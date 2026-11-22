@@ -49,8 +49,8 @@ function Onboarding() {
     if (!/^[a-z0-9_]{3,20}$/.test(handle)) { setHandleState("bad"); return; }
     if (handle === profile.handle) { setHandleState("ok"); return; }
     const id = setTimeout(async () => {
-      const { count } = await supabase.from("profiles").select("id", { count: "exact", head: true }).eq("handle", handle);
-      setHandleState(count ? "taken" : "ok");
+      const { data } = await supabase.rpc("handle_available", { _handle: handle });
+      setHandleState(data ? "ok" : "taken");
     }, 350);
     return () => clearTimeout(id);
   }, [handle, profile]);

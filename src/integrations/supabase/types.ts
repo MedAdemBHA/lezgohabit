@@ -516,6 +516,7 @@ export type Database = {
       crew_activity: { Args: { _crew_id: string }; Returns: Json }
       crew_today: { Args: { _crew_id: string }; Returns: Json }
       delete_my_account: { Args: never; Returns: undefined }
+      handle_available: { Args: { _handle: string }; Returns: boolean }
       join_crew: { Args: { _code: string }; Returns: string }
       join_season: {
         Args: { _mode?: string; _season_id: string }
