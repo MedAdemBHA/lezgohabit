@@ -190,3 +190,90 @@
 .create-habit input { height:44px; border-radius:12px; }
 .create-habit button { border-radius:12px; box-shadow:none; }
 .habit-group-label { line-height:13px; }
+
+/* Today artwork and the shared five-tab navigation. */
+.main-tab-wrap { position:fixed; inset-inline:0; bottom:calc(16px + env(safe-area-inset-bottom,0px)); z-index:40; width:100%; max-width:440px; margin-inline:auto; padding-inline:16px; }
+.main-tab-bar { height:64px; display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:4px; padding:5px; background:var(--card); border:2.5px solid var(--ink); border-radius:20px; box-shadow:var(--sx) 4px 0 var(--ink); }
+.main-tab { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; border-radius:14px; min-width:0; font-size:11px; font-weight:800; line-height:14px; letter-spacing:0; }
+.today-content { display:flex; flex-direction:column; gap:12px; padding:16px 18px calc(104px + env(safe-area-inset-bottom,0px)); flex:1; }
+.today-top { display:flex; align-items:center; justify-content:space-between; gap:8px; height:40px; flex-shrink:0; }
+.day-sticker { display:inline-flex; align-items:center; gap:5px; font-family:var(--font-mono); font-size:13px; font-weight:700; white-space:nowrap; background:var(--card); border:2.5px solid var(--ink); border-radius:10px; padding:6px 10px; transform:rotate(-3deg); }
+.today-top-end { display:flex; align-items:center; gap:8px; min-width:0; }
+.today-settings { height:40px; min-height:40px; width:40px; padding:0; flex-shrink:0; border-radius:12px; background:var(--card); border:2.5px solid var(--ink); box-shadow:none; }
+.streak-pill { display:flex; align-items:center; gap:5px; background:var(--orange); border:2.5px solid var(--ink); box-shadow:calc(var(--sx)*.75) 3px 0 var(--ink); border-radius:999px; padding:6px 12px; font-size:13px; font-weight:800; white-space:nowrap; }
+.streak-pill svg { flex-shrink:0; }
+.today-score { display:flex; flex-direction:column; gap:9px; background:var(--yellow); border:2.5px solid var(--ink); box-shadow:calc(var(--sx)*1.25) 5px 0 var(--ink); border-radius:22px; padding:12px 14px; }
+.today-score-row { display:flex; align-items:flex-end; justify-content:space-between; gap:6px; }
+.score-heading { flex:1; min-width:0; }
+.today-title { font-size:40px; font-weight:800; line-height:.95; letter-spacing:0; }
+.score-breakdown { font-family:var(--font-mono); font-size:11px; font-weight:700; line-height:1.4; margin-top:5px; }
+.score-total { display:flex; align-items:baseline; gap:3px; flex-shrink:0; }
+.today-score-number { font-size:46px; font-weight:700; line-height:1; }
+.score-total > span { font-size:13px; font-weight:800; }
+.habit-progress { display:flex; height:14px; gap:4px; }
+.progress-segment { flex:1; border:2px solid var(--ink); border-radius:5px; background:var(--card); overflow:hidden; min-width:0; }
+.progress-fill { display:block; height:100%; transition:width 180ms ease; }
+[data-color="lime"] { --habit-color:var(--lime); }
+[data-color="blue"] { --habit-color:var(--blue); }
+[data-color="purple"] { --habit-color:var(--purple); }
+[data-color="pink"] { --habit-color:var(--pink); }
+[data-color="teal"] { --habit-color:var(--teal); }
+[data-color="orange"] { --habit-color:var(--orange); }
+[data-color="yellow"] { --habit-color:var(--yellow); }
+[data-color="card"] { --habit-color:var(--card); }
+.progress-fill { background:var(--habit-color,var(--lime)); }
+.today-stacks { display:flex; align-items:center; flex-wrap:wrap; gap:6px; }
+.stacks-label { font-size:11px; font-weight:800; }
+.stack-chip { display:inline-flex; align-items:center; justify-content:center; gap:3px; font-family:var(--font-mono); font-size:10px; font-weight:700; height:26px; min-height:26px; padding:0 7px; border:2px solid var(--ink); border-radius:8px; background:transparent; color:var(--ink); box-shadow:none; opacity:.85; white-space:nowrap; }
+.stack-chip.is-on { background:var(--habit-color); box-shadow:var(--sx2) 2px 0 var(--ink); opacity:1; }
+.today-habit-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+.today-habit { height:92px; min-height:92px; width:100%; min-width:0; display:flex; flex-direction:column; align-items:stretch; justify-content:space-between; gap:0; border:2.5px solid var(--ink); border-radius:18px; padding:8px 12px; overflow:hidden; background:var(--card); box-shadow:var(--sx2) 2px 0 var(--ink); text-align:start; }
+.today-habit.is-done { background:var(--habit-color,var(--lime)); box-shadow:var(--sx) 4px 0 var(--ink); }
+.today-habit-top { display:flex; align-items:center; justify-content:space-between; gap:3px; }
+.habit-icon-box { display:flex; align-items:center; justify-content:center; width:38px; height:38px; flex-shrink:0; }
+.habit-icon-box svg [fill]:not([fill="none"]):not([fill="var(--ink)"]) { fill:var(--card); }
+.habit-top-end { display:flex; align-items:center; gap:6px; }
+.habit-points { font-size:11px; font-weight:700; border:2px solid var(--ink); border-radius:8px; padding:4px 5px; background:var(--card); line-height:1; }
+.habit-check { width:26px; height:26px; display:grid; place-items:center; border:2.5px solid var(--ink); border-radius:50%; background:var(--card); flex-shrink:0; }
+.habit-check.is-checked { background:var(--ink); }
+.today-habit-bottom { display:flex; flex-direction:column; gap:3px; min-width:0; }
+.habit-name { font-size:18px; font-weight:800; line-height:1.05; display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-transform:uppercase; }
+.habit-rule { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:11px; font-weight:600; line-height:1.25; color:var(--color-design-body); }
+.salat-card, .count-card { background:var(--card); border:2.5px solid var(--ink); box-shadow:var(--sx) 4px 0 var(--ink); border-radius:18px; padding:10px 12px; }
+.salat-card { display:flex; flex-direction:column; gap:8px; }
+.salat-heading { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px; }
+.salat-heading h2 { font-size:13px; font-weight:800; line-height:1.25; }
+.salat-heading bdi { font-size:12px; font-weight:700; }
+.salat-heading a { font-size:12px; font-weight:800; text-decoration:underline; }
+.prayers-grid { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:6px; }
+.prayer-button { height:48px; min-height:48px; border-radius:12px; border:2.5px solid var(--ink); padding:2px; display:flex; flex-direction:column; justify-content:center; gap:2px; box-shadow:none; font-size:12px; font-weight:800; background:var(--card); line-height:1.15; }
+.prayer-button.on-time { background:var(--teal); box-shadow:var(--sx2) 2px 0 var(--ink); }
+.prayer-button.late { background:var(--yellow); }
+.prayer-status { font-family:var(--font-mono); font-size:9px; font-weight:700; line-height:1.2; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.prayer-location { font-size:12px; min-height:24px; padding:0; border:0; text-align:start; justify-content:flex-start; text-decoration:underline; }
+.count-card { display:flex; align-items:center; gap:10px; padding-inline-start:14px; }
+.count-card h2 { font-size:13px; font-weight:800; line-height:1.25; text-transform:uppercase; }
+.count-indicators { display:flex; align-items:center; gap:3px; margin-top:3px; height:22px; }
+.count-indicator { display:block; width:18px; height:12px; border:2px solid var(--ink); border-radius:4px; }
+.count-indicator.is-filled { background:var(--ink); }
+.count-value { min-height:18px; padding:0; border:0; font-size:12px; font-weight:700; line-height:1.4; justify-content:flex-start; }
+.count-add { height:44px; min-height:44px; border-radius:14px; padding:0 14px; background:var(--pink); border:2.5px solid var(--ink); box-shadow:none; font-size:15px; font-weight:800; flex-shrink:0; }
+.daily-chaos { display:flex; align-items:center; gap:10px; background:var(--ink); color:var(--card); border:2.5px solid var(--ink); box-shadow:var(--sx) 4px 0 var(--purple); border-radius:18px; padding:12px 14px; flex-wrap:wrap; }
+.chaos-copy { min-width:0; flex:1; }
+.chaos-copy h2 { color:var(--lime); font-size:12px; font-weight:800; line-height:1.25; }
+.chaos-copy p { font-size:14px; font-weight:700; line-height:1.25; margin-top:4px; }
+.chaos-actions { display:flex; align-items:center; gap:6px; margin-inline-start:auto; }
+.chaos-spin, .chaos-do { height:44px; min-height:44px; border-radius:12px; padding:0 10px; font-size:13px; font-weight:800; box-shadow:none; }
+.chaos-spin { background:var(--card); color:var(--ink); border:0; }
+.chaos-do { color:var(--lime); border:2px solid var(--lime); background:transparent; }
+.chaos-do.is-done { background:var(--lime); color:var(--ink); }
+.today-banner { border:2.5px solid var(--ink); border-radius:18px; padding:10px 12px; font-size:13px; font-weight:600; box-shadow:var(--sx2) 2px 0 var(--ink); }
+.today-next { display:flex; align-items:center; justify-content:center; gap:6px; font-size:13px; font-weight:800; min-height:44px; }
+[dir="rtl"] .today-title { line-height:1.25; }
+[dir="rtl"] .day-sticker > span, [dir="rtl"] .stacks-label, [dir="rtl"] .stack-chip, [dir="rtl"] .prayer-status { font-family:var(--font-arabic); }
+[dir="rtl"] .habit-name { line-height:1.25; }
+@media(max-width:360px) { .today-content { padding-inline:14px; } .streak-pill { font-size:11px; padding-inline:8px; } .day-sticker { font-size:11px; padding-inline:7px; } .today-top-end { gap:5px; } .habit-points { font-size:10px; padding-inline:3px; } .habit-top-end { gap:3px; } }
+
+.chaos-copy { min-width:130px; }
+[lang="fr"] .daily-chaos .chaos-actions { flex-basis:100%; justify-content:flex-end; }
+@media(max-width:360px) { .daily-chaos .chaos-actions { flex-basis:100%; justify-content:flex-end; } }

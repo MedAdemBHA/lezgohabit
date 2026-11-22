@@ -10,6 +10,8 @@ export type Season = Database["public"]["Tables"]["seasons"]["Row"];
 export type Template = Database["public"]["Tables"]["habit_templates"]["Row"];
 export type UserHabit = Database["public"]["Tables"]["user_habits"]["Row"] & { template: Template | null };
 export type Checkin = Database["public"]["Tables"]["checkins"]["Row"];
+export type DayExtras = Database["public"]["Tables"]["day_extras"]["Row"];
+export type HabitPoints = { id: string; share: number; earned: number };
 export type DailyScore = Database["public"]["Tables"]["daily_scores"]["Row"];
 export type { Json };
 
@@ -65,13 +67,17 @@ export const habitsQuery = (uid: string, seasonId: string) => queryOptions({
 export const dayQuery = (uid: string, seasonId: string, day: string) => queryOptions({
   queryKey: ["day", uid, seasonId, day],
   queryFn: async () => {
-    const [c, s, e] = await Promise.all([
+    const [c, s, e, points] = await Promise.all([
       supabase.from("checkins").select("*").eq("user_id", uid).eq("day", day),
       supabase.from("daily_scores").select("*").eq("user_id", uid).eq("season_id", seasonId).eq("day", day).maybeSingle(),
       supabase.from("day_extras").select("*").eq("user_id", uid).eq("day", day).maybeSingle(),
+      supabase.rpc("today_habit_points", { _season_id: seasonId, _day: day }),
     ]);
     if (c.error) throw c.error;
-    return { checkins: c.data, score: s.data, extras: e.data };
+    if (s.error) throw s.error;
+    if (e.error) throw e.error;
+    if (points.error) throw points.error;
+    return { checkins: c.data, score: s.data, extras: e.data, points: points.data as unknown as HabitPoints[] };
   },
 });
 

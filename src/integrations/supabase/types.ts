@@ -184,22 +184,31 @@ export type Database = {
       day_extras: {
         Row: {
           chaos_done: boolean
+          chaos_index: number | null
+          chaos_spins: number
           day: string
           lift_prs: number
+          proof_path: string | null
           proof_posted: boolean
           user_id: string
         }
         Insert: {
           chaos_done?: boolean
+          chaos_index?: number | null
+          chaos_spins?: number
           day: string
           lift_prs?: number
+          proof_path?: string | null
           proof_posted?: boolean
           user_id: string
         }
         Update: {
           chaos_done?: boolean
+          chaos_index?: number | null
+          chaos_spins?: number
           day?: string
           lift_prs?: number
+          proof_path?: string | null
           proof_posted?: boolean
           user_id?: string
         }
@@ -208,6 +217,7 @@ export type Database = {
       habit_templates: {
         Row: {
           category: string
+          color: string | null
           default_target: number
           description: Json
           icon: string
@@ -221,6 +231,7 @@ export type Database = {
         }
         Insert: {
           category: string
+          color?: string | null
           default_target?: number
           description: Json
           icon: string
@@ -234,6 +245,7 @@ export type Database = {
         }
         Update: {
           category?: string
+          color?: string | null
           default_target?: number
           description?: Json
           icon?: string
@@ -532,6 +544,10 @@ export type Database = {
         Returns: Json
       }
       participating_countries: { Args: never; Returns: number }
+      post_daily_proof: {
+        Args: { _path: string; _season_id: string }
+        Returns: Json
+      }
       recompute_day: {
         Args: { _day: string; _season_id: string; _user_id: string }
         Returns: undefined
@@ -539,6 +555,11 @@ export type Database = {
       send_nudge: { Args: { _to_user: string }; Returns: boolean }
       set_chaos_done: {
         Args: { _day?: string; _done: boolean; _season_id: string }
+        Returns: Json
+      }
+      spin_daily_chaos: { Args: { _season_id: string }; Returns: Json }
+      today_habit_points: {
+        Args: { _day: string; _season_id: string }
         Returns: Json
       }
       toggle_respect: { Args: { _checkin_id: string }; Returns: boolean }

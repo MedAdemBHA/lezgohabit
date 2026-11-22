@@ -1,276 +1,151 @@
-import { pageHead } from "@/lib/page-head";
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
-import confetti from "canvas-confetti";
-import { AlertTriangle, ArrowRight, Check, Minus, Plus, Share2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { AppShell } from "@/components/lezgo/app-shell";
-import { CountUp } from "@/components/lezgo/count-up";
-import { ProofIcon, ChaosIcon, TrainIcon, CrewIcon } from "@/components/icons";
-import { FlameIcon } from "@/components/lezgo/icons";
-import { HabitIcon } from "@/components/lezgo/habit-icon";
-import { BottomSheet, Chip, Num, StickerButton, StickerCard } from "@/components/lezgo/ui";
-import { dayQuery, errKey, habitsQuery, useBase, type Checkin, type DailyScore, type UserHabit } from "@/lib/data";
-import { chaosFor, completion, fmtVal, PRAYERS, stepFor, type PrayerState } from "@/lib/habits";
-import { loc } from "@/lib/i18n";
-import { daysBetween, localHour, useNow } from "@/lib/time";
-import { cn } from "@/lib/utils";
-
-export const Route = createFileRoute("/_authenticated/today")({
-  head: () => pageHead("Today — lezgo", "Log today's gos and keep your go streak alive."),
-  component: Today,
-});
-
-type DayData = { checkins: Checkin[]; score: DailyScore | null; extras: { chaos_done: boolean; proof_posted: boolean; lift_prs: number } | null };
+import { pageHead } from '@/lib/page-head';
+import { createFileRoute, Link } from '@tanstack/react-router';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
+import confetti from 'canvas-confetti';
+import { AlertTriangle, ArrowRight, Minus, Plus, Share2, RotateCcw } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { AppShell } from '@/components/lezgo/app-shell';
+import { CountUp } from '@/components/lezgo/count-up';
+import { ChaosIcon } from '@/components/icons';
+import { GlobeIcon, TodayFlame } from '@/components/icons/tab-icons';
+import { BottomSheet, Avatar, Field, Num, StickerButton, inputCls } from '@/components/lezgo/ui';
+import { LangGrid } from '@/components/lezgo/lang-switcher';
+import { HabitTile, habitName } from '@/components/lezgo/today/habit-tile';
+import { SalatCard } from '@/components/lezgo/today/salat-card';
+import { CountCard } from '@/components/lezgo/today/count-card';
+import { ProofCompose } from '@/components/lezgo/today/proof-compose';
+import { dayQuery, errKey, habitsQuery, myCrewQuery, profileQuery, useBase, type Checkin, type DayExtras, type DailyScore, type HabitPoints, type UserHabit } from '@/lib/data';
+import { completion, fmtVal, stepFor, type PrayerState } from '@/lib/habits';
+import { canSpin, habitColor, incrementCount, DAILY_DARE_COUNT, streakAtRisk } from '@/lib/today-rules';
+import { daysBetween, localHour, pad, useNow } from '@/lib/time';
+import { FitHeading } from '@/components/lezgo/fit-heading';
+export const Route = createFileRoute('/_authenticated/today')({ head: () => pageHead('Today — lezgo', "Log today's gos and keep your go streak alive."), component: Today });
+type DayData = { checkins: Checkin[]; score: DailyScore | null; extras: DayExtras | null; points: HabitPoints[] };
 
 function Today() {
-  const { t, i18n } = useTranslation();
-  const lang = i18n.language;
-  const qc = useQueryClient();
-  const { uid, season, today, tz, profile } = useBase();
-  const sid = season?.id ?? "";
-  const habits = useQuery({ ...habitsQuery(uid, sid), enabled: !!uid && !!sid });
-  const dq = dayQuery(uid, sid, today);
-  const day = useQuery({ ...dq, enabled: !!uid && !!sid });
-  const [salatFor, setSalatFor] = useState<UserHabit | null>(null);
-  const [popId, setPopId] = useState<string | null>(null);
-  const [perfectOpen, setPerfectOpen] = useState(false);
-  const timers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
-  const now = useNow(60_000);
+ const { t, i18n } = useTranslation(); const qc = useQueryClient();
+ const { uid, season, today, tz, profile } = useBase(); const sid = season?.id ?? '';
+ const habits = useQuery({ ...habitsQuery(uid,sid), enabled: !!uid && !!sid });
+ const mine = useQuery({ ...myCrewQuery(uid,sid), enabled: !!uid && !!sid });
+ const dq = dayQuery(uid,sid,today); const day = useQuery({ ...dq, enabled: !!uid && !!sid });
+ const [popId, setPopId] = useState<string | null>(null); const [perfectOpen, setPerfectOpen] = useState(false);
+ const [settingsOpen, setSettingsOpen] = useState(false); const [cityOpen, setCityOpen] = useState(false); const [city, setCity] = useState('');
+ const [stepper, setStepper] = useState<UserHabit | null>(null); const [proofOpen, setProofOpen] = useState(false);
+ const [bonusBusy, setBonusBusy] = useState(false); const [pending, setPending] = useState(0);
+ const revision = useRef(0);
+ const queue = useRef<Promise<void>>(Promise.resolve()); const now = useNow(30_000);
+ const data = day.data; const score = data?.score; const list = habits.data ?? [];
+ const byHabit = new Map((data?.checkins ?? []).map(c => [c.user_habit_id,c]));
+ const comps = list.map(h => completion(h,byHabit.get(h.id)));
+ const missing = list.filter((_,i) => (comps[i] ?? 0) < 1);
+ const avg = list.length ? comps.reduce((a,b) => a+b,0)/list.length : 0;
+ const dayIndex = season ? daysBetween(season.starts_on,today)+1 : 1;
+ const seasonLength = season ? daysBetween(season.starts_on,season.ends_on)+1 : 40;
+ const closed = !!season && (today < season.starts_on || today > season.ends_on);
+ const atRisk = !!now && streakAtRisk(localHour(tz,now),avg,list.length > 0,closed);
+ const salat = list.find(h => h.kind === 'salat');
+ const points = new Map((data?.points ?? []).map(p => [p.id,p]));
+ const chaosIndex = data?.extras?.chaos_index ?? ((dayIndex-1) % DAILY_DARE_COUNT + DAILY_DARE_COUNT) % DAILY_DARE_COUNT;
+ const dares = t('todayDesign.dares', { returnObjects: true }) as string[];
+ const chaosDone = !!data?.extras?.chaos_done;
+ const spins = data?.extras?.chaos_spins ?? 0;
+ const disabled = closed || day.isLoading;
 
-  const data = day.data as DayData | undefined;
-  const score = data?.score;
-  const list = habits.data ?? [];
-  const byHabit = new Map((data?.checkins ?? []).map((c) => [c.user_habit_id, c]));
-  const comps = list.map((h) => completion(h, byHabit.get(h.id)));
-  const avg = list.length ? comps.reduce((a, b) => a + b, 0) / list.length : 0;
-
-  const dayIndex = season ? daysBetween(season.starts_on, today) + 1 : 1;
-  const total = season ? daysBetween(season.starts_on, season.ends_on) + 1 : 40;
-  const chaosKey = chaosFor(dayIndex);
-
-  useEffect(() => {
-    if (!score?.perfect) return;
-    const k = `lezgo_perfect_${today}`;
-    if (localStorage.getItem(k)) return;
-    localStorage.setItem(k, "1");
-    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      void confetti({ particleCount: 140, spread: 80, origin: { y: 0.3 }, colors: ["#C8F560", "#FF7A2F", "#FFD43B", "#FF8FC7", "#7FB2FF"] });
-    }
-    setPerfectOpen(true);
-  }, [score?.perfect, today]);
-
-  function patch(fn: (d: DayData) => DayData) {
-    qc.setQueryData(dq.queryKey, ((old: DayData | undefined) => fn(old ?? { checkins: [], score: null, extras: null })) as never);
+ useEffect(() => {
+  if (!score?.perfect || !uid) return;
+  const key = `lezgo_perfect_${uid}_${sid}_${today}`;
+  if (localStorage.getItem(key)) return; localStorage.setItem(key,'1');
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+   const css = getComputedStyle(document.documentElement);
+   void confetti({ particleCount:140, spread:80, origin:{ y:.3 }, colors:['--lime','--orange','--yellow','--pink','--blue'].map(token => css.getPropertyValue(token).trim()) });
   }
-
-  async function send(h: UserHabit, value: number, detail: unknown) {
-    try {
-      const { data: s, error } = await supabase.rpc("checkin_upsert", { _user_habit_id: h.id, _value: value, _detail: (detail ?? null) as never });
-      if (error) throw error;
-      patch((d) => ({ ...d, score: s as unknown as DailyScore }));
-      void qc.invalidateQueries({ queryKey: ["scores"] });
-    } catch (e) {
-      toast(errKey(e) === "day_closed" ? t("today.closed") : t("common.error"));
-      void qc.invalidateQueries({ queryKey: dq.queryKey });
-    }
-  }
-
-  function log(h: UserHabit, value: number, detail: unknown = null, debounce = false) {
-    patch((d) => {
-      const rest = d.checkins.filter((c) => c.user_habit_id !== h.id);
-      const prev = d.checkins.find((c) => c.user_habit_id === h.id);
-      const row = { ...(prev ?? { id: `tmp-${h.id}`, user_id: uid, user_habit_id: h.id, day: today, created_at: new Date().toISOString() }), value, detail } as Checkin;
-      return { ...d, checkins: [...rest, row] };
-    });
-    if (completion(h, { value, detail: detail as never }) >= 1) { setPopId(h.id); setTimeout(() => setPopId(null), 350); }
-    clearTimeout(timers.current[h.id]);
-    if (debounce) timers.current[h.id] = setTimeout(() => void send(h, value, detail), 450);
-    else void send(h, value, detail);
-  }
-
-  function tap(h: UserHabit) {
-    const c = byHabit.get(h.id);
-    if (h.kind === "salat") { setSalatFor(h); return; }
-    const done = completion(h, c) >= 1;
-    log(h, done ? 0 : Number(h.kind === "count" ? h.target : 1));
-  }
-
-  async function toggleChaos() {
-    const next = !data?.extras?.chaos_done;
-    patch((d) => ({ ...d, extras: { chaos_done: next, proof_posted: d.extras?.proof_posted ?? false, lift_prs: d.extras?.lift_prs ?? 0 } }));
-    const { data: s, error } = await supabase.rpc("set_chaos_done", { _season_id: sid, _done: next });
-    if (error) { toast(t("common.error")); void qc.invalidateQueries({ queryKey: dq.queryKey }); return; }
-    patch((d) => ({ ...d, score: s as unknown as DailyScore }));
-  }
-
-  const missing = list.filter((_, i) => (comps[i] ?? 0) < 1);
-  const atRisk = now && list.length > 0 && localHour(tz, now) >= 20 && avg < 0.6;
-  const stacks = [
-    { Icon: FlameIcon, k: "perfect", pts: 20, on: !!score?.perfect },
-    { Icon: ProofIcon, k: "proof", pts: 10, on: !!data?.extras?.proof_posted, soon: true },
-    { Icon: ChaosIcon, k: "chaos", pts: 10, on: !!data?.extras?.chaos_done },
-    { Icon: CrewIcon, k: "crewSync", pts: 10, on: !!score?.crew_sync },
-    { Icon: TrainIcon, k: "liftPr", pts: 5, on: (data?.extras?.lift_prs ?? 0) > 0, soon: true },
-  ];
-
-  if (!season || !profile) return <AppShell><p className="py-10 text-center">{t("common.loading")}</p></AppShell>;
-
-  return (
-    <AppShell>
-      <section className="flex items-end justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-[15px] font-bold text-muted-foreground">{loc(season.name, lang)}</p>
-          <h1 className="text-[30px] font-extrabold leading-tight">{t("today.day", { n: Math.min(Math.max(dayIndex, 1), total), total })}</h1>
-        </div>
-      </section>
-
-      <StickerCard className="mt-4 flex items-center justify-between gap-3 bg-ink text-cream shadow-hard-orange">
-        <div>
-          <p className="text-[13px] font-bold uppercase opacity-70">{t("today.score")}</p>
-          <p className="flex items-baseline gap-1.5"><CountUp value={score?.total ?? 0} className="text-[44px] font-bold leading-none text-lime" />
-            <span className="text-[14px] opacity-70">{t("common.pts")}</span></p>
-        </div>
-        <div className="flex flex-col items-end gap-2">
-          <span className="flex items-center gap-1.5 rounded-full bg-cream px-3 py-1 text-ink">
-            <FlameIcon size={22} dim={!score?.streak} /><Num className="text-[18px] font-bold">{score?.streak ?? 0}</Num>
-            <span className="text-[13px] font-bold">{t("today.streak")}</span>
-          </span>
-          <span className="rounded-full bg-lime px-3 py-1 text-[15px] font-bold text-ink"><Num>×{Number(score?.multiplier ?? 1).toFixed(2)}</Num></span>
-        </div>
-      </StickerCard>
-
-      {atRisk && (
-        <div className="mt-4 rounded-[18px] bg-yellow p-4 sticker-border shadow-hard">
-          <p className="flex items-center gap-2 text-[16px] font-extrabold"><AlertTriangle strokeWidth={2.5} className="size-5" />{t("today.riskTitle")}</p>
-          <p className="mt-1 text-[14px] font-semibold">{t("today.riskBody")}</p>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {missing.map((h) => <Chip key={h.id} onClick={() => tap(h)}>{h.custom_name ?? loc(h.template?.name, lang)}</Chip>)}
-          </div>
-        </div>
-      )}
-
-      {list.length === 0 ? (
-        <StickerCard className="mt-5 text-center">
-          <p className="text-[17px] font-bold">{t("today.noHabits")}</p>
-          <Link to="/habits" className="mt-3 inline-block"><StickerButton>{t("today.pickHabits")}</StickerButton></Link>
-        </StickerCard>
-      ) : (
-        <>
-          <p className="mt-5 mb-2 text-[14px] font-semibold text-muted-foreground">{t("today.tapHint")}</p>
-          <div className="grid grid-cols-2 gap-3">
-            {list.map((h, i) => {
-              const c = byHabit.get(h.id);
-              const comp = comps[i] ?? 0;
-              const done = comp >= 1;
-              const name = h.custom_name ?? loc(h.template?.name, lang);
-              const val = Number(c?.value ?? 0);
-              const step = stepFor(h.unit, Number(h.target));
-              return (
-                <div key={h.id} className={cn("relative h-[92px] min-w-0 overflow-hidden rounded-[18px] sticker-border shadow-hard", done ? "bg-lime" : "bg-card", popId === h.id && "animate-pop")}>
-                  {comp > 0 && !done && <div className="absolute inset-y-0 start-0 bg-lime/60" style={{ width: `${comp * 100}%` }} />}
-                  <button type="button" onClick={() => tap(h)} aria-pressed={done} className="relative flex size-full flex-col justify-between p-3 text-start">
-                    <span className="flex items-center justify-between gap-2">
-                      <HabitIcon name={h.template?.icon ?? "sparkles"} className="size-6 shrink-0" />
-                      {done && h.kind !== "count" && <span className="grid size-6 place-items-center rounded-full bg-ink text-lime"><Check strokeWidth={3} className="size-4" /></span>}
-                    </span>
-                    <span className="min-w-0">
-                      <span className="block truncate text-[15px] font-extrabold leading-tight">{name}</span>
-                      {h.kind === "count" && <Num className="text-[12px] font-bold text-muted-foreground">{fmtVal(val)}/{fmtVal(Number(h.target))}{h.unit ? ` ${h.unit}` : ""}</Num>}
-                      {h.kind === "salat" && <Num className="text-[12px] font-bold text-muted-foreground">{fmtVal(comp * 5)}/5</Num>}
-                    </span>
-                  </button>
-                  {h.kind === "count" && (
-                    <div className="absolute top-2 end-2 flex gap-1.5" dir="ltr">
-                      <button type="button" aria-label="−" onClick={() => log(h, Math.max(0, +(val - step).toFixed(2)), null, true)}
-                        className="press grid size-9 place-items-center rounded-[10px] bg-card sticker-border shadow-hard-sm"><Minus strokeWidth={3} className="size-4" /></button>
-                      <button type="button" aria-label="+" onClick={() => log(h, +(val + step).toFixed(2), null, true)}
-                        className="press grid size-9 place-items-center rounded-[10px] bg-ink text-lime sticker-border shadow-hard-sm"><Plus strokeWidth={3} className="size-4" /></button>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </>
-      )}
-
-      <h2 className="mt-6 mb-2 text-[18px] font-extrabold">{t("today.stacks")}</h2>
-      <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2">
-        {stacks.map((s) => (
-          <span key={s.k} className={cn("flex min-h-[44px] shrink-0 items-center gap-1.5 rounded-full px-3 text-[14px] font-bold sticker-border",
-            s.on ? "bg-lime shadow-hard-sm" : "dashed-ink bg-transparent text-muted-foreground")}>
-            <s.Icon size={20} />{s.on && <Check strokeWidth={3} className="size-4" />}{t(`today.${s.k}`)} <Num>+{s.pts}</Num>
-            {s.soon && !s.on && <span className="text-[12px]">· {t("today.soon")}</span>}
-          </span>
-        ))}
-      </div>
-
-      <StickerCard className={cn("mt-4", data?.extras?.chaos_done ? "bg-lime" : "bg-pink")}>
-        <p className="flex items-center gap-1.5 text-[13px] font-extrabold uppercase"><ChaosIcon size={24} />{t("today.chaosTitle")} · <Num>+10</Num></p>
-        <div className="mt-2 flex items-center justify-between gap-3">
-          <p className="text-[18px] font-extrabold leading-snug">{t(`chaos.${chaosKey}`)}</p>
-          <StickerButton size="sm" variant={data?.extras?.chaos_done ? "secondary" : "primary"} onClick={toggleChaos}>
-            {data?.extras?.chaos_done ? t("today.chaosUndo") : t("today.chaosBtn")}
-          </StickerButton>
-        </div>
-      </StickerCard>
-
-      <div className="mt-6">
-        {missing.length === 0 && list.length > 0 ? (
-          <Link to="/ranks" className="block"><StickerButton block>{t("today.nextDone")}<ArrowRight strokeWidth={3} className="size-5 rtl:-scale-x-100" /></StickerButton></Link>
-        ) : list.length > 0 ? (
-          <StickerButton block variant="secondary" onClick={() => { if (missing[0]) tap(missing[0]); }}>
-            {t("today.next")}<ArrowRight strokeWidth={3} className="size-5 rtl:-scale-x-100" />
-          </StickerButton>
-        ) : null}
-      </div>
-
-      <BottomSheet open={!!salatFor} onClose={() => setSalatFor(null)} title={t("today.salatTitle")}>
-        {salatFor && <SalatSheet habit={salatFor} checkin={byHabit.get(salatFor.id)} onSave={(detail, value) => log(salatFor, value, detail)} />}
-      </BottomSheet>
-
-      <BottomSheet open={perfectOpen} onClose={() => setPerfectOpen(false)} title={t("today.perfectTitle")}>
-        <p className="text-[17px] font-semibold">{t("today.perfectBody")}</p>
-        <StickerButton block className="mt-5" onClick={async () => {
-          const text = t("today.shareText", { score: score?.total ?? 0, streak: score?.streak ?? 0 });
-          try { if (navigator.share) await navigator.share({ text, url: "https://joinlezgo.com" }); else { await navigator.clipboard.writeText(text); toast(t("crew.copied")); } } catch { /* cancelled */ }
-          setPerfectOpen(false);
-        }}><Share2 strokeWidth={2.5} className="size-5" />{t("today.share")}</StickerButton>
-      </BottomSheet>
-    </AppShell>
-  );
-}
-
-function SalatSheet({ habit: _h, checkin, onSave }: { habit: UserHabit; checkin?: Checkin | undefined; onSave: (detail: unknown, value: number) => void }) {
-  const { t } = useTranslation();
-  const init = ((checkin?.detail as { prayers?: Record<string, PrayerState> } | null)?.prayers) ?? {};
-  const [pr, setPr] = useState<Record<string, PrayerState>>(init);
-  function set(p: string, s: PrayerState) {
-    const next = { ...pr, [p]: s };
-    setPr(next);
-    const value = Object.values(next).reduce((a, v) => a + (v === "on_time" ? 1 : v === "late" ? 0.5 : 0), 0);
-    onSave({ prayers: next }, value);
-  }
-  const opts: { s: PrayerState; cls: string }[] = [{ s: "on_time", cls: "bg-lime" }, { s: "late", cls: "bg-yellow" }, { s: "missed", cls: "bg-muted" }];
-  return (
-    <div className="space-y-3">
-      {PRAYERS.map((p) => (
-        <div key={p} className="rounded-[16px] bg-card p-3 sticker-border">
-          <p className="mb-2 text-[17px] font-extrabold">{t(`today.${p}`)}</p>
-          <div className="grid grid-cols-3 gap-2">
-            {opts.map((o) => (
-              <button key={o.s} type="button" onClick={() => set(p, o.s)}
-                className={cn("press min-h-[44px] rounded-[12px] text-[14px] font-bold sticker-border", pr[p] === o.s ? `${o.cls} shadow-hard-sm` : "bg-card")}>
-                {t(o.s === "on_time" ? "today.onTime" : o.s === "late" ? "today.late" : "today.missed")}
-              </button>
-            ))}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
+  setPerfectOpen(true);
+ }, [score?.perfect,uid,sid,today]);
+ function patch(fn: (d: DayData) => DayData) {
+  qc.setQueryData(dq.queryKey, (old: DayData | undefined) => fn(old ?? { checkins:[], score:null, extras:null, points:[] }));
+ }
+ async function reconcile() {
+  await Promise.all([qc.invalidateQueries({ queryKey:dq.queryKey }), qc.invalidateQueries({ queryKey:['scores'] }), qc.invalidateQueries({ queryKey:['leaderboard'] }), qc.invalidateQueries({ queryKey:['crewToday'] })]);
+ }
+ function log(h: UserHabit, value: number, detail: Checkin['detail'] = null) {
+  if (disabled) return;
+  patch(d => {
+   const prev = d.checkins.find(c => c.user_habit_id === h.id);
+   const row: Checkin = { ...(prev ?? { id:`tmp-${h.id}`, user_id:uid, user_habit_id:h.id, day:today, created_at:new Date().toISOString() }), value,detail };
+   return { ...d, checkins:[...d.checkins.filter(c => c.user_habit_id !== h.id),row] };
+  });
+  if (completion(h,{ value,detail }) >= 1) { setPopId(h.id); setTimeout(() => setPopId(null),350); }
+  const writeRevision = ++revision.current;
+  setPending(n => n+1);
+  queue.current = queue.current.catch(() => {}).then(async () => {
+   try {
+    const { data: serverScore, error } = await supabase.rpc('checkin_upsert',{ _user_habit_id:h.id, _value:value, _detail:detail, _day:today });
+    if (error) throw error;
+    // The server owns point allocation and the total; reconcile after each serialized write.
+    const allocation = await supabase.rpc('today_habit_points',{ _season_id:sid,_day:today });
+    if (allocation.error) throw allocation.error;
+    patch(d => ({ ...d, score:serverScore as unknown as DailyScore, points:allocation.data as unknown as HabitPoints[] }));
+    if (writeRevision === revision.current) await reconcile();
+   } catch(e) { toast(errKey(e) === 'day_closed' ? t('today.closed') : t('common.error')); await qc.invalidateQueries({ queryKey:dq.queryKey }); }
+   finally { setPending(n => n-1); }
+  });
+  void queue.current.then(() => { void qc.invalidateQueries({ queryKey:['scores'] }); void qc.invalidateQueries({ queryKey:['leaderboard'] }); });
+ }
+ function tap(h: UserHabit) {
+  if (h.kind === 'salat') { document.getElementById('salat-today')?.scrollIntoView({ behavior:'smooth',block:'center' }); return; }
+  const value = Number(byHabit.get(h.id)?.value ?? 0);
+  log(h,h.kind === 'count' ? incrementCount(value) : completion(h,byHabit.get(h.id)) >= 1 ? 0 : 1);
+ }
+ async function toggleChaos() {
+  if (bonusBusy || disabled) return; setBonusBusy(true);
+  await queue.current;
+  try { const { error } = await supabase.rpc('set_chaos_done',{ _season_id:sid,_done:!chaosDone,_day:today }); if (error) throw error; await reconcile(); }
+  catch { toast(t('common.error')); } finally { setBonusBusy(false); }
+ }
+ async function spin() {
+  if (!canSpin(spins) || bonusBusy || disabled) return; setBonusBusy(true);
+  await queue.current;
+  try { const { error } = await supabase.rpc('spin_daily_chaos',{ _season_id:sid }); if (error) throw error; await reconcile(); }
+  catch(e) { toast((e as { message?: string }).message?.includes('spin_limit') ? t('todayDesign.spinLimit') : t('common.error')); }
+  finally { setBonusBusy(false); }
+ }
+ async function saveCity() {
+  if (!city.trim()) return;
+  const { error } = await supabase.from('profiles').update({ city:city.trim() }).eq('id',uid);
+  if (error) { toast(t('common.error')); return; }
+  await qc.invalidateQueries({ queryKey:profileQuery(uid).queryKey }); setCityOpen(false);
+ }
+ const stacks = [
+  { key:'perfect',points:20,on:!!score?.perfect,color:'lime',action:null },
+  { key:'proof',points:10,on:!!data?.extras?.proof_posted,color:'card',action:() => setProofOpen(true) },
+  { key:'chaos',points:10,on:chaosDone,color:'purple',action:() => void toggleChaos() },
+  ...(mine.data ? [{ key:'crew',points:10,on:!!score?.crew_sync,color:'blue',action:null }] : []),
+  ...(list.some(h => h.kind === 'lift') || (data?.extras?.lift_prs ?? 0) > 0 ? [{ key:'lift',points:5,on:(data?.extras?.lift_prs ?? 0)>0,color:'orange',action:null }] : []),
+ ];
+ if (!season || !profile) return <AppShell todayLayout><p className="py-10 text-center">{t('common.loading')}</p></AppShell>;
+ return <AppShell todayLayout>
+  <header className="today-top"><span className="day-sticker"><span>{t('todayDesign.day')}</span> <Num>{pad(Math.min(Math.max(dayIndex,1),seasonLength))}/{seasonLength}</Num></span><div className="today-top-end"><StickerButton variant="secondary" className="today-settings" aria-label={t('todayDesign.settings')} onClick={() => setSettingsOpen(true)}><GlobeIcon/></StickerButton><span className="streak-pill"><TodayFlame/><span><Num>{score?.streak ?? 0}</Num> {t('todayDesign.days')} · <Num>×{Number(score?.multiplier ?? 1).toFixed(2)}</Num></span></span></div></header>
+  <section className="today-score" aria-busy={pending>0}>
+   <div className="today-score-row"><div className="score-heading"><FitHeading text={t('todayDesign.today')} className="today-title" requestedSize={40}/><p className="score-breakdown"><span>{t('todayDesign.habits')} <Num>{fmtVal(Number(score?.habit_points ?? 0))}</Num> + {t('todayDesign.stacks')} <Num>{fmtVal(Number(score?.stack_points ?? 0))}</Num> × <Num>{Number(score?.multiplier ?? 1).toFixed(2)}</Num></span></p></div><div className="score-total"><CountUp value={score?.total ?? 0} className="today-score-number"/><span>{t('common.pts')}</span></div></div>
+   <div className="habit-progress">{list.map((h,i) => <div key={h.id} className="progress-segment" role="progressbar" aria-label={habitName(h,t,i18n.language)} aria-valuenow={Math.round((comps[i] ?? 0)*100)} aria-valuemin={0} aria-valuemax={100}><span data-color={h.template?.color ?? habitColor(h.template?.key ?? '',h.template?.category ?? '')} className="progress-fill" style={{ width:`${(comps[i] ?? 0)*100}%` }}/></div>)}</div>
+   <div className="today-stacks"><span className="stacks-label">{t('todayDesign.stacksLabel')}</span>{stacks.map(s => s.action ? <StickerButton variant="ghost" key={s.key} className={`stack-chip ${s.on ? 'is-on' : ''}`} data-color={s.color} aria-pressed={s.on} onClick={s.action} disabled={disabled || bonusBusy}>{t(`todayDesign.${s.key}`)} <Num>+{s.points}</Num></StickerButton> : <span key={s.key} data-color={s.color} className={`stack-chip ${s.on ? 'is-on' : ''}`}>{t(`todayDesign.${s.key}`)} <Num>+{s.points}</Num></span>)}</div>
+  </section>
+  {closed && <p className="today-banner bg-card">{t('todayDesign.dayClosed')}</p>}
+  {score?.comeback && <section className="today-banner bg-blue"><h2 className="font-extrabold">{t('todayDesign.comeBack')}</h2><p>{t('todayDesign.comebackBody')}</p></section>}
+  {atRisk && <section className="today-banner bg-yellow"><h2 className="flex items-center gap-2 font-extrabold"><AlertTriangle size={20}/>{t('today.riskTitle')}</h2><p>{t('today.riskBody')}</p><div className="mt-2 flex flex-wrap gap-2">{missing.map(h => <StickerButton variant="secondary" size="sm" key={h.id} onClick={() => tap(h)}>{habitName(h,t,i18n.language)}</StickerButton>)}</div></section>}
+  {day.error && <StickerButton variant="secondary" onClick={() => void day.refetch()}>{t('common.error')} · {t('todayDesign.retry')}</StickerButton>}
+  {list.length ? <div className="today-habit-grid">{list.map(h => <HabitTile key={h.id} habit={h} value={Number(byHabit.get(h.id)?.value ?? 0)} completion={completion(h,byHabit.get(h.id))} points={points.get(h.id)} pop={popId === h.id} onTap={() => tap(h)} onStepper={() => setStepper(h)} disabled={disabled}/>)}</div> : <div className="today-banner bg-card"><p>{t('today.noHabits')}</p><Link to="/habits" className="font-extrabold underline">{t('today.pickHabits')}</Link></div>}
+  {salat && <div id="salat-today"><SalatCard uid={uid} day={today} city={profile.city} country={profile.country_code} points={points.get(salat.id)} prayers={(byHabit.get(salat.id)?.detail as { prayers?: Record<string,PrayerState> } | null)?.prayers ?? {}} onCity={() => { setCity(profile.city ?? ''); setCityOpen(true); }} disabled={disabled} onChange={prayers => log(salat,Object.values(prayers).reduce((n,v) => n+(v === 'on_time' ? 1 : v === 'late' ? .5 : 0),0),{ prayers })}/></div>}
+  {list.filter(h => h.kind === 'count').map(h => <CountCard key={h.id} habit={h} value={Number(byHabit.get(h.id)?.value ?? 0)} onIncrement={() => tap(h)} onEdit={() => setStepper(h)} disabled={disabled}/>)}
+  <section className="daily-chaos"><ChaosIcon size={30} className="shrink-0"/><div className="chaos-copy"><h2>{t('todayDesign.chaosTitle')} · <Num>+10</Num></h2><p>{dares[chaosIndex]}</p></div><div className="chaos-actions"><StickerButton variant="secondary" className="chaos-spin" disabled={disabled || bonusBusy || !canSpin(spins)} title={canSpin(spins) ? t('todayDesign.spin') : t('todayDesign.spinLimit')} onClick={() => void spin()}>{t('todayDesign.spin')}</StickerButton><StickerButton variant="ghost" className={`chaos-do ${chaosDone ? 'is-done' : ''}`} aria-pressed={chaosDone} disabled={disabled || bonusBusy} onClick={() => void toggleChaos()}>{t(chaosDone ? 'todayDesign.done' : 'todayDesign.doIt')}</StickerButton></div></section>
+  {missing.length === 0 && list.length>0 && <Link to="/ranks" className="today-next">{t('today.nextDone')}<ArrowRight size={18} className="rtl:-scale-x-100"/></Link>}
+  <BottomSheet open={settingsOpen} onClose={() => setSettingsOpen(false)} title={t('todayDesign.settings')}><Link to="/profile" onClick={() => setSettingsOpen(false)} className="mb-5 flex items-center gap-3"><Avatar id={profile.id} name={profile.display_name} url={profile.avatar_url} size={44}/><span className="font-extrabold">{profile.display_name}</span></Link><LangGrid onPick={async language => { await supabase.from('profiles').update({ language }).eq('id',uid); await qc.invalidateQueries({ queryKey:profileQuery(uid).queryKey }); setSettingsOpen(false); }}/><Link to="/settings" className="mt-5 block font-extrabold underline">{t('common.settings')}</Link></BottomSheet>
+  <BottomSheet open={cityOpen} onClose={() => setCityOpen(false)} title={t('todayDesign.city')}><form onSubmit={e => { e.preventDefault(); void saveCity(); }} className="space-y-4"><Field label={t('todayDesign.city')}><input className={inputCls} maxLength={100} value={city} onChange={e => setCity(e.target.value)}/></Field><StickerButton block type="submit" disabled={!city.trim()}>{t('common.save')}</StickerButton></form></BottomSheet>
+  <BottomSheet open={stepper !== null} onClose={() => setStepper(null)} title={stepper ? habitName(stepper,t,i18n.language) : ''}>{stepper && <div className="space-y-4"><p className="text-center font-semibold">{t('todayDesign.countTitle')}</p><div className="flex items-center justify-center gap-5"><StickerButton variant="secondary" aria-label={t('todayDesign.decrease')} onClick={() => log(stepper,Math.max(0,Number(byHabit.get(stepper.id)?.value ?? 0)-stepFor(stepper.unit,Number(stepper.target))))}><Minus/></StickerButton><Num className="text-[32px] font-bold">{fmtVal(Number(byHabit.get(stepper.id)?.value ?? 0))}</Num><StickerButton aria-label={t('todayDesign.increase')} onClick={() => log(stepper,Number(byHabit.get(stepper.id)?.value ?? 0)+stepFor(stepper.unit,Number(stepper.target)))}><Plus/></StickerButton></div><div className="flex gap-3"><StickerButton variant="secondary" onClick={() => log(stepper,0)}><RotateCcw size={18}/>{t('todayDesign.undo')}</StickerButton><StickerButton block onClick={() => { log(stepper,Number(stepper.target)); setStepper(null); }}>{t('todayDesign.complete')}</StickerButton></div></div>}</BottomSheet>
+  <BottomSheet open={proofOpen} onClose={() => setProofOpen(false)} title={t('todayDesign.proofTitle')}><ProofCompose uid={uid} seasonId={sid} day={today} existingPath={data?.extras?.proof_path ?? null} onSaved={async () => { await reconcile(); setProofOpen(false); }}/></BottomSheet>
+  <BottomSheet open={perfectOpen} onClose={() => setPerfectOpen(false)} title={t('today.perfectTitle')}><p className="font-semibold">{t('today.perfectBody')}</p><StickerButton block className="mt-5" onClick={async () => { const text = t('today.shareText',{ score:score?.total ?? 0, streak:score?.streak ?? 0 }); try { if (navigator.share) await navigator.share({ text,url:window.location.origin }); else { await navigator.clipboard.writeText(text); toast(t('crew.copied')); } } catch { /* share cancelled */ } setPerfectOpen(false); }}><Share2 size={20}/>{t('today.share')}</StickerButton></BottomSheet>
+ </AppShell>;
 }

@@ -42,3 +42,9 @@ use the editor.
 - Locale-sensitive public Join content is gated by ClientOnly to prevent saved language changes racing lazy-route hydration; route metadata remains server-rendered.
 - Public social proof uses a narrowly granted aggregate RPC over opted-in season participants, never broad profile reads.
 - Designed headings preserve explicit line breaks and shrink only when measured text overflows, rather than scaling with viewport width.
+
+- Today owns its designed header inside AppShell's todayLayout; shared navigation uses supplied monochrome tab SVGs and fixed safe-area geometry.
+- Today mutations serialize check-in writes, mirror completion optimistically, and read point shares/earned values through today_habit_points; never compute scores in the browser.
+- Daily spins and proof bonus writes use authenticated SECURITY DEFINER RPCs over day_extras; proof photos stay in an owner-only private bucket with validated uploaded paths.
+- Prayer times use an authenticated server function that reads the caller's saved city and lets Aladhan derive its timezone; missing cities prompt setup, never fabricated timings.
+- Protected server functions attach the bearer via attachAppBearer in start.ts; it complements existing request and CSRF middleware.
