@@ -12,8 +12,13 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedCrewRouteImport } from './routes/_authenticated/crew'
+import { Route as AuthenticatedHabitsRouteImport } from './routes/_authenticated/habits'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
+import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedRanksRouteImport } from './routes/_authenticated/ranks'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedTodayRouteImport } from './routes/_authenticated/today'
 import { Route as CCodeRouteImport } from './routes/c.$code'
 
@@ -31,14 +36,39 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCrewRoute = AuthenticatedCrewRouteImport.update({
+  id: '/crew',
+  path: '/crew',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedHabitsRoute = AuthenticatedHabitsRouteImport.update({
+  id: '/habits',
+  path: '/habits',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedRanksRoute = AuthenticatedRanksRouteImport.update({
   id: '/ranks',
   path: '/ranks',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedTodayRoute = AuthenticatedTodayRouteImport.update({
@@ -55,16 +85,26 @@ const CCodeRoute = CCodeRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/admin': typeof AuthenticatedAdminRoute
+  '/crew': typeof AuthenticatedCrewRoute
+  '/habits': typeof AuthenticatedHabitsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/profile': typeof AuthenticatedProfileRoute
   '/ranks': typeof AuthenticatedRanksRoute
+  '/settings': typeof AuthenticatedSettingsRoute
   '/today': typeof AuthenticatedTodayRoute
   '/c/$code': typeof CCodeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/admin': typeof AuthenticatedAdminRoute
+  '/crew': typeof AuthenticatedCrewRoute
+  '/habits': typeof AuthenticatedHabitsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
+  '/profile': typeof AuthenticatedProfileRoute
   '/ranks': typeof AuthenticatedRanksRoute
+  '/settings': typeof AuthenticatedSettingsRoute
   '/today': typeof AuthenticatedTodayRoute
   '/c/$code': typeof CCodeRoute
 }
@@ -73,23 +113,55 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/_authenticated/crew': typeof AuthenticatedCrewRoute
+  '/_authenticated/habits': typeof AuthenticatedHabitsRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
+  '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/ranks': typeof AuthenticatedRanksRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/today': typeof AuthenticatedTodayRoute
   '/c/$code': typeof CCodeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/onboarding' | '/ranks' | '/today' | '/c/$code'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/admin'
+    | '/crew'
+    | '/habits'
+    | '/onboarding'
+    | '/profile'
+    | '/ranks'
+    | '/settings'
+    | '/today'
+    | '/c/$code'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/onboarding' | '/ranks' | '/today' | '/c/$code'
+  to:
+    | '/'
+    | '/auth'
+    | '/admin'
+    | '/crew'
+    | '/habits'
+    | '/onboarding'
+    | '/profile'
+    | '/ranks'
+    | '/settings'
+    | '/today'
+    | '/c/$code'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/_authenticated/admin'
+    | '/_authenticated/crew'
+    | '/_authenticated/habits'
     | '/_authenticated/onboarding'
+    | '/_authenticated/profile'
     | '/_authenticated/ranks'
+    | '/_authenticated/settings'
     | '/_authenticated/today'
     | '/c/$code'
   fileRoutesById: FileRoutesById
@@ -124,6 +196,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/crew': {
+      id: '/_authenticated/crew'
+      path: '/crew'
+      fullPath: '/crew'
+      preLoaderRoute: typeof AuthenticatedCrewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/habits': {
+      id: '/_authenticated/habits'
+      path: '/habits'
+      fullPath: '/habits'
+      preLoaderRoute: typeof AuthenticatedHabitsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/onboarding': {
       id: '/_authenticated/onboarding'
       path: '/onboarding'
@@ -131,11 +224,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOnboardingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/profile': {
+      id: '/_authenticated/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AuthenticatedProfileRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/ranks': {
       id: '/_authenticated/ranks'
       path: '/ranks'
       fullPath: '/ranks'
       preLoaderRoute: typeof AuthenticatedRanksRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/today': {
@@ -156,14 +263,24 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
+  AuthenticatedCrewRoute: typeof AuthenticatedCrewRoute
+  AuthenticatedHabitsRoute: typeof AuthenticatedHabitsRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
+  AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedRanksRoute: typeof AuthenticatedRanksRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedTodayRoute: typeof AuthenticatedTodayRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
+  AuthenticatedCrewRoute: AuthenticatedCrewRoute,
+  AuthenticatedHabitsRoute: AuthenticatedHabitsRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
+  AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedRanksRoute: AuthenticatedRanksRoute,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedTodayRoute: AuthenticatedTodayRoute,
 }
 

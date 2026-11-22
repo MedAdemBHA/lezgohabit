@@ -62,7 +62,7 @@ function Today() {
   }, [score?.perfect, today]);
 
   function patch(fn: (d: DayData) => DayData) {
-    qc.setQueryData(dq.queryKey, (old: DayData | undefined) => fn(old ?? { checkins: [], score: null, extras: null }));
+    qc.setQueryData(dq.queryKey, ((old: DayData | undefined) => fn(old ?? { checkins: [], score: null, extras: null })) as never);
   }
 
   async function send(h: UserHabit, value: number, detail: unknown) {
@@ -243,7 +243,7 @@ function Today() {
   );
 }
 
-function SalatSheet({ habit: _h, checkin, onSave }: { habit: UserHabit; checkin?: Checkin; onSave: (detail: unknown, value: number) => void }) {
+function SalatSheet({ habit: _h, checkin, onSave }: { habit: UserHabit; checkin?: Checkin | undefined; onSave: (detail: unknown, value: number) => void }) {
   const { t } = useTranslation();
   const init = ((checkin?.detail as { prayers?: Record<string, PrayerState> } | null)?.prayers) ?? {};
   const [pr, setPr] = useState<Record<string, PrayerState>>(init);

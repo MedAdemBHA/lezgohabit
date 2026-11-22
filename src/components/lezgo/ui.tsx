@@ -102,7 +102,7 @@ export function colorFor(id: string) {
   let h = 0; for (const c of id) h = (h * 31 + c.charCodeAt(0)) >>> 0;
   return AV_COLORS[h % AV_COLORS.length]!;
 }
-export function Avatar({ id, name, url, size = 40, className }: { id: string; name: string; url?: string | null; size?: number; className?: string }) {
+export function Avatar({ id, name, url, size = 40, className }: { id: string; name: string; url?: string | null | undefined; size?: number; className?: string }) {
   return (
     <span className={cn("grid shrink-0 place-items-center overflow-hidden rounded-full font-extrabold sticker-border", colorFor(id), className)}
       style={{ width: size, height: size, fontSize: size * 0.4 }}>

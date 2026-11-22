@@ -8,7 +8,7 @@ import type { Template, UserHabit } from "@/lib/data";
 import { HabitIcon } from "./habit-icon";
 import { BottomSheet, Field, Num, StickerButton, Tile, inputCls } from "./ui";
 
-export type Pick = { id: string; template: Template; customName?: string; target: number };
+export type Pick = { id: string; template: Template; customName?: string | undefined; target: number };
 
 export function fromExisting(habits: UserHabit[], templates: Template[]): Pick[] {
   const custom = templates.find((t) => t.key === "custom");
