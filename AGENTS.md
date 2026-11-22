@@ -28,3 +28,11 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## Project rules (Lezgo)
+- Scoring lives only in Postgres SECURITY DEFINER functions (`recompute_day` recomputes the whole season for a user so streaks, shields and comeback stay consistent); the client only mirrors completion for optimistic UI (`src/lib/habits.ts`).
+- Clients write check-ins, crews, nudges and chaos via RPCs (`checkin_upsert`, `create_crew`, `join_crew`, `send_nudge`, `set_chaos_done`); only `profiles` (whitelisted columns) and `user_habits` are written directly under RLS.
+- Admin access is decided server-side by RPCs that check `profiles.is_admin`; the UI never trusts its own flag.
+- Signed-in screens live under `src/routes/_authenticated/` (client-only, redirects to /auth and to /onboarding until `profiles.onboarded`).
+- All UI strings go through react-i18next dictionaries in `src/lib/i18n/` (en is the typed source; fr/ar/aeb must match its shape). DB-localized fields are `{en,fr,ar,aeb}` jsonb read via `loc()`.
+- Sticker design tokens and utilities (`sticker`, `shadow-hard`, `press`, `num`) live in `src/styles.css`; shadows use `--sx` so they mirror in RTL.

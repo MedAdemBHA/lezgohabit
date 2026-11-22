@@ -38,7 +38,7 @@ function Landing() {
     <div className="mx-auto flex min-h-screen w-full max-w-[440px] flex-col px-5 pb-8 pt-4">
       <header className="flex items-center justify-between"><Brand /><LangSwitcher /></header>
 
-      <h1 className="mt-8 whitespace-pre-line text-[52px] font-extrabold leading-[1.02] tracking-tight [dir=rtl]:leading-tight">
+      <h1 className="mt-8 whitespace-pre-line text-[52px] font-extrabold leading-[1.02] tracking-tight rtl:leading-[1.3]">
         {t("landing.hero")}
       </h1>
       <p className="mt-4 text-[17px] font-medium text-muted-foreground">{t("landing.subtitle")}</p>

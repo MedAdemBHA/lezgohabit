@@ -173,7 +173,7 @@ function Today() {
                   <button type="button" onClick={() => tap(h)} aria-pressed={done} className="relative flex size-full flex-col justify-between p-3 text-start">
                     <span className="flex items-center justify-between gap-2">
                       <HabitIcon name={h.template?.icon ?? "sparkles"} className="size-6 shrink-0" />
-                      {done && <span className="grid size-6 place-items-center rounded-full bg-ink text-lime"><Check strokeWidth={3} className="size-4" /></span>}
+                      {done && h.kind !== "count" && <span className="grid size-6 place-items-center rounded-full bg-ink text-lime"><Check strokeWidth={3} className="size-4" /></span>}
                     </span>
                     <span className="min-w-0">
                       <span className="block truncate text-[15px] font-extrabold leading-tight">{name}</span>
@@ -182,7 +182,7 @@ function Today() {
                     </span>
                   </button>
                   {h.kind === "count" && (
-                    <div className="absolute bottom-2 end-2 flex gap-1.5" dir="ltr">
+                    <div className="absolute top-2 end-2 flex gap-1.5" dir="ltr">
                       <button type="button" aria-label="−" onClick={() => log(h, Math.max(0, +(val - step).toFixed(2)), null, true)}
                         className="press grid size-9 place-items-center rounded-[10px] bg-card sticker-border shadow-hard-sm"><Minus strokeWidth={3} className="size-4" /></button>
                       <button type="button" aria-label="+" onClick={() => log(h, +(val + step).toFixed(2), null, true)}
