@@ -36,3 +36,9 @@ use the editor.
 - Signed-in screens live under `src/routes/_authenticated/` (client-only, redirects to /auth and to /onboarding until `profiles.onboarded`).
 - All UI strings go through react-i18next dictionaries in `src/lib/i18n/` (en is the typed source; fr/ar/aeb must match its shape). DB-localized fields are `{en,fr,ar,aeb}` jsonb read via `loc()`.
 - Sticker design tokens and utilities (`sticker`, `shadow-hard`, `press`, `num`) live in `src/styles.css`; shadows use `--sx` so they mirror in RTL.
+
+- Supplied habit artwork is represented by shared SVG components in `src/components/icons`; map template icons through HabitIcon so all screens reuse the same geometry.
+- The onboarding design uses ordered template-key groups and a shared 1–3 selection guard; crew/solo selection stays in a sheet before the existing finish RPC flow.
+- Locale-sensitive public Join content is gated by ClientOnly to prevent saved language changes racing lazy-route hydration; route metadata remains server-rendered.
+- Public social proof uses a narrowly granted aggregate RPC over opted-in season participants, never broad profile reads.
+- Designed headings preserve explicit line breaks and shrink only when measured text overflows, rather than scaling with viewport width.

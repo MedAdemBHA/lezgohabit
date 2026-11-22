@@ -28,3 +28,6 @@ export function splitMs(ms: number) {
   return { d: Math.floor(s / 86400), h: Math.floor((s % 86400) / 3600), m: Math.floor((s % 3600) / 60), s: s % 60 };
 }
 export const pad = (n: number) => String(n).padStart(2, "0");
+
+/** Join artwork counts down to New Year midnight in the viewer's local timezone. */
+export function winterArcEndLocal() { return new Date(2027, 0, 1).getTime(); }

@@ -6,7 +6,8 @@ import { applyLang } from "@/lib/i18n";
 import { useBase } from "@/lib/data";
 import { LezgoMark } from "./brand";
 import { Avatar } from "./ui";
-import { CrewIcon, RanksIcon, TodayIcon } from "./icons";
+import { RanksIcon, TodayIcon } from "./icons";
+import { CrewIcon, TrainIcon, BossIcon } from "@/components/icons";
 
 export function AppShell({ children, hideTabs }: { children: ReactNode; hideTabs?: boolean }) {
   const { t, i18n } = useTranslation();
@@ -19,8 +20,10 @@ export function AppShell({ children, hideTabs }: { children: ReactNode; hideTabs
 
   const tabs = [
     { to: "/today" as const, label: t("common.today"), Icon: TodayIcon },
+    { to: "/lift" as const, label: t("design.lift"), Icon: TrainIcon },
     { to: "/ranks" as const, label: t("common.ranks"), Icon: RanksIcon },
-    { to: "/crew" as const, label: t("common.crew"), Icon: CrewIcon },
+    { to: "/boss" as const, label: t("design.boss"), Icon: BossIcon },
+    { to: "/community" as const, label: t("design.community"), Icon: CrewIcon },
   ];
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-[440px] flex-col bg-background">
@@ -35,11 +38,11 @@ export function AppShell({ children, hideTabs }: { children: ReactNode; hideTabs
         <nav className="fixed inset-x-0 bottom-0 z-40 mx-auto w-full max-w-[440px] px-4 pb-[max(12px,env(safe-area-inset-bottom))]">
           <div className="flex items-center justify-around rounded-[22px] bg-card p-1.5 sticker-border shadow-hard">
             {tabs.map(({ to, label, Icon }) => {
-              const active = loc.pathname.startsWith(to);
+              const active = loc.pathname.startsWith(to) || (to === "/community" && loc.pathname.startsWith("/crew"));
               return (
-                <Link key={to} to={to} className={cn("flex min-h-[52px] flex-1 items-center justify-center gap-2 rounded-[16px] text-[15px] font-extrabold transition-colors",
-                  active ? "bg-lime sticker-border" : "text-muted-foreground")}>
-                  <Icon size={22} /> <span className={cn(!active && "sr-only sm:not-sr-only")}>{label}</span>
+                <Link key={to} to={to} aria-current={active ? "page" : undefined} className={cn("flex min-h-[56px] min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-[16px] text-[10px] font-extrabold transition-colors",
+                  active ? "bg-ink text-lime" : "text-muted-foreground")}>
+                  <Icon size={22} /> <span className="max-w-full truncate">{label}</span>
                 </Link>
               );
             })}

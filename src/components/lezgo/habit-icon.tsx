@@ -1,10 +1,6 @@
-import { BookOpen, Book, Coffee, Droplet, Dumbbell, Footprints, Lightbulb, Moon, MoonStar, PhoneOff, Plus, Sparkles, Star, type LucideIcon } from "lucide-react";
-
-const MAP: Record<string, LucideIcon> = {
-  dumbbell: Dumbbell, footprints: Footprints, book: Book, moon: Moon, droplet: Droplet, coffee: Coffee,
-  "phone-off": PhoneOff, lightbulb: Lightbulb, "moon-star": MoonStar, "book-open": BookOpen, sparkles: Sparkles, plus: Plus,
-};
+import { TrainIcon, RunIcon, LearnIcon, SleepIcon, SalatIcon, QuranIcon, DhikrIcon, DuaIcon, NoSugarIcon, WaterIcon, ThoughtIcon } from '@/components/icons';
+const MAP = { dumbbell: TrainIcon, train: TrainIcon, footprints: RunIcon, run: RunIcon, book: LearnIcon, learn: LearnIcon, lightbulb: LearnIcon, moon: SleepIcon, sleep: SleepIcon, droplet: WaterIcon, water: WaterIcon, coffee: NoSugarIcon, 'no-sugar': NoSugarIcon, 'moon-star': SalatIcon, salat: SalatIcon, 'book-open': QuranIcon, quran: QuranIcon, sparkles: DhikrIcon, dhikr: DhikrIcon, dua: DuaIcon, thought: ThoughtIcon, 'phone-off': ThoughtIcon, plus: ThoughtIcon };
 export function HabitIcon({ name, className }: { name?: string | null; className?: string }) {
-  const I = (name && MAP[name]) || Star;
-  return <I strokeWidth={2.5} className={className ?? "size-5"} aria-hidden />;
+ const Icon = name && name in MAP ? MAP[name as keyof typeof MAP] : ThoughtIcon;
+ return <Icon className={className ?? 'size-5'} />;
 }

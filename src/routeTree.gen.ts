@@ -13,8 +13,11 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedBossRouteImport } from './routes/_authenticated/boss'
+import { Route as AuthenticatedCommunityRouteImport } from './routes/_authenticated/community'
 import { Route as AuthenticatedCrewRouteImport } from './routes/_authenticated/crew'
 import { Route as AuthenticatedHabitsRouteImport } from './routes/_authenticated/habits'
+import { Route as AuthenticatedLiftRouteImport } from './routes/_authenticated/lift'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedRanksRouteImport } from './routes/_authenticated/ranks'
@@ -41,6 +44,16 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedBossRoute = AuthenticatedBossRouteImport.update({
+  id: '/boss',
+  path: '/boss',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCommunityRoute = AuthenticatedCommunityRouteImport.update({
+  id: '/community',
+  path: '/community',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedCrewRoute = AuthenticatedCrewRouteImport.update({
   id: '/crew',
   path: '/crew',
@@ -49,6 +62,11 @@ const AuthenticatedCrewRoute = AuthenticatedCrewRouteImport.update({
 const AuthenticatedHabitsRoute = AuthenticatedHabitsRouteImport.update({
   id: '/habits',
   path: '/habits',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedLiftRoute = AuthenticatedLiftRouteImport.update({
+  id: '/lift',
+  path: '/lift',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
@@ -86,8 +104,11 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/boss': typeof AuthenticatedBossRoute
+  '/community': typeof AuthenticatedCommunityRoute
   '/crew': typeof AuthenticatedCrewRoute
   '/habits': typeof AuthenticatedHabitsRoute
+  '/lift': typeof AuthenticatedLiftRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/ranks': typeof AuthenticatedRanksRoute
@@ -99,8 +120,11 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/boss': typeof AuthenticatedBossRoute
+  '/community': typeof AuthenticatedCommunityRoute
   '/crew': typeof AuthenticatedCrewRoute
   '/habits': typeof AuthenticatedHabitsRoute
+  '/lift': typeof AuthenticatedLiftRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/ranks': typeof AuthenticatedRanksRoute
@@ -114,8 +138,11 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/_authenticated/boss': typeof AuthenticatedBossRoute
+  '/_authenticated/community': typeof AuthenticatedCommunityRoute
   '/_authenticated/crew': typeof AuthenticatedCrewRoute
   '/_authenticated/habits': typeof AuthenticatedHabitsRoute
+  '/_authenticated/lift': typeof AuthenticatedLiftRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/ranks': typeof AuthenticatedRanksRoute
@@ -129,8 +156,11 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/admin'
+    | '/boss'
+    | '/community'
     | '/crew'
     | '/habits'
+    | '/lift'
     | '/onboarding'
     | '/profile'
     | '/ranks'
@@ -142,8 +172,11 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/admin'
+    | '/boss'
+    | '/community'
     | '/crew'
     | '/habits'
+    | '/lift'
     | '/onboarding'
     | '/profile'
     | '/ranks'
@@ -156,8 +189,11 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/_authenticated/admin'
+    | '/_authenticated/boss'
+    | '/_authenticated/community'
     | '/_authenticated/crew'
     | '/_authenticated/habits'
+    | '/_authenticated/lift'
     | '/_authenticated/onboarding'
     | '/_authenticated/profile'
     | '/_authenticated/ranks'
@@ -203,6 +239,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/boss': {
+      id: '/_authenticated/boss'
+      path: '/boss'
+      fullPath: '/boss'
+      preLoaderRoute: typeof AuthenticatedBossRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/community': {
+      id: '/_authenticated/community'
+      path: '/community'
+      fullPath: '/community'
+      preLoaderRoute: typeof AuthenticatedCommunityRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/crew': {
       id: '/_authenticated/crew'
       path: '/crew'
@@ -215,6 +265,13 @@ declare module '@tanstack/react-router' {
       path: '/habits'
       fullPath: '/habits'
       preLoaderRoute: typeof AuthenticatedHabitsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/lift': {
+      id: '/_authenticated/lift'
+      path: '/lift'
+      fullPath: '/lift'
+      preLoaderRoute: typeof AuthenticatedLiftRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/onboarding': {
@@ -264,8 +321,11 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
+  AuthenticatedBossRoute: typeof AuthenticatedBossRoute
+  AuthenticatedCommunityRoute: typeof AuthenticatedCommunityRoute
   AuthenticatedCrewRoute: typeof AuthenticatedCrewRoute
   AuthenticatedHabitsRoute: typeof AuthenticatedHabitsRoute
+  AuthenticatedLiftRoute: typeof AuthenticatedLiftRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedRanksRoute: typeof AuthenticatedRanksRoute
@@ -275,8 +335,11 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
+  AuthenticatedBossRoute: AuthenticatedBossRoute,
+  AuthenticatedCommunityRoute: AuthenticatedCommunityRoute,
   AuthenticatedCrewRoute: AuthenticatedCrewRoute,
   AuthenticatedHabitsRoute: AuthenticatedHabitsRoute,
+  AuthenticatedLiftRoute: AuthenticatedLiftRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedRanksRoute: AuthenticatedRanksRoute,

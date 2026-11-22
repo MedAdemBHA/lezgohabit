@@ -1,3 +1,4 @@
+import { pageHead } from "@/lib/page-head";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -10,7 +11,7 @@ import { StickerButton } from "@/components/lezgo/ui";
 import { habitsQuery, templatesQuery, useBase } from "@/lib/data";
 
 export const Route = createFileRoute("/_authenticated/habits")({
-  head: () => ({ meta: [{ title: "Edit habits — lezgo" }, { name: "description", content: "Change your daily habits." }] }),
+  head: () => pageHead("Edit habits — lezgo", "Change your daily habits."),
   component: HabitsPage,
 });
 

@@ -1,3 +1,4 @@
+import { pageHead } from "@/lib/page-head";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
@@ -7,7 +8,7 @@ import { Num, StickerButton, StickerCard } from "@/components/lezgo/ui";
 import { loc } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/admin")({
-  head: () => ({ meta: [{ title: "Admin — lezgo" }, { name: "description", content: "Lezgo admin overview." }, { name: "robots", content: "noindex" }] }),
+  head: () => pageHead("Admin — lezgo", "Lezgo admin overview.", true),
   component: AdminPage,
 });
 

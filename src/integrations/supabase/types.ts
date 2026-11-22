@@ -531,6 +531,7 @@ export type Database = {
         }
         Returns: Json
       }
+      participating_countries: { Args: never; Returns: number }
       recompute_day: {
         Args: { _day: string; _season_id: string; _user_id: string }
         Returns: undefined

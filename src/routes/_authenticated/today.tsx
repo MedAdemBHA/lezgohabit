@@ -1,13 +1,15 @@
+import { pageHead } from "@/lib/page-head";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
-import { AlertTriangle, ArrowRight, Check, Minus, Plus, Share2, Zap } from "lucide-react";
+import { AlertTriangle, ArrowRight, Check, Minus, Plus, Share2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/lezgo/app-shell";
 import { CountUp } from "@/components/lezgo/count-up";
+import { ProofIcon, ChaosIcon, TrainIcon, CrewIcon } from "@/components/icons";
 import { FlameIcon } from "@/components/lezgo/icons";
 import { HabitIcon } from "@/components/lezgo/habit-icon";
 import { BottomSheet, Chip, Num, StickerButton, StickerCard } from "@/components/lezgo/ui";
@@ -18,7 +20,7 @@ import { daysBetween, localHour, useNow } from "@/lib/time";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/today")({
-  head: () => ({ meta: [{ title: "Today — lezgo" }, { name: "description", content: "Log today's gos and keep your go streak alive." }] }),
+  head: () => pageHead("Today — lezgo", "Log today's gos and keep your go streak alive."),
   component: Today,
 });
 
@@ -108,11 +110,11 @@ function Today() {
   const missing = list.filter((_, i) => (comps[i] ?? 0) < 1);
   const atRisk = now && list.length > 0 && localHour(tz, now) >= 20 && avg < 0.6;
   const stacks = [
-    { k: "perfect", pts: 20, on: !!score?.perfect },
-    { k: "proof", pts: 10, on: !!data?.extras?.proof_posted, soon: true },
-    { k: "chaos", pts: 10, on: !!data?.extras?.chaos_done },
-    { k: "crewSync", pts: 10, on: !!score?.crew_sync },
-    { k: "liftPr", pts: 5, on: (data?.extras?.lift_prs ?? 0) > 0, soon: true },
+    { Icon: FlameIcon, k: "perfect", pts: 20, on: !!score?.perfect },
+    { Icon: ProofIcon, k: "proof", pts: 10, on: !!data?.extras?.proof_posted, soon: true },
+    { Icon: ChaosIcon, k: "chaos", pts: 10, on: !!data?.extras?.chaos_done },
+    { Icon: CrewIcon, k: "crewSync", pts: 10, on: !!score?.crew_sync },
+    { Icon: TrainIcon, k: "liftPr", pts: 5, on: (data?.extras?.lift_prs ?? 0) > 0, soon: true },
   ];
 
   if (!season || !profile) return <AppShell><p className="py-10 text-center">{t("common.loading")}</p></AppShell>;
@@ -201,14 +203,14 @@ function Today() {
         {stacks.map((s) => (
           <span key={s.k} className={cn("flex min-h-[44px] shrink-0 items-center gap-1.5 rounded-full px-3 text-[14px] font-bold sticker-border",
             s.on ? "bg-lime shadow-hard-sm" : "dashed-ink bg-transparent text-muted-foreground")}>
-            {s.on && <Check strokeWidth={3} className="size-4" />}{t(`today.${s.k}`)} <Num>+{s.pts}</Num>
+            <s.Icon size={20} />{s.on && <Check strokeWidth={3} className="size-4" />}{t(`today.${s.k}`)} <Num>+{s.pts}</Num>
             {s.soon && !s.on && <span className="text-[12px]">· {t("today.soon")}</span>}
           </span>
         ))}
       </div>
 
       <StickerCard className={cn("mt-4", data?.extras?.chaos_done ? "bg-lime" : "bg-pink")}>
-        <p className="flex items-center gap-1.5 text-[13px] font-extrabold uppercase"><Zap strokeWidth={2.5} className="size-4" />{t("today.chaosTitle")} · <Num>+10</Num></p>
+        <p className="flex items-center gap-1.5 text-[13px] font-extrabold uppercase"><ChaosIcon size={24} />{t("today.chaosTitle")} · <Num>+10</Num></p>
         <div className="mt-2 flex items-center justify-between gap-3">
           <p className="text-[18px] font-extrabold leading-snug">{t(`chaos.${chaosKey}`)}</p>
           <StickerButton size="sm" variant={data?.extras?.chaos_done ? "secondary" : "primary"} onClick={toggleChaos}>

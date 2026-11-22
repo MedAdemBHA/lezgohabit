@@ -1,3 +1,4 @@
+import { pageHead } from "@/lib/page-head";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -14,7 +15,7 @@ import { msToMidnight, pad, splitMs, useNow } from "@/lib/time";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/crew")({
-  head: () => ({ meta: [{ title: "Crew — lezgo" }, { name: "description", content: "See who in your crew showed up today." }] }),
+  head: () => pageHead("Crew — lezgo", "See who in your crew showed up today."),
   component: CrewPage,
 });
 

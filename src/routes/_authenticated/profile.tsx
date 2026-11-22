@@ -1,3 +1,4 @@
+import { pageHead } from "@/lib/page-head";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
@@ -11,7 +12,7 @@ import { addDays, daysBetween } from "@/lib/time";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/profile")({
-  head: () => ({ meta: [{ title: "Profile — lezgo" }, { name: "description", content: "Your season score, rank and trail." }] }),
+  head: () => pageHead("Profile — lezgo", "Your season score, rank and trail."),
   component: ProfilePage,
 });
 

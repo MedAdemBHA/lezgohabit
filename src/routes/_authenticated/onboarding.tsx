@@ -1,19 +1,24 @@
+import { pageHead } from "@/lib/page-head";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ArrowRight, Ghost, Users } from "lucide-react";
+import { ArrowRight, Ghost } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Brand } from "@/components/lezgo/brand";
 import { LangGrid } from "@/components/lezgo/lang-switcher";
 import { Field, StickerButton, inputCls } from "@/components/lezgo/ui";
-import { HabitPicker, saveHabits, type Pick } from "@/components/lezgo/habit-picker";
+import { saveHabits, type Pick } from "@/components/lezgo/habit-picker";
 import { errKey, habitsQuery, templatesQuery, useBase } from "@/lib/data";
+import { BuildHabits } from "@/components/lezgo/build-habits";
+import { canStartSeason } from "@/lib/habit-selection";
+import { CrewIcon } from "@/components/icons";
+import { BottomSheet } from "@/components/lezgo/ui";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/onboarding")({
-  head: () => ({ meta: [{ title: "Get started — lezgo" }, { name: "description", content: "Set up your lezgo season in two steps." }] }),
+  head: () => pageHead("Get started — lezgo", "Set up your lezgo season in two steps."),
   component: Onboarding,
 });
 
@@ -36,6 +41,7 @@ function Onboarding() {
   const [crewName, setCrewName] = useState("");
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
+  const [modeOpen, setModeOpen] = useState(false);
 
   useEffect(() => {
     if (!profile) return;
@@ -56,7 +62,7 @@ function Onboarding() {
   }, [handle, profile]);
 
   async function finish() {
-    if (!season || !profile) return;
+    if (!season || !profile || !canStartSeason(picks.length)) return;
     setBusy(true);
     try {
       const { error } = await supabase.from("profiles").update({ display_name: name.trim() || profile.display_name, handle, country_code: country, language: i18n.language, onboarded: true }).eq("id", uid);
@@ -76,9 +82,9 @@ function Onboarding() {
   }
 
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-[440px] flex-col px-5 pb-8 pt-4">
-      <header className="flex items-center justify-between"><Brand size={32} />
-        <span className="rounded-full bg-card px-3 py-1 text-[14px] font-bold sticker-border">{t("onb.step", { n: step })}</span></header>
+    <div className={step === 2 ? "design-screen habits-screen" : "mx-auto flex min-h-screen w-full max-w-[440px] flex-col px-5 pb-8 pt-4"}>
+      {step === 1 && <header className="flex items-center justify-between"><Brand size={32} />
+        <span className="rounded-full bg-card px-3 py-1 text-[14px] font-bold sticker-border">{t("onb.step", { n: step })}</span></header>}
 
       {step === 1 ? (
         <div className="mt-6 space-y-5">
@@ -102,18 +108,20 @@ function Onboarding() {
           </StickerButton>
         </div>
       ) : (
-        <div className="mt-6">
-          <h1 className="mb-3 text-[32px] font-extrabold">{t("onb.habitsTitle")}</h1>
-          {templates.data && <HabitPicker templates={templates.data} picks={picks} onChange={setPicks} />}
-
-          <h2 className="mt-8 mb-3 text-[22px] font-extrabold">{t("onb.modeTitle")}</h2>
+        <>
+          <div className="flex items-center justify-between"><StickerButton variant="secondary" className="habit-back" aria-label={t("common.back")} onClick={() => setStep(1)}><ArrowRight className="size-5 -scale-x-100 rtl:scale-x-100" strokeWidth={3} /></StickerButton><bdi dir="ltr" className="picked-pill num">{t("design.picked", { n: picks.length })}</bdi></div>
+          <h1 className="habits-title">{t("design.build")}</h1>
+          <p className="text-[14px] font-semibold leading-[1.5] text-design-body">{t("design.habitsSub")}</p>
+          {templates.data && <BuildHabits templates={templates.data} picks={picks} onChange={setPicks} />}
+          <div className="mt-auto flex flex-col gap-3 pt-2"><p className="text-[12px] font-semibold text-design-muted">{t("design.note")}</p><StickerButton block className="habit-start" disabled={busy || !canStartSeason(picks.length)} onClick={() => setModeOpen(true)}>{t("design.start")}<ArrowRight className="size-5 rtl:-scale-x-100" strokeWidth={3} /></StickerButton></div>
+          <BottomSheet open={modeOpen} onClose={() => setModeOpen(false)} title={t("onb.modeTitle")}>
           <div className="grid grid-cols-2 gap-3">
-            {([["solo", Ghost, t("onb.solo"), t("onb.soloDesc")], ["crew", Users, t("onb.crewMode"), t("onb.crewDesc")]] as const).map(([m, I, l, d]) => (
-              <button key={m} type="button" onClick={() => setMode(m)}
-                className={cn("press min-h-[110px] rounded-[18px] p-3 text-start sticker-border shadow-hard", mode === m ? "bg-lime" : "bg-card")}>
-                <I strokeWidth={2.5} className="size-6" /><div className="mt-2 text-[17px] font-extrabold">{l}</div>
+            {([["solo", Ghost, t("onb.solo"), t("onb.soloDesc")], ["crew", CrewIcon, t("onb.crewMode"), t("onb.crewDesc")]] as const).map(([m, I, l, d]) => (
+              <StickerButton variant="secondary" key={m} onClick={() => setMode(m)}
+                className={cn("block min-h-[110px] rounded-[18px] p-3 text-start sticker-border shadow-hard", mode === m ? "bg-lime" : "bg-card")}>
+                <I className="size-6" /><div className="mt-2 text-[17px] font-extrabold">{l}</div>
                 <div className="text-[13px] font-semibold text-muted-foreground">{d}</div>
-              </button>
+              </StickerButton>
             ))}
           </div>
           {mode === "crew" && (
@@ -126,14 +134,15 @@ function Onboarding() {
             </div>
           )}
           <div className="mt-8 flex gap-3">
-            <StickerButton variant="secondary" onClick={() => setStep(1)}>
+            <StickerButton variant="secondary" onClick={() => setModeOpen(false)}>
               <ArrowRight strokeWidth={3} className="size-5 -scale-x-100 rtl:scale-x-100" /><span className="sr-only">{t("common.back")}</span>
             </StickerButton>
-            <StickerButton block size="lg" disabled={busy || picks.length === 0 || (mode === "crew" && code.length !== 6 && !crewName.trim())} onClick={finish}>
+            <StickerButton block size="lg" disabled={busy || !canStartSeason(picks.length) || (mode === "crew" && code.length !== 6 && !crewName.trim())} onClick={finish}>
               {t("common.cta")}
             </StickerButton>
           </div>
-        </div>
+          </BottomSheet>
+        </>
       )}
     </div>
   );

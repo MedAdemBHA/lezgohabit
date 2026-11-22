@@ -1,3 +1,4 @@
+import { pageHead } from "@/lib/page-head";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
@@ -11,7 +12,7 @@ import { useBase } from "@/lib/data";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/ranks")({
-  head: () => ({ meta: [{ title: "Ranks — lezgo" }, { name: "description", content: "Tunisia, World and Crew leaderboards for the season." }] }),
+  head: () => pageHead("Ranks — lezgo", "Tunisia, World and Crew leaderboards for the season."),
   component: Ranks,
 });
 

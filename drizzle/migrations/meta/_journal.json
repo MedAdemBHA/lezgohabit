@@ -15,6 +15,13 @@
       "when": 1795389225581,
       "tag": "0001_tighten_read_access",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1795390327867,
+      "tag": "0002_public_participation_count",
+      "breakpoints": true
     }
   ]
 }

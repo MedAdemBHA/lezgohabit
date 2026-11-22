@@ -1,3 +1,4 @@
+import { pageHead } from "@/lib/page-head";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
@@ -10,7 +11,7 @@ import { Segmented, StickerButton, StickerCard, Switch } from "@/components/lezg
 import { profileQuery, useBase, type Profile } from "@/lib/data";
 
 export const Route = createFileRoute("/_authenticated/settings")({
-  head: () => ({ meta: [{ title: "Settings — lezgo" }, { name: "description", content: "Language, privacy and account settings." }] }),
+  head: () => pageHead("Settings — lezgo", "Language, privacy and account settings."),
   component: SettingsPage,
 });
 

@@ -4,14 +4,18 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
+import { FitHeading } from "@/components/lezgo/fit-heading";
+import { isRtl } from "@/lib/i18n";
 import { Brand } from "@/components/lezgo/brand";
-import { LangSwitcher } from "@/components/lezgo/lang-switcher";
-import { Field, StickerButton, inputCls } from "@/components/lezgo/ui";
+import { DesignLanguage } from "@/components/lezgo/design-language";
+import { useQuery } from "@tanstack/react-query";
+import { Mail } from "lucide-react";
+import { BottomSheet, Field, StickerButton, inputCls } from "@/components/lezgo/ui";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
   head: () => ({ meta: [{ title: "Sign in — lezgo" }, { name: "description", content: "Sign in to lezgo with Google or a magic link." },
-    { property: "og:title", content: "Sign in — lezgo" }, { property: "og:description", content: "Start your 40-day season." }] }),
+    { property: "og:title", content: "Sign in — lezgo" }, { property: "og:description", content: "Start your 40-day season." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
   component: AuthPage,
 });
 
@@ -22,14 +26,17 @@ function GoogleG() {
 }
 
 function AuthPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const nav = useNavigate();
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [emailOpen, setEmailOpen] = useState(false);
+  const [legal, setLegal] = useState<"terms" | "privacy" | null>(null);
+  const countries = useQuery({ queryKey: ["participating-countries"], queryFn: async () => { const { data, error } = await supabase.rpc("participating_countries"); if (error) throw error; return data; }, staleTime: 60_000 });
 
   useEffect(() => {
-    void supabase.auth.getSession().then(({ data }) => { if (data.session) void nav({ to: "/today", replace: true }); });
+    void supabase.auth.getUser().then(({ data }) => { if (data.user) void nav({ to: "/today", replace: true }); });
     const { data } = supabase.auth.onAuthStateChange((_e, s) => { if (s) void nav({ to: "/today", replace: true }); });
     return () => data.subscription.unsubscribe();
   }, [nav]);
@@ -52,27 +59,19 @@ function AuthPage() {
   }
 
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-[440px] flex-col px-5 pb-8 pt-4">
-      <header className="flex items-center justify-between"><Brand /><LangSwitcher /></header>
-      <h1 className="mt-10 text-[30px] font-extrabold leading-tight">{t("auth.title")}</h1>
-      <div className="mt-8 space-y-4">
-        <button type="button" onClick={google} disabled={busy}
-          className="press flex min-h-[52px] w-full items-center justify-center gap-[10px] rounded-[16px] border border-[#747775] bg-[#FFFFFF] px-3 text-[14px] font-medium leading-5 text-[#1F1F1F] shadow-hard [font-family:'Google_Sans',var(--font-sans)]">
-          <GoogleG />{t("auth.google")}
-        </button>
-        <div className="flex items-center gap-3 text-[14px] font-bold text-muted-foreground"><span className="h-px flex-1 bg-ink/20" />{t("auth.or")}<span className="h-px flex-1 bg-ink/20" /></div>
-        {sent ? (
-          <p className="sticker bg-lime p-4 text-[16px] font-bold">{t("auth.linkSent")}</p>
-        ) : (
-          <form onSubmit={magic} className="space-y-3">
-            <Field label={t("auth.email")}>
-              <input dir="ltr" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t("auth.emailPh")} className={inputCls} />
-            </Field>
-            <StickerButton type="submit" block variant="secondary" disabled={busy}>{t("auth.sendLink")}</StickerButton>
-          </form>
-        )}
+    <div className="design-screen login-screen">
+      <header className="flex h-10 shrink-0 items-center justify-between gap-2"><div className="login-brand flex items-center gap-2" dir="ltr"><Brand size={34} /></div><DesignLanguage segmented /></header>
+      <span className="login-season">{t("design.loginSeason")}</span>
+      <FitHeading className="login-hero" text={t("design.hero")} requestedSize={isRtl(i18n.language) ? 60 : 64} />
+      <p className="text-[16px] font-semibold leading-[1.5] text-design-body">{t("design.sub")}</p>
+      <div className="flex items-center gap-3"><div className="flex shrink-0" aria-hidden="true">{([ ["bg-lime", "NR"], ["bg-pink", "SK"], ["bg-yellow", "YB"], ["bg-teal", "AK"] ] as const).map(([color, initials],i) => <span key={color} className={`grid size-[34px] place-items-center rounded-full text-[11px] font-extrabold sticker-border ${color} ${i ? "-ms-2.5" : ""}`}>{initials}</span>)}</div><p className="text-[13px] font-bold">{countries.data !== undefined ? t("design.proof", { n: countries.data }) : t("common.loading")}</p></div>
+      <div className="login-actions">
+        <StickerButton block variant="secondary" className="google-button" onClick={google} disabled={busy}><GoogleG />{t("auth.google")}</StickerButton>
+        <StickerButton block variant="ghost" className="email-button" onClick={() => setEmailOpen(true)} disabled={busy}><Mail size={20} strokeWidth={2.5} />{t("design.email")}</StickerButton>
+        <p className="text-center text-[12px] font-semibold leading-[1.5] text-design-muted">{t("design.legal")} <StickerButton variant="ghost" className="legal-link" onClick={() => setLegal("terms")}>{t("design.terms")}</StickerButton> {t("design.andWord")} <StickerButton variant="ghost" className="legal-link" onClick={() => setLegal("privacy")}>{t("design.privacy")}</StickerButton></p>
       </div>
-      <p className="mt-auto pt-10 text-center text-[13px] text-muted-foreground">{t("auth.privacy")}</p>
+      <BottomSheet open={emailOpen} onClose={() => setEmailOpen(false)} title={t("design.email")}>{sent ? <p className="sticker bg-lime p-4 font-bold">{t("auth.linkSent")}</p> : <form onSubmit={magic} className="space-y-4"><Field label={t("auth.email")}><input dir="ltr" type="email" autoComplete="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder={t("auth.emailPh")} className={inputCls} /></Field><StickerButton block type="submit" disabled={busy}>{t("design.email")}</StickerButton></form>}</BottomSheet>
+      <BottomSheet open={legal !== null} onClose={() => setLegal(null)} title={legal ? t(`design.${legal}`) : ""}><p>{t("design.soon")}</p></BottomSheet>
     </div>
   );
 }
