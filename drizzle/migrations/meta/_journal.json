@@ -421,6 +421,13 @@
       "when": 1795423552772,
       "tag": "0059_guest_triggers_direct_tables_only",
       "breakpoints": true
+    },
+    {
+      "idx": 60,
+      "version": "7",
+      "when": 1795423993927,
+      "tag": "0060_fair_play_v2_locks",
+      "breakpoints": true
     }
   ]
 }

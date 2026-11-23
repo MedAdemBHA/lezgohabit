@@ -833,6 +833,7 @@ export type Database = {
           created_at: string
           day: string
           detail: Json | null
+          done_at: string | null
           id: string
           is_demo: boolean
           user_habit_id: string
@@ -843,6 +844,7 @@ export type Database = {
           created_at?: string
           day: string
           detail?: Json | null
+          done_at?: string | null
           id?: string
           is_demo?: boolean
           user_habit_id: string
@@ -853,6 +855,7 @@ export type Database = {
           created_at?: string
           day?: string
           detail?: Json | null
+          done_at?: string | null
           id?: string
           is_demo?: boolean
           user_habit_id?: string
@@ -1127,6 +1130,7 @@ export type Database = {
       }
       day_extras: {
         Row: {
+          chaos_at: string | null
           chaos_done: boolean
           chaos_index: number | null
           chaos_spins: number
@@ -1140,6 +1144,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          chaos_at?: string | null
           chaos_done?: boolean
           chaos_index?: number | null
           chaos_spins?: number
@@ -1153,6 +1158,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          chaos_at?: string | null
           chaos_done?: boolean
           chaos_index?: number | null
           chaos_spins?: number
@@ -1648,6 +1654,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      point_reviews: {
+        Row: {
+          checkin_id: string
+          created_at: string
+          day: string
+          id: string
+          is_demo: boolean
+          reason: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          season_id: string
+          status: string
+          user_habit_id: string
+          user_id: string
+          value: number
+        }
+        Insert: {
+          checkin_id: string
+          created_at?: string
+          day: string
+          id?: string
+          is_demo?: boolean
+          reason: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          season_id: string
+          status?: string
+          user_habit_id: string
+          user_id: string
+          value: number
+        }
+        Update: {
+          checkin_id?: string
+          created_at?: string
+          day?: string
+          id?: string
+          is_demo?: boolean
+          reason?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          season_id?: string
+          status?: string
+          user_habit_id?: string
+          user_id?: string
+          value?: number
+        }
+        Relationships: []
       }
       post_hides: {
         Row: {
@@ -2340,11 +2394,14 @@ export type Database = {
           active: boolean
           created_at: string
           custom_name: string | null
+          ends_on: string | null
           id: string
           is_demo: boolean
           kind: string
           position: number
           season_id: string
+          starts_on: string | null
+          swapped_from: string | null
           target: number
           template_id: string | null
           unit: string | null
@@ -2354,11 +2411,14 @@ export type Database = {
           active?: boolean
           created_at?: string
           custom_name?: string | null
+          ends_on?: string | null
           id?: string
           is_demo?: boolean
           kind: string
           position?: number
           season_id: string
+          starts_on?: string | null
+          swapped_from?: string | null
           target?: number
           template_id?: string | null
           unit?: string | null
@@ -2368,11 +2428,14 @@ export type Database = {
           active?: boolean
           created_at?: string
           custom_name?: string | null
+          ends_on?: string | null
           id?: string
           is_demo?: boolean
           kind?: string
           position?: number
           season_id?: string
+          starts_on?: string | null
+          swapped_from?: string | null
           target?: number
           template_id?: string | null
           unit?: string | null
@@ -2509,6 +2572,10 @@ export type Database = {
         Args: { _detail: Json; _kind: string; _target: number; _value: number }
         Returns: number
       }
+      _habits_frozen: {
+        Args: { _season: string; _user: string }
+        Returns: boolean
+      }
       _is_guest: { Args: never; Returns: boolean }
       _local_today: { Args: { _user_id: string }; Returns: string }
       _notify: {
@@ -2600,6 +2667,11 @@ export type Database = {
         Args: { _post: string; _reason: string }
         Returns: undefined
       }
+      admin_review_points: {
+        Args: { _decision: string; _id: string; _reason: string }
+        Returns: undefined
+      }
+      admin_review_queue: { Args: never; Returns: Json }
       admin_security_presence: {
         Args: { _device: string; _network: string }
         Returns: undefined
@@ -2609,6 +2681,7 @@ export type Database = {
         Returns: Json
       }
       app_feature_flags: { Args: never; Returns: Json }
+      apply_due_habit_swaps: { Args: never; Returns: number }
       assign_sub_squad: {
         Args: { _squad: string; _user: string }
         Returns: undefined
@@ -2891,6 +2964,15 @@ export type Database = {
       signature_overview: { Args: { _season_id: string }; Returns: Json }
       solo_ghost: { Args: { _season_id: string }; Returns: Json }
       spin_daily_chaos: { Args: { _season_id: string }; Returns: Json }
+      swap_habit: {
+        Args: {
+          _custom_name?: string
+          _remove: string
+          _target?: number
+          _template_id: string
+        }
+        Returns: Json
+      }
       today_habit_points: {
         Args: { _day: string; _season_id: string }
         Returns: Json
