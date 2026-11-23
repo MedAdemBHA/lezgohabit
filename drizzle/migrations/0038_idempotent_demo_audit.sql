@@ -1,0 +1,1 @@
+DO $$ DECLARE f text; BEGIN SELECT pg_get_functiondef('public.admin_action(text,uuid,jsonb)'::regprocedure) INTO f;f:=replace(f,'IF _action=''role'' THEN','IF _action=''seed_demo_existing'' THEN NULL; ELSIF _action=''role'' THEN');EXECUTE f;END $$;

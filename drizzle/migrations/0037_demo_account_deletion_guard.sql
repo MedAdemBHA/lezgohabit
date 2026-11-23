@@ -1,0 +1,1 @@
+DO $$ DECLARE f text; BEGIN SELECT pg_get_functiondef('public.delete_my_account()'::regprocedure) INTO f;f:=replace(f,'if uid is null then','if exists(select 1 from public.profiles where id=uid and is_demo) then raise exception ''demo_protected''; end if; if uid is null then');EXECUTE f;END $$;

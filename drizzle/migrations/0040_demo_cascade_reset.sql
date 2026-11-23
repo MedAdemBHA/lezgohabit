@@ -1,0 +1,1 @@
+DO $$ DECLARE f text; BEGIN SELECT pg_get_functiondef('public.guard_account_content()'::regprocedure) INTO f;f:=replace(f,'IF j->>''checkin_id'' IS NOT NULL','IF TG_OP<>''DELETE'' AND j->>''checkin_id'' IS NOT NULL');f:=replace(f,'IF j ? ''post_id'' THEN','IF TG_OP<>''DELETE'' AND j ? ''post_id'' THEN');EXECUTE f;END $$;

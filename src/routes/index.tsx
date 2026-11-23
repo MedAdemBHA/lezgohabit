@@ -1,7 +1,7 @@
 import { ClientOnly, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { enterDemo } from "@/lib/admin.functions";
 import { supabase } from "@/integrations/supabase/client";
@@ -34,11 +34,12 @@ function JoinPage() {
 }
 
 function Landing() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const nav = useNavigate();
   const now = useNow();
   const demoFn = useServerFn(enterDemo);
   const qc = useQueryClient();
+  const featured = useQuery({queryKey:['featuredCreators'],queryFn:async()=>{const {data,error}=await supabase.rpc('featured_creator_challenges');if(error)throw error;return data as unknown as {name:string;code:string;days:number}[];}});
   const [demoBusy, setDemoBusy] = useState(false);
   async function demo() {
     setDemoBusy(true);
@@ -67,6 +68,7 @@ function Landing() {
         <div className="grid grid-cols-4 gap-2" dir="ltr">{([["d",left.d,t("landing.days")],["h",left.h,t("landing.hrs")],["m",left.m,t("landing.min")],["s",left.s,t("landing.sec")]] as const).map(([key,value,label]) => <div key={key} className="flex flex-col items-center"><span className={`num text-[28px] font-bold leading-none ${key === "s" ? "text-orange" : ""}`}>{pad(value)}</span><span className="mt-1 text-[11px] font-bold text-countdown-muted">{label}</span></div>)}</div>
       </div>
       <ol className="flex flex-col gap-3">{steps.map((step,i) => <li key={step} className="flex items-center gap-3"><span className={`num flex size-[34px] shrink-0 items-center justify-center rounded-[10px] text-[15px] font-bold sticker-border ${["bg-lime","bg-yellow","bg-blue"][i] ?? "bg-lime"}`}>{i+1}</span><span className="text-[17px] font-bold leading-[1.35]">{step}</span></li>)}</ol>
+      {featured.data?.map(c=><StickerButton key={c.code} variant="secondary" onClick={()=>void nav({to:"/c/$code",params:{code:c.code}})}>{c.name}<ArrowRight className="size-4 rtl:rotate-180"/></StickerButton>)}
       <div className="join-actions">
         <StickerButton block className="join-primary" onClick={() => nav({ to: "/auth" })}>{t("common.cta")}</StickerButton>
         <StickerButton block variant="secondary" className="join-code" onClick={() => setCodeOpen(true)}>{t("landing.haveCode")}</StickerButton>

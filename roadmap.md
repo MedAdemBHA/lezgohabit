@@ -42,7 +42,8 @@ Season reminders are saved only; delivery remains separate. Upcoming dates use 2
 Club/Company remain contact-only as requested; Teach It records the author’s declared lesson duration (60 seconds minimum), not video verification. Boss windows follow calendar weeks after the opening Sunday.
 
 ## Batch 7 — Super admin and demo
-- [ ] Add audited server-only administration, role/bootstrap protections and demo isolation.
-- [ ] Build desktop admin pages, mobile drawer, EN/AR and all moderation/content tools.
-- [ ] Seed realistic demo history, shared sign-in/reset and safe clearing.
-- [ ] Verify permissions, real admin/demo flows and RTL; save changes.
+- [x] Add audited server-only administration, role/bootstrap protections and demo isolation.
+- [x] Build desktop admin pages, mobile drawer, EN/AR and all moderation/content tools.
+- [x] Seed realistic demo history, shared sign-in/reset and safe clearing.
+- [x] Verify permissions, real admin/demo flows and RTL; save changes.
+- [ ] Guarantee shared demo email immutability: blocked by Cloud exposing no per-account email-change control. Password changes require the hidden current password, and account deletion is server-blocked.

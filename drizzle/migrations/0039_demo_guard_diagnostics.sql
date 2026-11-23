@@ -1,0 +1,1 @@
+DO $$ DECLARE f text; BEGIN SELECT pg_get_functiondef('public.guard_account_content()'::regprocedure) INTO f;f:=replace(f,'RAISE EXCEPTION ''demo_only'';','RAISE EXCEPTION ''demo_only:%'',TG_TABLE_NAME;');EXECUTE f;END $$;

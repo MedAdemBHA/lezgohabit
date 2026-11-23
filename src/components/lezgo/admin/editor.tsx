@@ -1,23 +1,397 @@
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { X,Save } from 'lucide-react';
-import { StickerButton,Switch,inputCls } from '@/components/lezgo/ui';
-import type { AdminRow } from '@/lib/admin-data';
-export type EditorKind='season'|'boss'|'habit'|'announcement'|'referral';
-const colors=['cream','lime','orange','yellow','pink','blue','purple','teal'];
-const fields:Record<EditorKind,string[]>={season:['slug','name','starts_on','ends_on','status','theme_color','featured_habits'],boss:['season_id','week_no','slug','name','rule','metric','exercise_key','levels','starts_at','ends_at','color','sponsor'],habit:['key','name','description','category','icon','kind','default_target','unit','is_faith','color','sort'],announcement:['title','body','country','language','season_id','scheduled_at'],referral:['user_id','code','featured']};
-const numeric=['week_no','default_target','sort'];
-const localized=['name','rule','description','title','body'];
-const nullable=['unit','exercise_key','sponsor','country','language','season_id'];
-export function AdminEditor({kind,row,seasonId,onClose,onSave,busy}:{kind:EditorKind;row?:AdminRow;seasonId?:string;onClose:()=>void;onSave:(action:string,id:string|null,payload:AdminRow)=>Promise<void>;busy:boolean}){const {t}=useTranslation();const today=new Date().toISOString().slice(0,10);const [value,setValue]=useState<AdminRow>(()=>({...({season:{slug:'',name:{en:'',fr:'',ar:'',aeb:''},starts_on:today,ends_on:today,status:'upcoming',theme_color:'blue',featured_habits:[]},boss:{season_id:seasonId??'',week_no:1,slug:'',name:{en:'',fr:'',ar:'',aeb:''},rule:{en:'',fr:'',ar:'',aeb:''},metric:'reps',exercise_key:null,levels:[{key:'rookie',target:30,bonus:50},{key:'pro',target:60,bonus:100},{key:'beast',target:100,bonus:150}],starts_at:new Date().toISOString(),ends_at:new Date(Date.now()+7*86400000).toISOString(),color:'yellow',sponsor:null},habit:{key:'',name:{en:'',fr:'',ar:'',aeb:''},description:{en:'',fr:'',ar:'',aeb:''},category:'body',icon:'train',kind:'check',default_target:1,unit:null,is_faith:false,color:'lime',sort:1},announcement:{title:{en:'',fr:'',ar:'',aeb:''},body:{en:'',fr:'',ar:'',aeb:''},country:null,language:null,season_id:null,scheduled_at:new Date().toISOString()},referral:{user_id:'',code:'',featured:false}}[kind]),...(row?Object.fromEntries(fields[kind].map(k=>[k,row[k]])):{})}));
- const set=(key:string,v:unknown)=>setValue(p=>({...p,[key]:v}));
- const options:Record<string,string[]>={status:['upcoming','live','ended'],theme_color:colors,color:colors,metric:['reps','km','days','posts','custom'],kind:['check','count','salat','detox'],icon:['train','run','learn','sleep','salat','quran','dhikr','dua','no_sugar','detox','water','steps','read','journal','coffee','custom'],category:['body','mind','faith','life'],language:['','en','fr','ar','aeb']};
- return <div className="admin-modal" role="dialog" aria-modal="true" aria-labelledby="admin-editor-title"><div className="admin-modal-backdrop" onClick={onClose}/><div className="admin-editor"><div className="admin-editor-heading"><h2 id="admin-editor-title">{t(`batch7.${row?'edit':'create'}`)} · {t(`batch7.${kind==='season'?'season':kind==='boss'?'bosses':kind==='habit'?'habits':kind==='announcement'?'broadcast':'creators'}`)}</h2><StickerButton variant="ghost" className="!px-2" aria-label={t('common.close')} onClick={onClose}><X/></StickerButton></div><form onSubmit={e=>{e.preventDefault();const payload=Object.fromEntries(fields[kind].map(k=>[k,value[k]]));void onSave(kind==='announcement'?'broadcast':kind==='referral'?'save_referral':`save_${kind}`,typeof row?.['id']==='string'?row['id']:null,payload);}} className="space-y-5">
- {fields[kind].map(key=>{const label=t(`batch7.${key}`);const v=value[key];if(localized.includes(key)){const obj=v&&typeof v==='object'?v as Record<string,string>:{};return <fieldset key={key}><legend className="mb-2 font-extrabold">{label}</legend><div className="admin-locale-fields">{(['en','fr','ar','aeb'] as const).map(lang=><label key={lang}><span className="mb-1 block text-[12px] font-bold">{t(`batch7.${lang}`)}</span><textarea aria-label={`${label} ${lang}`} dir={lang==='ar'||lang==='aeb'?'rtl':'ltr'} className={`${inputCls} min-h-20`} value={obj[lang]??''} maxLength={key==='body'?280:1000} required onChange={e=>set(key,{...obj,[lang]:e.target.value})}/></label>)}</div></fieldset>;}
- if(key==='is_faith'||key==='featured')return <Switch key={key} checked={v===true} onChange={b=>set(key,b)} label={label}/>;
- if(key==='levels'){const arr=Array.isArray(v)?v as {key:string;target:number;bonus:number}[]:[];return <fieldset key={key}><legend className="mb-2 font-extrabold">{label}</legend>{arr.map((lv,i)=><div key={lv.key} className="grid grid-cols-[1fr_1fr_1fr] items-end gap-2 py-2"><strong>{t(`batch7.${lv.key}`)}</strong>{(['target','bonus'] as const).map(f=><label key={f} className="text-[12px] font-bold">{t(`batch7.${f==='target'?'targetValue':'bonus'}`)}<input className={inputCls} type="number" min={f==='target'?1:0} value={lv[f]} onChange={e=>set(key,arr.map((item,j)=>j===i?{...item,[f]:Number(e.target.value)}:item))}/></label>)}</div>)}</fieldset>;}
- const select=options[key];if(select)return <label key={key} className="block font-bold">{label}<select className={`${inputCls} mt-2`} value={String(v??'')} onChange={e=>set(key,e.target.value||null)}>{select.map(o=><option key={o} value={o}>{o?t(`batch7.${o}`,{defaultValue:o}):t('batch7.all')}</option>)}</select></label>;
- if(key==='featured_habits')return <label key={key} className="block font-bold">{label}<input className={`${inputCls} mt-2`} value={Array.isArray(v)?v.join(', '):''} onChange={e=>set(key,e.target.value.split(',').map(s=>s.trim()).filter(Boolean))}/></label>;
- const date=['starts_on','ends_on'].includes(key);const dateTime=['starts_at','ends_at','scheduled_at'].includes(key);const rendered=dateTime&&typeof v==='string'?v.slice(0,16):v;return <label key={key} className="block font-bold">{label}<input aria-label={label} className={`${inputCls} mt-2`} type={date?'date':dateTime?'datetime-local':numeric.includes(key)?'number':'text'} dir={date||dateTime||numeric.includes(key)?'ltr':undefined} required={!nullable.includes(key)} value={String(rendered??'')} onChange={e=>set(key,numeric.includes(key)?Number(e.target.value):dateTime&&e.target.value?new Date(e.target.value).toISOString():e.target.value|| (nullable.includes(key)?null:''))}/></label>;
- })}<div className="admin-editor-footer"><StickerButton variant="secondary" onClick={onClose}>{t('batch7.cancel')}</StickerButton><StickerButton type="submit" disabled={busy}><Save className="size-4"/>{t('batch7.save')}</StickerButton></div></form></div></div>;
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { X, Save } from "lucide-react";
+import { StickerButton, Switch, inputCls } from "@/components/lezgo/ui";
+import type { AdminRow } from "@/lib/admin-data";
+import {
+  TrainIcon,
+  RunIcon,
+  LearnIcon,
+  SleepIcon,
+  SalatIcon,
+  QuranIcon,
+  DhikrIcon,
+  DuaIcon,
+  NoSugarIcon,
+  WaterIcon,
+  ProofIcon,
+  ChaosIcon,
+  BossIcon,
+  StreakIcon,
+  CrewIcon,
+  ThoughtIcon,
+} from "@/components/icons";
+export type EditorKind = "season" | "boss" | "habit" | "announcement" | "referral";
+const colors = ["cream", "lime", "orange", "yellow", "pink", "blue", "purple", "teal"];
+const fields: Record<EditorKind, string[]> = {
+  season: ["slug", "name", "starts_on", "ends_on", "status", "theme_color", "featured_habits"],
+  boss: [
+    "season_id",
+    "week_no",
+    "slug",
+    "name",
+    "rule",
+    "metric",
+    "exercise_key",
+    "levels",
+    "starts_at",
+    "ends_at",
+    "color",
+    "sponsor",
+  ],
+  habit: [
+    "key",
+    "name",
+    "description",
+    "category",
+    "icon",
+    "kind",
+    "default_target",
+    "unit",
+    "is_faith",
+    "color",
+    "sort",
+  ],
+  announcement: ["title", "body", "country", "language", "season_id", "scheduled_at"],
+  referral: ["user_id", "code", "featured"],
+};
+const numeric = ["week_no", "default_target", "sort"];
+const localized = ["name", "rule", "description", "title", "body"];
+const nullable = ["unit", "exercise_key", "sponsor", "country", "language", "season_id"];
+const iconChoices = {
+  train: TrainIcon,
+  run: RunIcon,
+  learn: LearnIcon,
+  sleep: SleepIcon,
+  salat: SalatIcon,
+  quran: QuranIcon,
+  dhikr: DhikrIcon,
+  dua: DuaIcon,
+  "no-sugar": NoSugarIcon,
+  water: WaterIcon,
+  proof: ProofIcon,
+  chaos: ChaosIcon,
+  boss: BossIcon,
+  streak: StreakIcon,
+  crew: CrewIcon,
+  thought: ThoughtIcon,
+};
+export function AdminEditor({
+  kind,
+  row,
+  seasonId,
+  onClose,
+  onSave,
+  busy,
+}: {
+  kind: EditorKind;
+  row?: AdminRow;
+  seasonId?: string;
+  onClose: () => void;
+  onSave: (action: string, id: string | null, payload: AdminRow) => Promise<void>;
+  busy: boolean;
+}) {
+  const { t } = useTranslation();
+  const today = new Date().toISOString().slice(0, 10);
+  const [value, setValue] = useState<AdminRow>(() => ({
+    ...{
+      season: {
+        slug: "",
+        name: { en: "", fr: "", ar: "", aeb: "" },
+        starts_on: today,
+        ends_on: today,
+        status: "upcoming",
+        theme_color: "blue",
+        featured_habits: [],
+      },
+      boss: {
+        season_id: seasonId ?? "",
+        week_no: 1,
+        slug: "",
+        name: { en: "", fr: "", ar: "", aeb: "" },
+        rule: { en: "", fr: "", ar: "", aeb: "" },
+        metric: "reps",
+        exercise_key: null,
+        levels: [
+          { key: "rookie", target: 30, bonus: 50 },
+          { key: "pro", target: 60, bonus: 100 },
+          { key: "beast", target: 100, bonus: 150 },
+        ],
+        starts_at: new Date().toISOString(),
+        ends_at: new Date(Date.now() + 7 * 86400000).toISOString(),
+        color: "yellow",
+        sponsor: null,
+      },
+      habit: {
+        key: "",
+        name: { en: "", fr: "", ar: "", aeb: "" },
+        description: { en: "", fr: "", ar: "", aeb: "" },
+        category: "body",
+        icon: "train",
+        kind: "check",
+        default_target: 1,
+        unit: null,
+        is_faith: false,
+        color: "lime",
+        sort: 1,
+      },
+      announcement: {
+        title: { en: "", fr: "", ar: "", aeb: "" },
+        body: { en: "", fr: "", ar: "", aeb: "" },
+        country: null,
+        language: null,
+        season_id: null,
+        scheduled_at: new Date().toISOString(),
+      },
+      referral: { user_id: "", code: "", featured: false },
+    }[kind],
+    ...(row ? Object.fromEntries(fields[kind].map((k) => [k, row[k]])) : {}),
+  }));
+  const set = (key: string, v: unknown) => setValue((p) => ({ ...p, [key]: v }));
+  const options: Record<string, string[]> = {
+    status: ["upcoming", "live", "ended"],
+    theme_color: colors,
+    color: colors,
+    metric: ["reps", "km", "days", "posts", "custom"],
+    kind: ["check", "count", "salat", "detox"],
+    icon: [
+      "train",
+      "run",
+      "learn",
+      "sleep",
+      "salat",
+      "quran",
+      "dhikr",
+      "dua",
+      "no_sugar",
+      "detox",
+      "water",
+      "steps",
+      "read",
+      "journal",
+      "coffee",
+      "custom",
+    ],
+    category: ["body", "mind", "faith", "life"],
+    language: ["", "en", "fr", "ar", "aeb"],
+  };
+  return (
+    <div
+      className="admin-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="admin-editor-title"
+    >
+      <div className="admin-modal-backdrop" onClick={onClose} />
+      <div className="admin-editor">
+        <div className="admin-editor-heading">
+          <h2 id="admin-editor-title">
+            {t(`batch7.${row ? "edit" : "create"}`)} ·{" "}
+            {t(
+              `batch7.${kind === "season" ? "season" : kind === "boss" ? "bosses" : kind === "habit" ? "habits" : kind === "announcement" ? "broadcast" : "creators"}`,
+            )}
+          </h2>
+          <StickerButton
+            variant="ghost"
+            className="!px-2"
+            aria-label={t("common.close")}
+            onClick={onClose}
+          >
+            <X />
+          </StickerButton>
+        </div>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            const payload = Object.fromEntries(fields[kind].map((k) => [k, value[k]]));
+            void onSave(
+              kind === "announcement"
+                ? "broadcast"
+                : kind === "referral"
+                  ? "save_referral"
+                  : `save_${kind}`,
+              typeof row?.["id"] === "string" ? row["id"] : null,
+              payload,
+            );
+          }}
+          className="space-y-5"
+        >
+          {fields[kind].map((key) => {
+            const label = t(`batch7.${key}`);
+            const v = value[key];
+            if (localized.includes(key)) {
+              const obj = v && typeof v === "object" ? (v as Record<string, string>) : {};
+              return (
+                <fieldset key={key}>
+                  <legend className="mb-2 font-extrabold">{label}</legend>
+                  <div className="admin-locale-fields">
+                    {(["en", "fr", "ar", "aeb"] as const).map((lang) => (
+                      <label key={lang}>
+                        <span className="mb-1 block text-[12px] font-bold">
+                          {t(`batch7.${lang}`)}
+                        </span>
+                        <textarea
+                          aria-label={`${label} ${lang}`}
+                          dir={lang === "ar" || lang === "aeb" ? "rtl" : "ltr"}
+                          className={`${inputCls} min-h-20`}
+                          value={obj[lang] ?? ""}
+                          maxLength={key === "body" ? 280 : 1000}
+                          required
+                          onChange={(e) => set(key, { ...obj, [lang]: e.target.value })}
+                        />
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+              );
+            }
+            if (key === "is_faith" || key === "featured")
+              return (
+                <Switch
+                  key={key}
+                  checked={v === true}
+                  onChange={(b) => set(key, b)}
+                  label={label}
+                />
+              );
+            if (key === "levels") {
+              const arr = Array.isArray(v)
+                ? (v as { key: string; target: number; bonus: number }[])
+                : [];
+              return (
+                <fieldset key={key}>
+                  <legend className="mb-2 font-extrabold">{label}</legend>
+                  {arr.map((lv, i) => (
+                    <div key={lv.key} className="grid grid-cols-[1fr_1fr_1fr] items-end gap-2 py-2">
+                      <strong>{t(`batch7.${lv.key}`)}</strong>
+                      {(["target", "bonus"] as const).map((f) => (
+                        <label key={f} className="text-[12px] font-bold">
+                          {t(`batch7.${f === "target" ? "targetValue" : "bonus"}`)}
+                          <input
+                            className={inputCls}
+                            type="number"
+                            min={f === "target" ? 1 : 0}
+                            value={lv[f]}
+                            onChange={(e) =>
+                              set(
+                                key,
+                                arr.map((item, j) =>
+                                  j === i ? { ...item, [f]: Number(e.target.value) } : item,
+                                ),
+                              )
+                            }
+                          />
+                        </label>
+                      ))}
+                    </div>
+                  ))}
+                </fieldset>
+              );
+            }
+            if (key === "icon")
+              return (
+                <fieldset key={key}>
+                  <legend className="mb-2 font-extrabold">{label}</legend>
+                  <div className="grid grid-cols-4 gap-3">
+                    {Object.entries(iconChoices).map(([name, Icon]) => (
+                      <StickerButton
+                        key={name}
+                        variant={v === name ? "lime" : "secondary"}
+                        className="!min-h-14 !p-2"
+                        title={name}
+                        aria-label={name}
+                        aria-pressed={v === name}
+                        onClick={() => set(key, name)}
+                      >
+                        <Icon size={36} />
+                      </StickerButton>
+                    ))}
+                  </div>
+                </fieldset>
+              );
+            const select = options[key];
+            if (select)
+              return (
+                <label key={key} className="block font-bold">
+                  {label}
+                  <select
+                    className={`${inputCls} mt-2`}
+                    value={String(v ?? "")}
+                    onChange={(e) => set(key, e.target.value || null)}
+                  >
+                    {select.map((o) => (
+                      <option key={o} value={o}>
+                        {o ? t(`batch7.${o}`, { defaultValue: o }) : t("batch7.all")}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              );
+            if (key === "featured_habits")
+              return (
+                <label key={key} className="block font-bold">
+                  {label}
+                  <input
+                    className={`${inputCls} mt-2`}
+                    value={Array.isArray(v) ? v.join(", ") : ""}
+                    onChange={(e) =>
+                      set(
+                        key,
+                        e.target.value
+                          .split(",")
+                          .map((s) => s.trim())
+                          .filter(Boolean),
+                      )
+                    }
+                  />
+                </label>
+              );
+            const date = ["starts_on", "ends_on"].includes(key);
+            const dateTime = ["starts_at", "ends_at", "scheduled_at"].includes(key);
+            const rendered = dateTime && typeof v === "string" ? v.slice(0, 16) : v;
+            return (
+              <label key={key} className="block font-bold">
+                {label}
+                <input
+                  aria-label={label}
+                  className={`${inputCls} mt-2`}
+                  type={
+                    date
+                      ? "date"
+                      : dateTime
+                        ? "datetime-local"
+                        : numeric.includes(key)
+                          ? "number"
+                          : "text"
+                  }
+                  dir={date || dateTime || numeric.includes(key) ? "ltr" : undefined}
+                  required={!nullable.includes(key)}
+                  value={String(rendered ?? "")}
+                  onChange={(e) =>
+                    set(
+                      key,
+                      numeric.includes(key)
+                        ? Number(e.target.value)
+                        : dateTime && e.target.value
+                          ? new Date(e.target.value).toISOString()
+                          : e.target.value || (nullable.includes(key) ? null : ""),
+                    )
+                  }
+                />
+              </label>
+            );
+          })}
+          <div className="admin-editor-footer">
+            <StickerButton variant="secondary" onClick={onClose}>
+              {t("batch7.cancel")}
+            </StickerButton>
+            <StickerButton type="submit" disabled={busy}>
+              <Save className="size-4" />
+              {t("batch7.save")}
+            </StickerButton>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
 }

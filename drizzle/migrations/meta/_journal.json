@@ -246,6 +246,48 @@
       "when": 1795416310281,
       "tag": "0034_demo_cleanup_and_seed_completion",
       "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1795416564194,
+      "tag": "0035_demo_derived_row_cleanup",
+      "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1795416635930,
+      "tag": "0036_demo_cross_content_isolation",
+      "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1795416849552,
+      "tag": "0037_demo_account_deletion_guard",
+      "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1795416954287,
+      "tag": "0038_idempotent_demo_audit",
+      "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1795417000424,
+      "tag": "0039_demo_guard_diagnostics",
+      "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1795417023804,
+      "tag": "0040_demo_cascade_reset",
+      "breakpoints": true
     }
   ]
 }
