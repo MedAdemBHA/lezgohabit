@@ -67,6 +67,94 @@ export type Database = {
         }
         Relationships: []
       }
+      buddy_requests: {
+        Row: {
+          created_at: string
+          crew_id: string | null
+          from_user: string
+          id: string
+          status: string
+          to_user: string
+        }
+        Insert: {
+          created_at?: string
+          crew_id?: string | null
+          from_user: string
+          id?: string
+          status?: string
+          to_user: string
+        }
+        Update: {
+          created_at?: string
+          crew_id?: string | null
+          from_user?: string
+          id?: string
+          status?: string
+          to_user?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "buddy_requests_crew_id_fkey"
+            columns: ["crew_id"]
+            isOneToOne: false
+            referencedRelation: "crews"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "buddy_requests_from_user_fkey"
+            columns: ["from_user"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "buddy_requests_to_user_fkey"
+            columns: ["to_user"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      buddy_safety_reports: {
+        Row: {
+          created_at: string
+          id: string
+          reason: string
+          reporter: string
+          target: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reason: string
+          reporter: string
+          target: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reason?: string
+          reporter?: string
+          target?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "buddy_safety_reports_reporter_fkey"
+            columns: ["reporter"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "buddy_safety_reports_target_fkey"
+            columns: ["target"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       checkins: {
         Row: {
           created_at: string
@@ -240,6 +328,7 @@ export type Database = {
           chaos_index: number | null
           chaos_spins: number
           day: string
+          detox_points: number
           lift_prs: number
           proof_path: string | null
           proof_posted: boolean
@@ -250,6 +339,7 @@ export type Database = {
           chaos_index?: number | null
           chaos_spins?: number
           day: string
+          detox_points?: number
           lift_prs?: number
           proof_path?: string | null
           proof_posted?: boolean
@@ -260,12 +350,109 @@ export type Database = {
           chaos_index?: number | null
           chaos_spins?: number
           day?: string
+          detox_points?: number
           lift_prs?: number
           proof_path?: string | null
           proof_posted?: boolean
           user_id?: string
         }
         Relationships: []
+      }
+      detox_duels: {
+        Row: {
+          a: string
+          a_avg_min: number | null
+          b: string
+          b_avg_min: number | null
+          id: string
+          status: string
+          week_start: string
+        }
+        Insert: {
+          a: string
+          a_avg_min?: number | null
+          b: string
+          b_avg_min?: number | null
+          id?: string
+          status?: string
+          week_start: string
+        }
+        Update: {
+          a?: string
+          a_avg_min?: number | null
+          b?: string
+          b_avg_min?: number | null
+          id?: string
+          status?: string
+          week_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "detox_duels_a_fkey"
+            columns: ["a"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "detox_duels_b_fkey"
+            columns: ["b"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      detox_sessions: {
+        Row: {
+          completed: boolean
+          day: string
+          ended_at: string | null
+          id: string
+          last_seen_at: string
+          minutes: number
+          season_id: string
+          started_at: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          day: string
+          ended_at?: string | null
+          id?: string
+          last_seen_at?: string
+          minutes: number
+          season_id: string
+          started_at?: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          day?: string
+          ended_at?: string | null
+          id?: string
+          last_seen_at?: string
+          minutes?: number
+          season_id?: string
+          started_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "detox_sessions_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "detox_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       habit_templates: {
         Row: {
@@ -311,6 +498,84 @@ export type Database = {
           unit?: string | null
         }
         Relationships: []
+      }
+      lift_exercises: {
+        Row: {
+          equipment: string
+          id: string
+          key: string
+          name: Json
+          sort: number
+        }
+        Insert: {
+          equipment: string
+          id?: string
+          key: string
+          name: Json
+          sort?: number
+        }
+        Update: {
+          equipment?: string
+          id?: string
+          key?: string
+          name?: Json
+          sort?: number
+        }
+        Relationships: []
+      }
+      lift_sets: {
+        Row: {
+          created_at: string
+          day: string
+          exercise_id: string
+          id: string
+          is_demo: boolean
+          reps: number
+          result: string
+          unit: string
+          user_id: string
+          weight: number | null
+        }
+        Insert: {
+          created_at?: string
+          day: string
+          exercise_id: string
+          id?: string
+          is_demo?: boolean
+          reps: number
+          result?: string
+          unit?: string
+          user_id: string
+          weight?: number | null
+        }
+        Update: {
+          created_at?: string
+          day?: string
+          exercise_id?: string
+          id?: string
+          is_demo?: boolean
+          reps?: number
+          result?: string
+          unit?: string
+          user_id?: string
+          weight?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lift_sets_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "lift_exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lift_sets_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       nudges: {
         Row: {
@@ -486,15 +751,19 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          birth_date: string | null
           city: string | null
           country_code: string
           created_at: string
           display_name: string
+          equipment: string[]
           faith_public: boolean
+          gender: string | null
           handle: string
           id: string
           is_admin: boolean
           language: string
+          max_dumbbell_kg: number
           notif_crew: boolean
           notif_daily: boolean
           onboarded: boolean
@@ -504,15 +773,19 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          birth_date?: string | null
           city?: string | null
           country_code?: string
           created_at?: string
           display_name?: string
+          equipment?: string[]
           faith_public?: boolean
+          gender?: string | null
           handle: string
           id: string
           is_admin?: boolean
           language?: string
+          max_dumbbell_kg?: number
           notif_crew?: boolean
           notif_daily?: boolean
           onboarded?: boolean
@@ -522,15 +795,19 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          birth_date?: string | null
           city?: string | null
           country_code?: string
           created_at?: string
           display_name?: string
+          equipment?: string[]
           faith_public?: boolean
+          gender?: string | null
           handle?: string
           id?: string
           is_admin?: boolean
           language?: string
+          max_dumbbell_kg?: number
           notif_crew?: boolean
           notif_daily?: boolean
           onboarded?: boolean
@@ -602,6 +879,35 @@ export type Database = {
           },
         ]
       }
+      screen_time_logs: {
+        Row: {
+          day: string
+          proof_url: string
+          social_minutes: number
+          user_id: string
+        }
+        Insert: {
+          day: string
+          proof_url: string
+          social_minutes: number
+          user_id: string
+        }
+        Update: {
+          day?: string
+          proof_url?: string
+          social_minutes?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "screen_time_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       season_entries: {
         Row: {
           comeback_used: boolean
@@ -630,6 +936,69 @@ export type Database = {
             columns: ["season_id"]
             isOneToOne: false
             referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      season_reminders: {
+        Row: {
+          season_slug: string
+          user_id: string
+        }
+        Insert: {
+          season_slug: string
+          user_id: string
+        }
+        Update: {
+          season_slug?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "season_reminders_season_slug_fkey"
+            columns: ["season_slug"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["slug"]
+          },
+          {
+            foreignKeyName: "season_reminders_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      season_trophies: {
+        Row: {
+          awarded_at: string
+          season_id: string
+          user_id: string
+        }
+        Insert: {
+          awarded_at?: string
+          season_id: string
+          user_id: string
+        }
+        Update: {
+          awarded_at?: string
+          season_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "season_trophies_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "season_trophies_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -835,6 +1204,16 @@ export type Database = {
         Args: { _search?: string; _season_id: string }
         Returns: Json
       }
+      buddy_matches: {
+        Args: {
+          _gender?: boolean
+          _goals?: boolean
+          _language?: boolean
+          _season_id: string
+          _timezone?: boolean
+        }
+        Returns: Json
+      }
       can_read_post: { Args: { _id: string }; Returns: boolean }
       checkin_upsert: {
         Args: {
@@ -865,6 +1244,15 @@ export type Database = {
       crew_details: { Args: { _crew_id: string }; Returns: Json }
       crew_today: { Args: { _crew_id: string }; Returns: Json }
       delete_my_account: { Args: never; Returns: undefined }
+      detox_action: {
+        Args: { _action: string; _minutes?: number; _session?: string }
+        Returns: Json
+      }
+      detox_duel_action: {
+        Args: { _action: string; _target: string }
+        Returns: undefined
+      }
+      detox_overview: { Args: never; Returns: Json }
       handle_available: { Args: { _handle: string }; Returns: boolean }
       join_crew: { Args: { _code: string }; Returns: string }
       join_season: {
@@ -881,6 +1269,20 @@ export type Database = {
         Returns: Json
       }
       leave_crew: { Args: { _crew_id: string }; Returns: undefined }
+      log_lift: {
+        Args: {
+          _exercise: string
+          _reps: number
+          _unit?: string
+          _weight: number
+        }
+        Returns: Json
+      }
+      log_lift_session: { Args: { _sets: Json }; Returns: Json }
+      log_screen_time: {
+        Args: { _minutes: number; _path: string }
+        Returns: undefined
+      }
       participating_countries: { Args: never; Returns: number }
       post_action: {
         Args: { _action: string; _post_id: string; _reason?: string }
@@ -909,6 +1311,10 @@ export type Database = {
       }
       recompute_day: {
         Args: { _day: string; _season_id: string; _user_id: string }
+        Returns: undefined
+      }
+      report_buddy: {
+        Args: { _reason: string; _target: string }
         Returns: undefined
       }
       scoreboard: {
@@ -946,6 +1352,10 @@ export type Database = {
       set_chaos_done: {
         Args: { _day?: string; _done: boolean; _season_id: string }
         Returns: Json
+      }
+      set_season_reminder: {
+        Args: { _on: boolean; _slug: string }
+        Returns: undefined
       }
       solo_ghost: { Args: { _season_id: string }; Returns: Json }
       spin_daily_chaos: { Args: { _season_id: string }; Returns: Json }

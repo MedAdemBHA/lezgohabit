@@ -85,6 +85,41 @@
       "when": 1795393000761,
       "tag": "0011_restrict_feed_data_api_grants",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1795393755065,
+      "tag": "0012_lift_detox_buddy_seasons",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1795393864440,
+      "tag": "0013_batch5_reward_scoring",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1795393892751,
+      "tag": "0014_buddy_matches_and_detox_summary",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1795394214412,
+      "tag": "0015_batch5_session_integrity",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1795394643338,
+      "tag": "0016_detox_reward_ceiling",
+      "breakpoints": true
     }
   ]
 }

@@ -5,6 +5,7 @@ import { fr } from "./fr";
 import { ar } from "./ar";
 import { aeb } from "./aeb";
 import { batch4en, batch4fr, batch4ar, batch4aeb } from "./batch4";
+import { batch5en, batch5fr, batch5ar, batch5aeb } from "./batch5";
 
 export const LANGS = ["en", "fr", "ar", "aeb"] as const;
 export type Lang = (typeof LANGS)[number];
@@ -15,10 +16,10 @@ export const LANG_KEY = "lezgo_lang";
 if (!i18n.isInitialized) {
   void i18n.use(initReactI18next).init({
     resources: {
-      en: { translation: { ...en, batch4: batch4en } },
-      fr: { translation: { ...fr, batch4: batch4fr } },
-      ar: { translation: { ...ar, batch4: batch4ar } },
-      aeb: { translation: { ...aeb, batch4: batch4aeb } },
+      en: { translation: { ...en, batch4: batch4en, batch5: batch5en } },
+      fr: { translation: { ...fr, batch4: batch4fr, batch5: batch5fr } },
+      ar: { translation: { ...ar, batch4: batch4ar, batch5: batch5ar } },
+      aeb: { translation: { ...aeb, batch4: batch4aeb, batch5: batch5aeb } },
     },
     lng: "en",
     fallbackLng: { aeb: ["ar", "en"], fr: ["en"], default: ["en"] },

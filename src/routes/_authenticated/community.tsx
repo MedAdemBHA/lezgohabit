@@ -1,8 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { infiniteQueryOptions, useSuspenseInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Plus } from "lucide-react";
+import { Plus, Smartphone } from "lucide-react";
 import { ThoughtIcon } from "@/components/icons";
 import { AppShell } from "@/components/lezgo/app-shell";
 import { StickerButton } from "@/components/lezgo/ui";
@@ -50,6 +50,9 @@ function Community() {
   return (
     <AppShell todayLayout>
       <CommunitySwitch active="feed" />
+      <Link to="/detox" className="self-end">
+        <StickerButton variant="secondary" size="sm"><Smartphone size={18}/>{t('batch5.detox')}</StickerButton>
+      </Link>
       <div className="feed-header">
         <FitHeading className="feed-title" requestedSize={56} text={t("batch4.feedTitle")} />
         <StickerButton

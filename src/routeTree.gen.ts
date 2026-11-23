@@ -18,6 +18,7 @@ import { Route as AuthenticatedBuddiesRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedCommunityRouteImport } from './routes/_authenticated/community'
 import { Route as AuthenticatedCrewRouteImport } from './routes/_authenticated/crew'
 import { Route as AuthenticatedCrewDetailsRouteImport } from './routes/_authenticated/crew-details'
+import { Route as AuthenticatedDetoxRouteImport } from './routes/_authenticated/detox'
 import { Route as AuthenticatedHabitsRouteImport } from './routes/_authenticated/habits'
 import { Route as AuthenticatedLiftRouteImport } from './routes/_authenticated/lift'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
@@ -74,6 +75,11 @@ const AuthenticatedCrewDetailsRoute =
     path: '/crew-details',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedDetoxRoute = AuthenticatedDetoxRouteImport.update({
+  id: '/detox',
+  path: '/detox',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedHabitsRoute = AuthenticatedHabitsRouteImport.update({
   id: '/habits',
   path: '/habits',
@@ -134,6 +140,7 @@ export interface FileRoutesByFullPath {
   '/community': typeof AuthenticatedCommunityRoute
   '/crew': typeof AuthenticatedCrewRoute
   '/crew-details': typeof AuthenticatedCrewDetailsRoute
+  '/detox': typeof AuthenticatedDetoxRoute
   '/habits': typeof AuthenticatedHabitsRoute
   '/lift': typeof AuthenticatedLiftRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
@@ -154,6 +161,7 @@ export interface FileRoutesByTo {
   '/community': typeof AuthenticatedCommunityRoute
   '/crew': typeof AuthenticatedCrewRoute
   '/crew-details': typeof AuthenticatedCrewDetailsRoute
+  '/detox': typeof AuthenticatedDetoxRoute
   '/habits': typeof AuthenticatedHabitsRoute
   '/lift': typeof AuthenticatedLiftRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
@@ -176,6 +184,7 @@ export interface FileRoutesById {
   '/_authenticated/community': typeof AuthenticatedCommunityRoute
   '/_authenticated/crew': typeof AuthenticatedCrewRoute
   '/_authenticated/crew-details': typeof AuthenticatedCrewDetailsRoute
+  '/_authenticated/detox': typeof AuthenticatedDetoxRoute
   '/_authenticated/habits': typeof AuthenticatedHabitsRoute
   '/_authenticated/lift': typeof AuthenticatedLiftRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
@@ -198,6 +207,7 @@ export interface FileRouteTypes {
     | '/community'
     | '/crew'
     | '/crew-details'
+    | '/detox'
     | '/habits'
     | '/lift'
     | '/onboarding'
@@ -218,6 +228,7 @@ export interface FileRouteTypes {
     | '/community'
     | '/crew'
     | '/crew-details'
+    | '/detox'
     | '/habits'
     | '/lift'
     | '/onboarding'
@@ -239,6 +250,7 @@ export interface FileRouteTypes {
     | '/_authenticated/community'
     | '/_authenticated/crew'
     | '/_authenticated/crew-details'
+    | '/_authenticated/detox'
     | '/_authenticated/habits'
     | '/_authenticated/lift'
     | '/_authenticated/onboarding'
@@ -323,6 +335,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCrewDetailsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/detox': {
+      id: '/_authenticated/detox'
+      path: '/detox'
+      fullPath: '/detox'
+      preLoaderRoute: typeof AuthenticatedDetoxRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/habits': {
       id: '/_authenticated/habits'
       path: '/habits'
@@ -403,6 +422,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCommunityRoute: typeof AuthenticatedCommunityRoute
   AuthenticatedCrewRoute: typeof AuthenticatedCrewRoute
   AuthenticatedCrewDetailsRoute: typeof AuthenticatedCrewDetailsRoute
+  AuthenticatedDetoxRoute: typeof AuthenticatedDetoxRoute
   AuthenticatedHabitsRoute: typeof AuthenticatedHabitsRoute
   AuthenticatedLiftRoute: typeof AuthenticatedLiftRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
@@ -421,6 +441,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCommunityRoute: AuthenticatedCommunityRoute,
   AuthenticatedCrewRoute: AuthenticatedCrewRoute,
   AuthenticatedCrewDetailsRoute: AuthenticatedCrewDetailsRoute,
+  AuthenticatedDetoxRoute: AuthenticatedDetoxRoute,
   AuthenticatedHabitsRoute: AuthenticatedHabitsRoute,
   AuthenticatedLiftRoute: AuthenticatedLiftRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,

@@ -37,7 +37,7 @@ function SettingsPage() {
   const { uid, profile } = useBase();
   const prefs = useQuery({ ...preferencesQuery(uid), enabled: !!uid });
   const p = prefs.data ?? defaultPreferences(uid);
-  const [sheet, setSheet] = useState<"method" | "city" | "max" | "time" | "delete" | null>(null);
+  const [sheet, setSheet] = useState<"method" | "city" | "max" | "time" | "birthday" | "delete" | null>(null);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const preferenceQueue = useRef<Promise<void>>(Promise.resolve());
@@ -95,12 +95,16 @@ function SettingsPage() {
     }
     await signOut();
   }
-  function edit(kind: "city" | "max" | "time", value: string) {
+  function edit(kind: "city" | "max" | "time" | "birthday", value: string) {
     setInput(value);
     setSheet(kind);
   }
   async function saveSheet() {
-    if (sheet === "city") {
+    if (sheet === 'birthday') {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(input)) return;
+      await update({ birth_date: input });
+      await qc.invalidateQueries({ queryKey: ['buddies'] });
+    } else if (sheet === "city") {
       if (!input.trim()) return;
       await update({ city: input.trim() });
     } else if (sheet === "max") {
@@ -266,6 +270,18 @@ function SettingsPage() {
       </div>
       <h2 className="section-label mt-2">{t("batch4.privacy")}</h2>
       <div className="settings-card divided">
+        <div className="settings-row">
+          <span>{t('batch5.birthDate')}</span>
+          <StickerButton variant="ghost" size="sm" onClick={()=>edit('birthday',profile.birth_date??'')}>
+            <Num>{profile.birth_date??t('batch5.unset')}</Num>
+          </StickerButton>
+        </div>
+        <div className="py-3">
+          <p className="mb-2 font-bold">{t('batch5.gender')}</p>
+          <div className="flex flex-wrap gap-2">
+            {['woman','man','other','unset'].map(g=><StickerButton key={g} variant="secondary" size="sm" className={profile.gender===g||!profile.gender&&g==='unset'?'bg-lime':'shadow-none'} aria-pressed={profile.gender===g||!profile.gender&&g==='unset'} onClick={()=>void update({gender:g==='unset'?null:g})}>{t(`batch5.${g}`)}</StickerButton>)}
+          </div>
+        </div>
         <Switch
           label={t("settings.publicBoards")}
           checked={profile.show_on_public_board}
@@ -320,10 +336,10 @@ function SettingsPage() {
         </div>
       </BottomSheet>
       <BottomSheet
-        open={sheet === "city" || sheet === "max" || sheet === "time"}
+        open={sheet === "city" || sheet === "max" || sheet === "time" || sheet === 'birthday'}
         onClose={() => setSheet(null)}
         title={t(
-          sheet === "city"
+          sheet === 'birthday' ? 'batch5.birthDate' : sheet === "city"
             ? "batch4.location"
             : sheet === "max"
               ? "batch4.equipment"
@@ -332,7 +348,7 @@ function SettingsPage() {
       >
         <Field
           label={t(
-            sheet === "city"
+            sheet === 'birthday' ? 'batch5.birthDate' : sheet === "city"
               ? "batch4.location"
               : sheet === "max"
                 ? "batch4.weight"
@@ -341,7 +357,7 @@ function SettingsPage() {
         >
           <input
             className={inputCls}
-            type={sheet === "max" ? "number" : sheet === "time" ? "time" : "text"}
+            type={sheet === 'birthday' ? 'date' : sheet === "max" ? "number" : sheet === "time" ? "time" : "text"}
             min={0}
             max={500}
             maxLength={80}

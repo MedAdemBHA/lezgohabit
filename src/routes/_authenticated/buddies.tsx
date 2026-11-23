@@ -1,157 +1,31 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import { useTranslation } from "react-i18next";
-import { ArrowLeft, Search, UserPlus } from "lucide-react";
-import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { CommunitySwitch } from "@/components/lezgo/community/community-switch";
-import { AppShell } from "@/components/lezgo/app-shell";
-import { Avatar, Field, StickerButton, inputCls } from "@/components/lezgo/ui";
-import { buddyQuery, type Buddy } from "@/lib/community-data";
-import { useBase } from "@/lib/data";
-import { pageHead } from "@/lib/page-head";
-export const Route = createFileRoute("/_authenticated/buddies")({
-  head: () =>
-    pageHead("Find a buddy — lezgo", "Invite a season buddy and keep showing up together."),
-  component: Buddies,
-});
-function Buddies() {
-  const { t } = useTranslation();
-  const { uid, season } = useBase();
-  const qc = useQueryClient();
-  const [input, setInput] = useState("");
-  const [search, setSearch] = useState("");
-  const [busy, setBusy] = useState<string | null>(null);
-  const q = useQuery({ ...buddyQuery(uid, season?.id ?? "", search), enabled: !!uid && !!season });
-  async function action(type: string, target: string) {
-    setBusy(target);
-    const { error } = await supabase.rpc("buddy_action", { _action: type, _target: target });
-    setBusy(null);
-    if (error) {
-      toast(
-        error.message.includes("buddy_limit") ? t("socialDesign.buddyLimit") : t("common.error"),
-      );
-      return;
-    }
-    await qc.invalidateQueries({ queryKey: ["buddies"] });
-  }
-  function person(b: Buddy, kind: "buddy" | "incoming" | "result") {
-    return (
-      <div
-        key={b.user_id}
-        className="flex flex-wrap items-center gap-3 rounded-[18px] bg-card p-3 sticker-border shadow-hard"
-      >
-        <Avatar id={b.user_id} name={b.display_name} url={b.avatar_url} size={40} />
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-[18px] font-extrabold">{b.display_name}</p>
-          <p className="text-[13px] font-semibold">
-            <bdi dir="ltr">@{b.handle}</bdi> · {t("socialDesign.streakStat", { n: b.streak })}
-          </p>
-        </div>
-        {kind === "incoming" ? (
-          <div className="flex w-full justify-end gap-2">
-            <StickerButton
-              variant="ghost"
-              size="sm"
-              disabled={busy === b.user_id}
-              onClick={() => void action("decline", b.user_id)}
-            >
-              {t("socialDesign.decline")}
-            </StickerButton>
-            <StickerButton
-              variant="lime"
-              size="sm"
-              disabled={busy === b.user_id}
-              onClick={() => void action("accept", b.user_id)}
-            >
-              {t("socialDesign.accept")}
-            </StickerButton>
-          </div>
-        ) : (
-          <StickerButton
-            variant={kind === "buddy" ? "ghost" : "yellow"}
-            size="sm"
-            disabled={busy === b.user_id || b.status === "pending"}
-            onClick={() => void action(kind === "buddy" ? "remove" : "invite", b.user_id)}
-          >
-            {t(
-              kind === "buddy"
-                ? "socialDesign.removeBuddy"
-                : b.status === "pending"
-                  ? "socialDesign.requested"
-                  : "socialDesign.sendRequest",
-            )}
-          </StickerButton>
-        )}
-      </div>
-    );
-  }
-  return (
-    <AppShell todayLayout>
-      <CommunitySwitch active="buddies" />
-      <Link to="/profile" className="self-start">
-        <StickerButton variant="secondary" className="habit-back" aria-label={t("common.back")}>
-          <ArrowLeft className="rtl:-scale-x-100" />
-        </StickerButton>
-      </Link>
-      <h1 className="text-[36px] font-extrabold">{t("socialDesign.findBuddy")}</h1>
-      {q.data?.buddy ? (
-        <>{person(q.data.buddy, "buddy")}</>
-      ) : (
-        <>
-          <UserPlus size={40} />
-          <p className="font-semibold">{t("socialDesign.findBuddySub")}</p>
-        </>
-      )}
-      {(q.data?.incoming.length ?? 0) > 0 && (
-        <>
-          <h2 className="mt-3 font-extrabold">{t("socialDesign.buddyRequests")}</h2>
-          {q.data?.incoming.map((b) => person(b, "incoming"))}
-        </>
-      )}
-      {!q.data?.buddy && (
-        <form
-          className="flex items-end gap-2"
-          onSubmit={(e) => {
-            e.preventDefault();
-            setSearch(input.trim());
-          }}
-        >
-          <div className="min-w-0 flex-1">
-            <Field label={t("socialDesign.searchBuddy")}>
-              <input
-                className={inputCls}
-                dir="ltr"
-                value={input}
-                maxLength={20}
-                onChange={(e) => setInput(e.target.value)}
-              />
-            </Field>
-          </div>
-          <StickerButton
-            type="submit"
-            variant="lime"
-            disabled={input.trim().length < 2}
-            aria-label={t("socialDesign.searchBuddy")}
-            className="size-[50px] p-0"
-          >
-            <Search size={22} />
-          </StickerButton>
-        </form>
-      )}
-      {q.isPending ? (
-        <p>{t("common.loading")}</p>
-      ) : q.isError ? (
-        <StickerButton variant="secondary" onClick={() => void q.refetch()}>
-          {t("common.error")}
-        </StickerButton>
-      ) : (
-        <>
-          {!q.data?.buddy && q.data?.results.map((b) => person(b, "result"))}
-          {search && q.data?.results.length === 0 && <p>{t("socialDesign.noResults")}</p>}
-        </>
-      )}
-    </AppShell>
-  );
+import { createFileRoute,Link } from '@tanstack/react-router';
+import { useQuery,useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { ArrowLeft,ShieldCheck,ArrowRight,Ban,Flag } from 'lucide-react';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { AppShell } from '@/components/lezgo/app-shell';
+import { CommunitySwitch } from '@/components/lezgo/community/community-switch';
+import { FitHeading } from '@/components/lezgo/fit-heading';
+import { Avatar,BottomSheet,Field,inputCls,Num,StickerButton } from '@/components/lezgo/ui';
+import { matchesQuery,type Match } from '@/lib/batch5-data';
+import { countryName } from '@/lib/community-data';
+import { useBase,seasonQuery } from '@/lib/data';
+import { loc } from '@/lib/i18n';
+import { pageHead } from '@/lib/page-head';
+export const Route=createFileRoute('/_authenticated/buddies')({head:()=>pageHead('Find a buddy — lezgo','Meet a compatible adult habit buddy, accept safely and keep a shared go streak.'),loader:async({context})=>{const s=await context.queryClient.ensureQueryData(seasonQuery);if(s)await context.queryClient.ensureQueryData(matchesQuery(context.user.id,s.id));},component:Buddies});
+function Buddies(){const {t,i18n}=useTranslation();const {season,profile}=useBase();const uid=Route.useRouteContext().user.id;const qc=useQueryClient();const [filters,setFilters]=useState([false,false,false,false]);const [skipped,setSkipped]=useState<string[]>([]);const [busy,setBusy]=useState(false);const [birthday,setBirthday]=useState('');const [report,setReport]=useState<Match|null>(null);const [reason,setReason]=useState('');const q=useQuery({...matchesQuery(uid,season?.id??'',filters),enabled:!!season});const candidate=q.data?.results.find(p=>!skipped.includes(p.user_id));
+ async function action(type:string,id:string){setBusy(true);const r=await supabase.rpc('buddy_action',{_action:type,_target:id});setBusy(false);if(r.error){toast(t(r.error.message.includes('adults_only')?'batch5.birthdayError':r.error.message.includes('buddy_limit')?'socialDesign.buddyLimit':'common.error'));return;}if(type==='invite')toast(t('batch5.invited'));await Promise.all(['buddies','myCrew','day','crewDetails','profileSummary'].map(k=>qc.invalidateQueries({queryKey:[k]})));}
+ async function saveBirthday(){setBusy(true);const r=await supabase.from('profiles').update({birth_date:birthday}).eq('id',uid);setBusy(false);if(r.error)toast(t('common.error'));else await Promise.all([qc.invalidateQueries({queryKey:['profile',uid]}),qc.invalidateQueries({queryKey:['buddies']})]);}
+ function mini(p:Match){return <article className="buddy-request" key={p.user_id}><Avatar id={p.user_id} name={p.display_name} url={p.avatar_url} size={44}/><h3>{p.display_name}</h3><div className="buddy-request-actions"><StickerButton variant="secondary" size="sm" disabled={busy} onClick={()=>void action('decline',p.user_id)}>{t('socialDesign.decline')}</StickerButton><StickerButton variant="lime" size="sm" disabled={busy} onClick={()=>void action('accept',p.user_id)}>{t('socialDesign.accept')}</StickerButton><StickerButton variant="ghost" className="icon-control" aria-label={t('batch5.reportBlock')} disabled={busy} onClick={()=>void action('block',p.user_id)}><Ban size={20}/></StickerButton></div></article>;}
+ function card(p:Match,isBuddy=false){return <article className="buddy-match"><span className="buddy-percent"><Num>{p.match}%</Num></span><div className="buddy-identity"><Avatar className="bg-pink" id={p.user_id} name={p.display_name} url={p.avatar_url} size={64}/><div><h2>{p.display_name}</h2><p>{[p.city,countryName(p.country_code,i18n.language)].filter(Boolean).join(', ')} · <bdi dir="ltr">UTC{p.utc_offset>=0?'+':''}{p.utc_offset}</bdi></p><p className="buddy-level">{t('batch5.levelStreak',{level:t(p.active_days<10?'batch5.beginner':p.active_days<30?'batch5.regular':'batch5.veteran'),n:p.streak})}</p></div></div><h3 className="section-label mt-5">{t('batch5.shared')}</h3><div className="buddy-habits">{p.shared.map(h=><span className="buddy-habit" data-color={h.color??'lime'} key={h.key}>{loc(h.name,i18n.language)}</span>)}</div><div className="buddy-actions">{isBuddy?<><StickerButton variant="secondary" disabled={busy} onClick={()=>void action('remove',p.user_id)}>{t('socialDesign.removeBuddy')}</StickerButton><Link to="/crew"><StickerButton block>{t('batch4.crew')}<ArrowRight size={20} className="rtl:-scale-x-100"/></StickerButton></Link></>:<><StickerButton variant="secondary" onClick={()=>setSkipped(old=>[...old,p.user_id])}>{t('batch5.skip')}</StickerButton><StickerButton disabled={busy} onClick={()=>void action('invite',p.user_id)}>{t('batch5.invite')}</StickerButton></>}</div><div className="buddy-safety-actions"><StickerButton variant="ghost" size="sm" disabled={busy} onClick={()=>void action('block',p.user_id)}><Ban size={16}/>{t('batch5.block')}</StickerButton><StickerButton variant="ghost" size="sm" onClick={()=>{setReport(p);setReason('');}}><Flag size={16}/>{t('batch4.report')}</StickerButton></div></article>;}
+ return <AppShell todayLayout><CommunitySwitch active="buddies"/><Link to="/profile" className="self-start"><StickerButton variant="secondary" className="icon-control" aria-label={t('common.back')}><ArrowLeft className="rtl:-scale-x-100"/></StickerButton></Link><FitHeading requestedSize={52} className="batch5-title" text={t('batch5.findBuddy')}/><p className="batch5-sub">{t('batch5.buddySub')}</p>
+ {(q.data?.incoming.length??0)>0&&<><h2 className="section-label">{t('socialDesign.buddyRequests')}</h2>{q.data?.incoming.map(mini)}</>}
+ {!q.data?.eligible&&profile&&!q.isPending&&<div className="buddy-age"><p>{t('batch5.ageNeeded')}</p><Field label={t('batch5.birthDate')}><input type="date" value={birthday} className={inputCls} onChange={e=>setBirthday(e.target.value)}/></Field><StickerButton block disabled={busy||!birthday} onClick={()=>void saveBirthday()}>{t('common.save')}</StickerButton></div>}
+ <div className="buddy-filters">{(['sameLanguage','closeTimezone','sameGoals','sameGender'] as const).map((k,i)=><StickerButton size="sm" variant="secondary" className={filters[i]?'bg-ink text-lime':'shadow-none'} aria-pressed={filters[i]??false} key={k} onClick={()=>{setSkipped([]);setFilters(old=>old.map((v,j)=>i===j?!v:v));}}>{t(`batch5.${k}`)}</StickerButton>)}</div>
+ {q.isPending?<p>{t('common.loading')}</p>:q.isError?<StickerButton variant="secondary" onClick={()=>void q.refetch()}>{t('common.error')}</StickerButton>:q.data?.buddy?<><h2 className="section-label">{t('batch5.myBuddy')}</h2>{card(q.data.buddy,true)}</>:candidate?card(candidate):q.data?.eligible&&<p className="py-8 text-center font-bold">{t('batch5.noMatches')}</p>}
+ <section className="buddy-safety"><ShieldCheck size={32}/><p>{t('batch5.safety')}</p></section><footer className="buddy-footer"><span>{t('batch5.buddyBonus')}</span><span className="buddy-bonus num">{t('batch5.bonusDay')}</span></footer>
+ <BottomSheet open={!!report} onClose={()=>setReport(null)} title={t('batch5.reportBlock')}><Field label={t('batch4.reason')}><textarea value={reason} maxLength={280} className={inputCls} onChange={e=>setReason(e.target.value)}/></Field><StickerButton block className="mt-4" disabled={busy||!reason.trim()} onClick={async()=>{if(!report)return;setBusy(true);const r=await supabase.rpc('report_buddy',{_target:report.user_id,_reason:reason});setBusy(false);if(r.error)toast(t('common.error'));else {setReport(null);await qc.invalidateQueries({queryKey:['buddies']});toast(t('batch4.reported'));}}}>{t('batch5.reportBlock')}</StickerButton></BottomSheet>
+ </AppShell>;
 }

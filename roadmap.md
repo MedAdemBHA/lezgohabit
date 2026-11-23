@@ -2,7 +2,7 @@
 - [x] Match Join and Login in four languages; leave demo unwired and Apple hidden.
 - [x] Match habit onboarding, seed missing templates, preserve 1–3 limit and existing season/crew flow.
 - [x] Verify mobile, RTL, authenticated onboarding, tests, and save changes.
-Deferred by batch scope: demo sign-in awaits admin/demo batch; Lift, Boss and legal documents remain placeholders.
+Deferred by batch scope: demo sign-in awaits admin/demo batch; Boss and legal documents remain placeholders.
 
 ## Batch 2 — Today
 - [x] Match Today header, score, progress, habit tiles and exact shared tab bar.
@@ -25,3 +25,10 @@ Boss K.O. stays locked until the later Boss batch supplies verified Boss results
 - [x] Build server-calculated scoring playground and average/day ranks with linked board views.
 - [x] Verify signed-in posting/reactions/privacy, score rules, mobile/RTL and save changes.
 Reminder delivery remains outside this batch; settings save preferences. The calculator preserves floor((100 + 65) × 1.5) = 247 rather than displaying 248.
+
+## Batch 5 — Lift, Detox, Buddy matching and Seasons
+- [x] Add private lift logs and capped PR rewards, detox sessions/duels/proofs, consensual duo matching, reminders and trophies.
+- [x] Match Lift and Scroll Detox with saved equipment, timer integrity and real weekly stats.
+- [x] Match Find a Buddy and Seasons with four languages and mirrored layouts.
+- [x] Test scoring, consent, privacy and timer rules; verify signed-in flows/mobile/RTL and save changes.
+Season reminders are saved only; delivery remains separate. Upcoming dates use 2027; Ramadan and September dates are provisional.

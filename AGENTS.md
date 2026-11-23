@@ -56,4 +56,9 @@ use the editor.
 - Community posts use audience-checked RPCs, private proof storage, one reaction per user/post and serialized distinct-report moderation; faith keys/stats are projected only for the owner or explicit public consent.
 - Proof uploads re-encode browser pixels as JPEG at a maximum 1280px edge, stripping metadata before upload; Today and feed Compose share this path and the existing server proof bonus.
 - Personal equipment, distance, prayer-method and reminder preferences live in owner-scoped user_preferences; reminder delivery is separate from saving preferences.
+- Kit preferences mirror into owner-readable profile equipment fields through a database trigger so Settings and Lift cannot diverge.
+- Lift sets use one editable exercise/day result against the previous saved day; recomputed distinct beats prevent repeated-save reward farming.
+- Detox rewards require elapsed server time and fresh visible-page heartbeats; screen-time proof remains private and weekly savings use logged days only.
+- Adult buddy discovery uses privacy-aware RPC matching and buddy_requests for consent, blocks, reports and duo membership; duo and crew sync share one bonus.
+- Season reminders and earned trophies are owner-readable records; trophies are awarded only by saved-score triggers, never browser claims.
 - Scoring playground results and average/day ranks are computed in Postgres; average divides by elapsed local participation days, including missed days, to avoid rewarding skipped check-ins.

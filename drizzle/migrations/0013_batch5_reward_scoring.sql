@@ -1,0 +1,26 @@
+CREATE OR REPLACE FUNCTION public.recompute_day(_user_id uuid,_season_id uuid,_day date) RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$
+DECLARE s record;tz text;today date;start_d date;end_d date;d date;n int;comp numeric;allfull boolean;hp numeric;st numeric;mult numeric;tot int;v_streak int:=0;prev_missed boolean:=false;v_cb_used boolean:=false;shield_weeks date[]:='{}';wk date;v_shield boolean;v_cb boolean;v_perfect boolean;v_crew uuid;v_sync boolean;ex record;joined timestamptz;
+BEGIN
+SELECT * INTO s FROM seasons WHERE id=_season_id;IF NOT FOUND THEN RETURN;END IF;
+SELECT joined_at INTO joined FROM season_entries WHERE user_id=_user_id AND season_id=_season_id;IF joined IS NULL THEN RETURN;END IF;
+SELECT coalesce(timezone,'Africa/Tunis') INTO tz FROM profiles WHERE id=_user_id;tz:=coalesce(tz,'Africa/Tunis');today:=(now() AT TIME ZONE tz)::date;start_d:=greatest(s.starts_on,(joined AT TIME ZONE tz)::date);end_d:=least(s.ends_on,today);
+SELECT count(*) INTO n FROM user_habits WHERE user_id=_user_id AND season_id=_season_id AND active;
+SELECT cm.crew_id INTO v_crew FROM crew_members cm JOIN crews c ON c.id=cm.crew_id WHERE cm.user_id=_user_id AND c.season_id=_season_id AND c.kind<>'duo' LIMIT 1;
+d:=start_d;
+WHILE d<=end_d LOOP
+IF n=0 THEN comp:=0;allfull:=false;ELSE SELECT coalesce(avg(x.c),0),coalesce(bool_and(x.c>=1),false) INTO comp,allfull FROM(SELECT public._habit_completion(h.kind,h.target,ci.value,ci.detail) c FROM user_habits h LEFT JOIN checkins ci ON ci.user_habit_id=h.id AND ci.day=d WHERE h.user_id=_user_id AND h.season_id=_season_id AND h.active)x;END IF;
+v_perfect:=n>0 AND allfull;v_shield:=false;v_cb:=false;
+IF comp>=0.6 THEN v_streak:=v_streak+1;ELSIF d<>today THEN wk:=date_trunc('week',d)::date;IF v_streak>0 AND NOT(wk=ANY(shield_weeks)) THEN v_shield:=true;shield_weeks:=shield_weeks||wk;ELSE v_streak:=0;END IF;END IF;
+hp:=100*comp;IF prev_missed AND NOT v_cb_used AND comp>0 THEN v_cb:=true;v_cb_used:=true;hp:=least(200,hp*2);END IF;
+st:=CASE WHEN v_perfect THEN 20 ELSE 0 END;SELECT * INTO ex FROM day_extras WHERE user_id=_user_id AND day=d;
+IF coalesce(ex.proof_posted,false) THEN st:=st+10;END IF;IF coalesce(ex.chaos_done,false) THEN st:=st+10;END IF;st:=st+least(coalesce(ex.lift_prs,0)*5,15);v_sync:=false;
+IF v_crew IS NOT NULL AND v_perfect AND (SELECT count(*) FROM crew_members WHERE crew_id=v_crew)>=2 AND NOT EXISTS(SELECT 1 FROM crew_members m WHERE m.crew_id=v_crew AND (NOT EXISTS(SELECT 1 FROM user_habits h WHERE h.user_id=m.user_id AND h.season_id=_season_id AND h.active) OR EXISTS(SELECT 1 FROM user_habits h LEFT JOIN checkins ci ON ci.user_habit_id=h.id AND ci.day=d WHERE h.user_id=m.user_id AND h.season_id=_season_id AND h.active AND public._habit_completion(h.kind,h.target,ci.value,ci.detail)<1))) THEN v_sync:=true;END IF;
+IF EXISTS(SELECT 1 FROM buddy_requests r JOIN crews c ON c.id=r.crew_id WHERE r.status='accepted' AND _user_id IN(r.from_user,r.to_user) AND c.season_id=_season_id AND EXISTS(SELECT 1 FROM crew_members WHERE crew_id=c.id AND user_id=r.from_user) AND EXISTS(SELECT 1 FROM crew_members WHERE crew_id=c.id AND user_id=r.to_user) AND EXISTS(SELECT 1 FROM checkins ci JOIN user_habits h ON h.id=ci.user_habit_id WHERE ci.user_id=r.from_user AND ci.day=d AND ci.value>0 AND h.season_id=_season_id AND h.active) AND EXISTS(SELECT 1 FROM checkins ci JOIN user_habits h ON h.id=ci.user_habit_id WHERE ci.user_id=r.to_user AND ci.day=d AND ci.value>0 AND h.season_id=_season_id AND h.active)) THEN v_sync:=true;END IF;
+IF v_sync THEN st:=st+10;END IF;st:=least(65,st+coalesce(ex.detox_points,0));mult:=least(1+0.05*v_streak,1.5);tot:=floor((hp+st)*mult);
+INSERT INTO daily_scores(user_id,season_id,day,habit_points,stack_points,multiplier,total,completion,perfect,streak,shield_used,comeback,crew_sync) VALUES(_user_id,_season_id,d,round(hp,2),st,mult,tot,round(comp,4),v_perfect,v_streak,v_shield,v_cb,v_sync) ON CONFLICT(user_id,season_id,day) DO UPDATE SET habit_points=excluded.habit_points,stack_points=excluded.stack_points,multiplier=excluded.multiplier,total=excluded.total,completion=excluded.completion,perfect=excluded.perfect,streak=excluded.streak,shield_used=excluded.shield_used,comeback=excluded.comeback,crew_sync=excluded.crew_sync;
+prev_missed:=comp<0.6 AND NOT v_shield AND d<>today;d:=d+1;
+END LOOP;UPDATE season_entries SET comeback_used=v_cb_used WHERE user_id=_user_id AND season_id=_season_id;
+END $$;
+CREATE FUNCTION public.validate_buddy_profile() RETURNS trigger LANGUAGE plpgsql SET search_path=public AS $$ BEGIN IF NEW.birth_date>current_date OR NEW.birth_date<current_date-interval '120 years' THEN RAISE EXCEPTION 'invalid_birth_date'; END IF;IF NEW.gender IS NOT NULL AND NEW.gender NOT IN('woman','man','other') THEN RAISE EXCEPTION 'invalid_gender'; END IF;IF NEW.max_dumbbell_kg<0 OR NEW.max_dumbbell_kg>500 THEN RAISE EXCEPTION 'invalid_kit';END IF;RETURN NEW;END $$;
+CREATE TRIGGER validate_buddy_fields BEFORE INSERT OR UPDATE OF birth_date,gender,max_dumbbell_kg ON public.profiles FOR EACH ROW EXECUTE FUNCTION public.validate_buddy_profile();
+REVOKE ALL ON FUNCTION public.validate_buddy_profile() FROM PUBLIC,anon,authenticated;

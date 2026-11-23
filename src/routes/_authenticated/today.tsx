@@ -1,5 +1,5 @@
 import { pageHead } from "@/lib/page-head";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -53,6 +53,7 @@ type DayData = {
 
 function Today() {
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
   const qc = useQueryClient();
   const { uid, season, today, tz, profile } = useBase();
   const sid = season?.id ?? "";
@@ -184,6 +185,10 @@ function Today() {
     });
   }
   function tap(h: UserHabit) {
+    if (h.template?.key === 'detox') {
+      void navigate({ to: '/detox' });
+      return;
+    }
     if (h.kind === "salat") {
       document
         .getElementById("salat-today")
@@ -276,12 +281,12 @@ function Today() {
   return (
     <AppShell todayLayout>
       <header className="today-top">
-        <span className="day-sticker">
+        <Link to="/seasons" className="day-sticker" aria-label={t('batch5.seasons')}>
           <span>{t("todayDesign.day")}</span>{" "}
           <Num>
             {pad(Math.min(Math.max(dayIndex, 1), seasonLength))}/{seasonLength}
           </Num>
-        </span>
+        </Link>
         <div className="today-top-end">
           <StickerButton
             variant="secondary"

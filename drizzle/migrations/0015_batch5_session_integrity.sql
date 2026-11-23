@@ -1,0 +1,17 @@
+CREATE OR REPLACE FUNCTION public.log_lift(_exercise uuid,_weight numeric,_reps integer,_unit text DEFAULT 'kg') RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$
+DECLARE uid uuid:=auth.uid();d date;sid uuid;e record;prev record;kg numeric;res text;beats integer;bw boolean;
+BEGIN IF uid IS NULL THEN RAISE EXCEPTION 'not_authenticated'; END IF;
+d:=public._local_today(uid);SELECT s.id INTO sid FROM seasons s JOIN season_entries se ON se.season_id=s.id AND se.user_id=uid WHERE d BETWEEN s.starts_on AND s.ends_on AND s.status='live' LIMIT 1;IF sid IS NULL THEN RAISE EXCEPTION 'season_closed';END IF;
+PERFORM pg_advisory_xact_lock(hashtextextended(uid::text,15));SELECT * INTO e FROM lift_exercises WHERE id=_exercise;IF NOT FOUND OR _reps IS NULL OR _reps NOT BETWEEN 1 AND 1000 OR _unit IS NULL OR _unit NOT IN('kg','lb') THEN RAISE EXCEPTION 'invalid_set';END IF;
+bw:=e.equipment='bodyweight' OR e.key='pullups';kg:=CASE WHEN bw THEN NULL WHEN _unit='lb' THEN round(_weight/2.2046226218,4) ELSE _weight END;
+IF NOT bw AND(kg IS NULL OR kg<=0 OR kg>1000) THEN RAISE EXCEPTION 'invalid_set';END IF;
+SELECT * INTO prev FROM lift_sets WHERE user_id=uid AND exercise_id=_exercise AND day<d ORDER BY day DESC LIMIT 1;
+res:=CASE WHEN prev.id IS NULL THEN 'match' WHEN coalesce(kg,1)*_reps>coalesce(prev.weight,1)*prev.reps THEN 'beat' WHEN coalesce(kg,1)*_reps=coalesce(prev.weight,1)*prev.reps THEN 'match' ELSE 'under' END;
+INSERT INTO lift_sets(user_id,exercise_id,day,weight,reps,unit,result) VALUES(uid,_exercise,d,kg,_reps,_unit,res) ON CONFLICT(user_id,exercise_id,day) DO UPDATE SET weight=excluded.weight,reps=excluded.reps,unit=excluded.unit,result=excluded.result;
+SELECT least(3,count(*)) INTO beats FROM lift_sets WHERE user_id=uid AND day=d AND result='beat';INSERT INTO day_extras(user_id,day,lift_prs) VALUES(uid,d,beats) ON CONFLICT(user_id,day) DO UPDATE SET lift_prs=excluded.lift_prs;
+PERFORM public._recompute_with_crew(uid,sid,d);RETURN jsonb_build_object('result',res,'beats',beats,'points',beats*5);END $$;
+CREATE FUNCTION public.break_abandoned_detox() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$ BEGIN UPDATE detox_sessions SET ended_at=now(),completed=false WHERE user_id=NEW.user_id AND ended_at IS NULL; RETURN NEW; END $$;
+CREATE TRIGGER end_old_jail BEFORE INSERT ON public.detox_sessions FOR EACH ROW EXECUTE FUNCTION public.break_abandoned_detox();
+CREATE FUNCTION public.recompute_buddy_change() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$ DECLARE sid uuid; BEGIN IF NEW.status='accepted' OR OLD.status='accepted' THEN FOR sid IN SELECT a.season_id FROM season_entries a JOIN season_entries b USING(season_id) WHERE a.user_id=NEW.from_user AND b.user_id=NEW.to_user LOOP PERFORM public.recompute_day(NEW.from_user,sid,public._local_today(NEW.from_user));PERFORM public.recompute_day(NEW.to_user,sid,public._local_today(NEW.to_user));END LOOP; END IF;RETURN NEW;END $$;
+CREATE TRIGGER buddy_bonus_refresh AFTER UPDATE OF status ON public.buddy_requests FOR EACH ROW EXECUTE FUNCTION public.recompute_buddy_change();
+REVOKE ALL ON FUNCTION public.break_abandoned_detox(),public.recompute_buddy_change() FROM PUBLIC,anon,authenticated;
