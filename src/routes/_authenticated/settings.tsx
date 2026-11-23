@@ -1,3 +1,4 @@
+import { NotificationSettings } from "@/components/lezgo/launch/notification-settings";
 import { pageHead } from "@/lib/page-head";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -236,6 +237,7 @@ function SettingsPage() {
           {t("batch4.maxDumbbell", { n: maxWeight, unit: t(`batch4.${profile.units}`) })}
         </StickerButton>
       </div>
+      <NotificationSettings uid={uid} />
       <h2 className="section-label mt-2">{t("batch4.reminders")}</h2>
       <div className="settings-card divided">
         <Switch

@@ -35,6 +35,7 @@ import { Route as AuthenticatedTodayRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedTrailRouteImport } from './routes/_authenticated/trail'
 import { Route as AuthenticatedWrappedRouteImport } from './routes/_authenticated/wrapped'
 import { Route as CCodeRouteImport } from './routes/c.$code'
+import { Route as ApiPublicNotificationsRouteImport } from './routes/api/public/notifications'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -167,6 +168,11 @@ const CCodeRoute = CCodeRouteImport.update({
   path: '/c/$code',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicNotificationsRoute = ApiPublicNotificationsRouteImport.update({
+  id: '/api/public/notifications',
+  path: '/api/public/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -194,6 +200,7 @@ export interface FileRoutesByFullPath {
   '/trail': typeof AuthenticatedTrailRoute
   '/wrapped': typeof AuthenticatedWrappedRoute
   '/c/$code': typeof CCodeRoute
+  '/api/public/notifications': typeof ApiPublicNotificationsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -221,6 +228,7 @@ export interface FileRoutesByTo {
   '/trail': typeof AuthenticatedTrailRoute
   '/wrapped': typeof AuthenticatedWrappedRoute
   '/c/$code': typeof CCodeRoute
+  '/api/public/notifications': typeof ApiPublicNotificationsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -250,6 +258,7 @@ export interface FileRoutesById {
   '/_authenticated/trail': typeof AuthenticatedTrailRoute
   '/_authenticated/wrapped': typeof AuthenticatedWrappedRoute
   '/c/$code': typeof CCodeRoute
+  '/api/public/notifications': typeof ApiPublicNotificationsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -279,6 +288,7 @@ export interface FileRouteTypes {
     | '/trail'
     | '/wrapped'
     | '/c/$code'
+    | '/api/public/notifications'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -306,6 +316,7 @@ export interface FileRouteTypes {
     | '/trail'
     | '/wrapped'
     | '/c/$code'
+    | '/api/public/notifications'
   id:
     | '__root__'
     | '/'
@@ -334,6 +345,7 @@ export interface FileRouteTypes {
     | '/_authenticated/trail'
     | '/_authenticated/wrapped'
     | '/c/$code'
+    | '/api/public/notifications'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -341,6 +353,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   CCodeRoute: typeof CCodeRoute
+  ApiPublicNotificationsRoute: typeof ApiPublicNotificationsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -527,6 +540,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CCodeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/notifications': {
+      id: '/api/public/notifications'
+      path: '/api/public/notifications'
+      fullPath: '/api/public/notifications'
+      preLoaderRoute: typeof ApiPublicNotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -588,6 +608,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   CCodeRoute: CCodeRoute,
+  ApiPublicNotificationsRoute: ApiPublicNotificationsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -1,0 +1,2 @@
+DO $$ DECLARE def text; BEGIN SELECT pg_get_functiondef(oid) INTO def FROM pg_proc WHERE proname='launch_notification_tick' AND pronamespace='public'::regnamespace; EXECUTE replace(def,'JOIN profiles p ON p.id=rr.entity WHERE p.show_on_public_board AND NOT p.is_demo AND p.account_status=''active''','JOIN profiles ranked ON ranked.id=rr.entity WHERE ranked.show_on_public_board AND NOT ranked.is_demo AND ranked.account_status=''active''');END $$;
+REVOKE EXECUTE ON FUNCTION public._check_day_window(uuid,date),public._local_today(uuid) FROM authenticated;

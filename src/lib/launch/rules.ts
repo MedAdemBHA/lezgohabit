@@ -1,0 +1,6 @@
+export const NOTIFICATION_TYPES=['morning','prayer','risk','nudge','crew','buddy','reaction','rank','boss','broadcast','season'] as const;
+export type NotificationType=typeof NOTIFICATION_TYPES[number];
+export const PUSH_HOSTS=['fcm.googleapis.com','updates.push.services.mozilla.com','web.push.apple.com','wns.windows.com','notify.windows.com'];
+export function validPushEndpoint(value:string){try{const u=new URL(value);return u.protocol==='https:'&&!u.port&&!u.username&&!u.password&&PUSH_HOSTS.some(h=>u.hostname===h||u.hostname.endsWith('.'+h));}catch{return false;}}
+export function offlineRefused(host:string,prod:boolean,framed:boolean,off:boolean){host=host.toLowerCase();return !prod||framed||off||host==='localhost'||host==='lovableproject.com'||host.endsWith('.lovableproject.com')||host==='lovableproject-dev.com'||host.endsWith('.lovableproject-dev.com')||host==='beta.lovable.dev'||host.endsWith('.beta.lovable.dev')||host==='project--0dad2404-9c86-4c0a-a8d3-28d08fd1c00c-dev.lovable.app'||(/\.(lovable\.app|gpt-eng\.com|gptengineer\.run)$/.test(host)&&/^(?:id-preview|preview)(?:-[a-z0-9]+)?--.+$/.test(host.split('.')[0]??''));}
+export function coalesce<T extends {uid:string;habit:string;day:string}>(rows:T[],row:T){return [...rows.filter(r=>r.uid!==row.uid||r.habit!==row.habit||r.day!==row.day),row];}

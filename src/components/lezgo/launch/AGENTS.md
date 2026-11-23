@@ -1,0 +1,6 @@
+- Use a dedicated messaging worker at /push-sw.js with /push/ scope; it must never cache app pages.
+- Offline shell registration goes only through launch/offline.ts and refuses development, embedded and verified preview hosts.
+- Store offline goes by user, habit and original day; sync only for the verified owner through the existing scoring RPC, retaining transient failures and rejecting expired days.
+- Generate private inbox events in database triggers and timed service-only functions; validate push hosts before server fetch to prevent private-network requests.
+- Scheduled delivery uses one authenticated five-minute callback; timed generation is separate from push signing so the inbox keeps working without VAPID keys.
+- Prayer reminders and displayed timings share owner/day/city/method cache records; real API timings use Tunis only as the explicitly requested missing-city default.

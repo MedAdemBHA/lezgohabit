@@ -669,3 +669,11 @@
 @media(prefers-reduced-motion:reduce){.seal-pop,.badge-unlock{animation:none;}}
 .capsule-sealed {min-width:0;width:100%;}.capsule-sealed h1,.moment-inner h1 {min-width:0;width:100%;max-width:100%;}
 .signature-page>button:disabled {border-style:dashed;color:var(--muted-foreground);background:transparent;box-shadow:none;}
+
+/* Launch: keyboard focus and pending states reuse the Sticker tokens. */
+:where(button,a,input,select,textarea):focus-visible {outline:3px solid var(--ink);outline-offset:4px;}
+.lights-page :where(button,a,input,textarea):focus-visible {outline-color:var(--yellow);}
+.app-status-compact {display:flex;align-items:center;flex-shrink:0;}
+.app-status-compact .app-inbox-button {min-width:44px;min-height:44px;padding:0;}
+.today-top-end {flex-wrap:wrap;justify-content:flex-end;}
+@media(prefers-reduced-motion:reduce) {*,*::before,*::after {animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important;}}

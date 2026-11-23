@@ -260,28 +260,7 @@ export function TodayMoments({
             <footer>
               {moment === "first" ? (
                 <>
-                  <StickerButton
-                    block
-                    variant="secondary"
-                    onClick={async () => {
-                      try {
-                        if (navigator.share)
-                          await navigator.share({
-                            title: "lezgo",
-                            text: `${t("batch8.dayOne")} ${t("batch8.fire")}`,
-                          });
-                        else
-                          await navigator.clipboard.writeText(
-                            `${t("batch8.dayOne")} ${t("batch8.fire")}`,
-                          );
-                      } catch {
-                        /* cancelled */
-                      }
-                    }}
-                  >
-                    <Share2 />
-                    {t("batch8.share")}
-                  </StickerButton>
+                  <Link to="/small-wins" onClick={()=>void dismiss()}><StickerButton block variant="secondary"><Share2 />{t("batch8.share")}</StickerButton></Link>
                   <StickerButton block onClick={() => void dismiss()}>
                     {t("batch8.keepGoing")}
                   </StickerButton>

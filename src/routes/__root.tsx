@@ -6,6 +6,7 @@ import { useEffect, type ReactNode } from "react";
 import { I18nextProvider } from "react-i18next";
 import { Toaster } from "sonner";
 
+import { StickerButton } from "@/components/lezgo/ui";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import i18n, { applyLang, LANG_KEY } from "@/lib/i18n";
@@ -16,6 +17,7 @@ function NotFoundComponent() {
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="num text-7xl font-bold text-foreground">404</h1>
+        <p className="mt-4 text-lg font-bold">{i18n.t("batch9.notFound")}</p>
         <div className="mt-6">
           <Link to="/" className="inline-flex min-h-[48px] items-center rounded-[16px] bg-ink px-5 font-extrabold text-lime sticker-border shadow-hard-orange">
             lezgo
@@ -35,8 +37,8 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
       <div className="max-w-md text-center">
         <h1 className="text-xl font-semibold tracking-tight text-foreground">{i18n.t("common.error")}</h1>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
-          <button onClick={() => { router.invalidate(); reset(); }}
-            className="inline-flex min-h-[48px] items-center rounded-[16px] bg-ink px-5 font-extrabold text-lime sticker-border">↻</button>
+          <StickerButton aria-label={i18n.t("batch9.retry")} onClick={() => { router.invalidate(); reset(); }}
+            className="inline-flex min-h-[48px] items-center rounded-[16px] bg-ink px-5 font-extrabold text-lime sticker-border">↻</StickerButton>
           <a href="/" className="inline-flex min-h-[48px] items-center rounded-[16px] bg-card px-5 font-extrabold sticker-border">lezgo</a>
         </div>
       </div>
@@ -62,7 +64,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Alexandria:wght@500;600;700;800&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Space+Mono:wght@400;700&display=swap" },
       { rel: "stylesheet", href: appCss },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", href: "/icons/icon-192.png", type: "image/png" },
+      { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "apple-touch-icon", href: "/icons/icon-192.png" },
     ],
   }),
   shellComponent: RootShell,

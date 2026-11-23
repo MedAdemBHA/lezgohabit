@@ -1,5 +1,8 @@
+import { AppStatus } from "@/components/lezgo/app-status";
+import { StickerLoading } from "@/components/lezgo/launch/loading";
 import { GhostBar } from "@/components/lezgo/sharing/ghost-bar";
 import { summaryQuery } from "@/lib/community-data";
+import { queueGo } from "@/lib/launch/offline";
 import { pageHead } from "@/lib/page-head";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -159,6 +162,7 @@ function Today() {
       .catch(() => {})
       .then(async () => {
         try {
+          if (!navigator.onLine) { queueGo({uid,habit:h.id,day:today,value,detail}); toast(t("batch9.queued")); return; }
           const { data: serverScore, error } = await supabase.rpc("checkin_upsert", {
             _user_habit_id: h.id,
             _value: value,
@@ -184,6 +188,7 @@ function Today() {
           void qc.invalidateQueries({queryKey:["signature"]});
           void qc.invalidateQueries({queryKey:["profileSummary"]});
         } catch (e) {
+          if (!navigator.onLine) { queueGo({uid,habit:h.id,day:today,value,detail}); toast(t("batch9.queued")); return; }
           toast(errKey(e) === "day_closed" ? t("today.closed") : t("common.error"));
           await qc.invalidateQueries({ queryKey: dq.queryKey });
         } finally {
@@ -286,7 +291,7 @@ function Today() {
   if (!season || !profile)
     return (
       <AppShell todayLayout>
-        <p className="py-10 text-center">{t("common.loading")}</p>
+        <StickerLoading />
       </AppShell>
     );
   return (
@@ -299,6 +304,7 @@ function Today() {
           </Num>
         </Link>
         <div className="today-top-end">
+          <AppStatus profile={profile} compact />
           <StickerButton
             variant="secondary"
             className="today-settings"

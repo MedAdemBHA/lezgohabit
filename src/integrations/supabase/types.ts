@@ -1398,6 +1398,115 @@ export type Database = {
           },
         ]
       }
+      notification_preferences: {
+        Row: {
+          enabled: Json
+          push_enabled: boolean
+          user_id: string
+        }
+        Insert: {
+          enabled?: Json
+          push_enabled?: boolean
+          user_id: string
+        }
+        Update: {
+          enabled?: Json
+          push_enabled?: boolean
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notification_rank_state: {
+        Row: {
+          day: string
+          rank: number
+          season_id: string
+          user_id: string
+        }
+        Insert: {
+          day: string
+          rank: number
+          season_id: string
+          user_id: string
+        }
+        Update: {
+          day?: string
+          rank?: number
+          season_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_rank_state_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notification_rank_state_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          attempts: number
+          created_at: string
+          event_key: string
+          id: string
+          next_attempt_at: string
+          push_sent_at: string | null
+          read_at: string | null
+          type: string
+          url: string
+          user_id: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          event_key: string
+          id?: string
+          next_attempt_at?: string
+          push_sent_at?: string | null
+          read_at?: string | null
+          type: string
+          url?: string
+          user_id: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          event_key?: string
+          id?: string
+          next_attempt_at?: string
+          push_sent_at?: string | null
+          read_at?: string | null
+          type?: string
+          url?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       nudges: {
         Row: {
           created_at: string
@@ -1581,6 +1690,41 @@ export type Database = {
           },
         ]
       }
+      prayer_cache: {
+        Row: {
+          city: string
+          created_at: string
+          day: string
+          method: number
+          times: Json
+          user_id: string
+        }
+        Insert: {
+          city: string
+          created_at?: string
+          day: string
+          method: number
+          times: Json
+          user_id: string
+        }
+        Update: {
+          city?: string
+          created_at?: string
+          day?: string
+          method?: number
+          times?: Json
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prayer_cache_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           account_status: string
@@ -1682,6 +1826,41 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          id: string
+          p256dh: string
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          p256dh: string
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          p256dh?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reports: {
         Row: {
@@ -2130,6 +2309,10 @@ export type Database = {
         Returns: number
       }
       _local_today: { Args: { _user_id: string }; Returns: string }
+      _notify: {
+        Args: { _key: string; _type: string; _uid: string; _url?: string }
+        Returns: undefined
+      }
       _rank_rows: {
         Args: {
           _country: string
@@ -2254,6 +2437,27 @@ export type Database = {
         Args: { _key: string; _season_id: string }
         Returns: boolean
       }
+      claim_notification_pushes: {
+        Args: never
+        Returns: {
+          attempts: number
+          created_at: string
+          event_key: string
+          id: string
+          next_attempt_at: string
+          push_sent_at: string | null
+          read_at: string | null
+          type: string
+          url: string
+          user_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "notifications"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       close_my_day: {
         Args: { _mood: string; _tomorrow?: string }
         Returns: undefined
@@ -2311,6 +2515,7 @@ export type Database = {
         Returns: undefined
       }
       detox_overview: { Args: never; Returns: Json }
+      enqueue_timed_notifications: { Args: never; Returns: number }
       featured_creator_challenges: { Args: never; Returns: Json }
       handle_available: { Args: { _handle: string }; Returns: boolean }
       has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
@@ -2324,6 +2529,7 @@ export type Database = {
         Args: { _mode?: string; _season_id: string }
         Returns: undefined
       }
+      launch_notification_tick: { Args: never; Returns: number }
       leaderboard: {
         Args: {
           _country_code?: string
@@ -2389,6 +2595,10 @@ export type Database = {
       }
       register_proof_fingerprint: {
         Args: { _fingerprint: string; _path: string }
+        Returns: undefined
+      }
+      register_push: {
+        Args: { _auth: string; _endpoint: string; _p256dh: string }
         Returns: undefined
       }
       register_saved_proof: {

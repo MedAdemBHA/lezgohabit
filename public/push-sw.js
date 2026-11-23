@@ -1,0 +1,3 @@
+// Messaging only: no navigation or app-shell caching.
+self.addEventListener('push',event=>{let data={title:'lezgo',body:'',url:'/today'};try{data={...data,...event.data.json()};}catch{}event.waitUntil(self.registration.showNotification(data.title,{body:data.body,icon:'/icons/icon-192.png',badge:'/icons/icon-192.png',tag:data.tag,data:{url:data.url}}));});
+self.addEventListener('notificationclick',event=>{event.notification.close();let path='/today';try{const target=new URL(event.notification.data?.url,self.location.origin);if(target.origin===self.location.origin)path=target.pathname+target.search;}catch{}event.waitUntil(clients.openWindow(path));});

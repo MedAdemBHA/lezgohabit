@@ -73,7 +73,8 @@ function Onboarding() {
       else await supabase.rpc("join_season", { _season_id: season.id, _mode: "solo" }).throwOnError();
       sessionStorage.removeItem("lezgo_pending_code");
       await qc.invalidateQueries();
-      void nav({ to: "/capsule" });
+      const invite=sessionStorage.getItem("lezgo_challenge_invite");
+      if(invite&&/^[A-Z0-9]{6}$/.test(invite)){sessionStorage.removeItem("lezgo_challenge_invite");void nav({to:"/c/$code",params:{code:invite}});}else void nav({ to: "/capsule" });
     } catch (e) {
       const k = errKey(e);
       toast(k ? t(`crew.err_${k}`, { defaultValue: t("common.error") }) : t("common.error"));

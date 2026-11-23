@@ -28,6 +28,7 @@ function GoogleG() {
 function AuthPage() {
   const { t, i18n } = useTranslation();
   const nav = useNavigate();
+  const [adult, setAdult] = useState(false);
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -36,27 +37,30 @@ function AuthPage() {
   const countries = useQuery({ queryKey: ["participating-countries"], queryFn: async () => { const { data, error } = await supabase.rpc("participating_countries"); if (error) throw error; return data; }, staleTime: 60_000 });
 
   useEffect(() => {
-    const go=()=>{const code=sessionStorage.getItem('lezgo_challenge_invite');if(code&&/^[A-Z0-9]{6}$/.test(code)){sessionStorage.removeItem('lezgo_challenge_invite');void nav({to:'/c/$code',params:{code},replace:true});}else void nav({to:'/today',replace:true});};
+    const fromLink=new URLSearchParams(window.location.search).get("code");
+    if(fromLink&&/^[A-Z0-9]{6}$/.test(fromLink))sessionStorage.setItem("lezgo_challenge_invite",fromLink);
+    const go=()=>{const code=sessionStorage.getItem('lezgo_challenge_invite');if(code&&/^[A-Z0-9]{6}$/.test(code)){void nav({to:'/c/$code',params:{code},replace:true});}else void nav({to:'/today',replace:true});};
     void supabase.auth.getUser().then(({ data }) => { if (data.user) go(); });
     const { data } = supabase.auth.onAuthStateChange((_e, s) => { if (s) go(); });
     return () => data.subscription.unsubscribe();
   }, [nav]);
 
   async function google() {
+    if (!adult) return;
     setBusy(true);
     const r = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin + "/auth" });
     if (r.error) { toast(t("common.error")); setBusy(false); return; }
     if (r.redirected) return;
     const code=sessionStorage.getItem("lezgo_challenge_invite");
-    if(code&&/^[A-Z0-9]{6}$/.test(code)) {sessionStorage.removeItem("lezgo_challenge_invite");void nav({to:"/c/$code",params:{code}});} else void nav({ to: "/today", replace: true });
+    if(code&&/^[A-Z0-9]{6}$/.test(code)) {void nav({to:"/c/$code",params:{code}});} else void nav({ to: "/today", replace: true });
   }
   async function magic(e: React.FormEvent) {
     e.preventDefault();
-    if (!email) return;
+    if (!email || !adult) return;
     setBusy(true);
-    const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.origin + "/auth" } });
+    const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.origin + "/auth" + (sessionStorage.getItem("lezgo_challenge_invite") ? "?code=" + encodeURIComponent(sessionStorage.getItem("lezgo_challenge_invite") ?? "") : "") } });
     setBusy(false);
-    if (error) { toast(error.message); return; }
+    if (error) { toast(t("common.error")); return; }
     setSent(true);
   }
 
@@ -68,8 +72,9 @@ function AuthPage() {
       <p className="text-[16px] font-semibold leading-[1.5] text-design-body">{t("design.sub")}</p>
       <div className="flex items-center gap-3"><div className="flex shrink-0" aria-hidden="true">{([ ["bg-lime", "NR"], ["bg-pink", "SK"], ["bg-yellow", "YB"], ["bg-teal", "AK"] ] as const).map(([color, initials],i) => <span key={color} className={`grid size-[34px] place-items-center rounded-full text-[11px] font-extrabold sticker-border ${color} ${i ? "-ms-2.5" : ""}`}>{initials}</span>)}</div><p className="text-[13px] font-bold">{countries.data !== undefined ? t("design.proof", { n: countries.data }) : t("common.loading")}</p></div>
       <div className="login-actions">
-        <StickerButton block variant="secondary" className="google-button" onClick={google} disabled={busy}><GoogleG />{t("auth.google")}</StickerButton>
-        <StickerButton block variant="ghost" className="email-button" onClick={() => setEmailOpen(true)} disabled={busy}><Mail size={20} strokeWidth={2.5} />{t("design.email")}</StickerButton>
+        <label className="flex min-h-11 items-center gap-3 text-[14px] font-bold"><input type="checkbox" checked={adult} onChange={e=>setAdult(e.target.checked)} className="size-5 accent-ink"/>{t("batch9.adult")}</label>
+        <StickerButton block variant="secondary" className="google-button" onClick={google} disabled={busy || !adult}><GoogleG />{t("auth.google")}</StickerButton>
+        <StickerButton block variant="ghost" className="email-button" onClick={() => setEmailOpen(true)} disabled={busy || !adult}><Mail size={20} strokeWidth={2.5} />{t("design.email")}</StickerButton>
         <p className="text-center text-[12px] font-semibold leading-[1.5] text-design-muted">{t("design.legal")} <StickerButton variant="ghost" className="legal-link" onClick={() => setLegal("terms")}>{t("design.terms")}</StickerButton> {t("design.andWord")} <StickerButton variant="ghost" className="legal-link" onClick={() => setLegal("privacy")}>{t("design.privacy")}</StickerButton></p>
       </div>
       <BottomSheet open={emailOpen} onClose={() => setEmailOpen(false)} title={t("design.email")}>{sent ? <p className="sticker bg-lime p-4 font-bold">{t("auth.linkSent")}</p> : <form onSubmit={magic} className="space-y-4"><Field label={t("auth.email")}><input dir="ltr" type="email" autoComplete="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder={t("auth.emailPh")} className={inputCls} /></Field><StickerButton block type="submit" disabled={busy}>{t("design.email")}</StickerButton></form>}</BottomSheet>

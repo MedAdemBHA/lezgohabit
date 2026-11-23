@@ -8,11 +8,13 @@ import { LezgoMark } from "./brand";
 import { Avatar } from "./ui";
 import { TabIcon } from "@/components/icons/tab-icons";
 import { AppStatus } from "./app-status";
+import { OfflineStatus } from "./launch/offline-status";
+import { daysBetween } from "@/lib/time";
 import { BadgeSignals } from "./signature/moments";
 
 export function AppShell({ children, hideTabs, todayLayout = false }: { children: ReactNode; hideTabs?: boolean; todayLayout?: boolean }) {
   const { t, i18n } = useTranslation();
-  const { profile } = useBase();
+  const { profile, season } = useBase();
   const loc = useLocation();
   const applied = useRef(false);
   useEffect(() => {
@@ -28,7 +30,8 @@ export function AppShell({ children, hideTabs, todayLayout = false }: { children
   ];
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-[440px] flex-col bg-background">
-      <AppStatus profile={profile} />
+      <AppStatus profile={profile} hideBell={loc.pathname==="/today"} />
+      {profile && <OfflineStatus uid={profile.id} day={season ? Math.max(1, daysBetween(season.starts_on, new Intl.DateTimeFormat("en-CA",{timeZone:profile.timezone,year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date()))+1) : 1} />}
       <BadgeSignals />
       {!todayLayout && <header className="sticky top-0 z-30 flex items-center justify-between bg-background/95 px-4 py-3 backdrop-blur">
         <Link to="/today" aria-label="lezgo"><LezgoMark size={40} /></Link>

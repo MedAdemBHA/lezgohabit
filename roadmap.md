@@ -54,3 +54,15 @@ Club/Company remain contact-only as requested; Teach It records the author’s d
 - [x] Connect Today, Profile, onboarding and Wrapped; show earned badge notifications.
 - [x] Verify signed-in saving, time locks, permissions and mobile/RTL; save changes.
 23:00 reminders are delivered inside the app only. Comeback and trophy eligibility use saved server results; their future-date automatic display was not exercised end-to-end.
+
+## Batch 9 — Final flow and launch pass
+- [x] Connect private notifications, per-type preferences and authenticated five-minute delivery.
+- [x] Add install icons, guarded offline shell and owner-scoped check-in queue; live queue sync verified.
+- [x] Add age checkbox, retained invitation handoff, optional capsule and daily prayer cache.
+- [x] Verify demo seed, offline save/read-back, inbox and callback; 50 tests pass, four-language 390px pages and 1440px admin have no overflow.
+- [x] Document external launch requirements and save changes.
+- [ ] End-to-end push receipt: requires VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY and VAPID_SUBJECT in Project Settings → Secrets, then publish.
+- [ ] Installed offline cold-start and full Google/email first-open verification: require published app/device and provider completion; preview intentionally refuses shell workers.
+- [ ] Custom domain joinlezgo.com: requires domain ownership and DNS connection.
+Remaining limitations: shared demo email immutability remains unverified; future trophy/comeback automatic display requires future-date exercise. Prayer reminders may arrive up to five minutes after the ten-minute-before threshold. No app-store/native splash is supplied; standalone launch uses manifest colors/icons.
+

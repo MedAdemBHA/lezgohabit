@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -140,6 +140,7 @@ function CapsulePage() {
   const date = season ? formatDayMonth(season.ends_on, i18n.language) : "—";
   return (
     <SignatureFrame>
+      <Link to="/today"><StickerButton block variant="ghost">{t("batch9.skip")}</StickerButton></Link>
       <span className="capsule-day num">{t("batch8.day", { n: 1 })}</span>
       {c?.sealed ? (
         <section className="capsule-sealed">

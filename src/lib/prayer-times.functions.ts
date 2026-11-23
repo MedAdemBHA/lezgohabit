@@ -17,10 +17,11 @@ export const getPrayerTimes = createServerFn({ method: "GET" })
       .select("city,country_code,timezone")
       .eq("id", context.userId)
       .single();
-    if (error || !profile?.city?.trim()) return { times: null, status: "missing_city" as const };
+    if (error || !profile) return { times: null, status: "missing_city" as const };
     const [year, month, day] = data.day.split("-");
     const url = new URL(`https://api.aladhan.com/v1/timingsByCity/${day}-${month}-${year}`);
-    url.searchParams.set("city", profile.city);
+    const city = profile.city?.trim() || "Tunis";
+    url.searchParams.set("city", city);
     url.searchParams.set("country", profile.country_code);
     const { data: preferences } = await context.supabase
       .from("user_preferences")
@@ -33,6 +34,9 @@ export const getPrayerTimes = createServerFn({ method: "GET" })
       "method",
       String(preferences?.prayer_method ?? (profile.country_code === "TN" ? 18 : 3)),
     );
+    const method = preferences?.prayer_method ?? (profile.country_code === "TN" ? 18 : 3);
+    const {data: cached} = await context.supabase.from("prayer_cache").select("times,city,method").eq("user_id",context.userId).eq("day",data.day).maybeSingle();
+    if (cached?.city===city && cached.method===method) return {times:cached.times as Record<string,string>,status:"ready" as const};
     try {
       const response = await fetch(url, { signal: AbortSignal.timeout(12000) });
       if (!response.ok) return { times: null, status: "unavailable" as const };
@@ -44,6 +48,7 @@ export const getPrayerTimes = createServerFn({ method: "GET" })
         const time = body.data.timings[key]?.match(/^\d{2}:\d{2}/)?.[0];
         if (time) times[name] = time;
       }
+      await context.supabase.from("prayer_cache").upsert({user_id:context.userId,day:data.day,city,method,times});
       return { times, status: "ready" as const };
     } catch {
       return { times: null, status: "unavailable" as const };
