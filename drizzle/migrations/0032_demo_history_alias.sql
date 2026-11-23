@@ -1,0 +1,1 @@
+DO $$ DECLARE f text; BEGIN SELECT pg_get_functiondef('public.admin_seed_demo(jsonb,boolean)'::regprocedure) INTO f;f:=replace(f,'sd+j,90-j*3-g','sd+gday,90-gday*3-g');f:=replace(f,'CROSS JOIN generate_series(0,13)j;','CROSS JOIN generate_series(0,13)gday;');EXECUTE f;END $$;

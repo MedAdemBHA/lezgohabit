@@ -1,0 +1,1 @@
+DO $$ DECLARE f text; BEGIN SELECT pg_get_functiondef('public.admin_seed_demo(jsonb,boolean)'::regprocedure) INTO f; f:=replace(f,'''accepted'',true),(ids[11],ids[12]','''active'',true),(ids[11],ids[12]');f:=replace(f,',36,51,''accepted'',true)',',36,51,''active'',true)'); EXECUTE f; END $$;

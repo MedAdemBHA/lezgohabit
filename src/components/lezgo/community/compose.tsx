@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { fingerprintProof } from "@/lib/admin.functions";
 import { createPortal } from "react-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
@@ -25,6 +27,7 @@ export function Compose({
   const { t, i18n } = useTranslation();
   const { uid, season } = useBase();
   const qc = useQueryClient();
+  const proofFingerprint = useServerFn(fingerprintProof);
   const root = useRef<HTMLDivElement>(null);
   const previousFocus = useRef<HTMLElement | null>(null);
   const habits = useQuery({
@@ -98,6 +101,7 @@ export function Compose({
           .from("proofs")
           .upload(path, photo, { contentType: "image/jpeg" });
         if (uploaded.error) throw uploaded.error;
+        await proofFingerprint({ data: { path } });
       }
       const { error } = await supabase.rpc("create_post", {
         _season_id: season.id,

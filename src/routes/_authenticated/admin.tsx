@@ -10,7 +10,7 @@ import { Avatar,StickerButton,Switch,BottomSheet,Num,inputCls } from '@/componen
 import { AdminOverview } from '@/components/lezgo/admin/charts';
 import { AdminEditor,type EditorKind } from '@/components/lezgo/admin/editor';
 import { adminQuery,adminWrite,type AdminRow } from '@/lib/admin-data';
-import { adminDemo } from '@/lib/admin.functions';
+import { adminDemo,adminAccount } from '@/lib/admin.functions';
 import { ADMIN_SECTIONS,type AdminSection,requiresReason } from '@/lib/admin-rules';
 import { applyLang,loc } from '@/lib/i18n';
 import { pageHead } from '@/lib/page-head';
@@ -19,7 +19,8 @@ export const Route=createFileRoute('/_authenticated/admin')({validateSearch:(sea
 const str=(r:AdminRow,k:string)=>String(r[k]??'');
 function AdminPage(){const {t,i18n}=useTranslation();const section=Route.useSearch().section??'overview';const nav=useNavigate();const qc=useQueryClient();const [drawer,setDrawer]=useState(false);const [search,setSearch]=useState('');const [page,setPage]=useState(0);const [target,setTarget]=useState<string|null>(null);const [busy,setBusy]=useState(false);const [editor,setEditor]=useState<{kind:EditorKind;row?:AdminRow}|null>(null);const [pending,setPending]=useState<{action:string;id:string|null;payload:AdminRow;demo?:boolean}|null>(null);const [reason,setReason]=useState('');const [menu,setMenu]=useState<string|null>(null);const [detail,setDetail]=useState<AdminRow|null>(null);const [word,setWord]=useState('');const [wordLang,setWordLang]=useState('en');const q=useQuery(adminQuery(section,search,page,target));const seedFn=useServerFn(adminDemo);
  async function refresh(){await qc.invalidateQueries();}
- async function save(action:string,id:string|null,payload:AdminRow={}){setBusy(true);try{await adminWrite(action,id,payload);setEditor(null);setPending(null);setMenu(null);toast.success(t('batch7.saved'));await refresh();}catch(e){toast.error((e as {message?:string})?.message?.includes('reason_required')?t('batch7.noReason'):t('batch7.actionFailed'));}finally{setBusy(false);}}
+ const accountFn=useServerFn(adminAccount);
+ async function save(action:string,id:string|null,payload:AdminRow={}){setBusy(true);try{if(id&&(action==='ban'||action==='unban'||action==='delete_user'))await accountFn({data:{action,user:id}});else await adminWrite(action,id,payload);setEditor(null);setPending(null);setMenu(null);toast.success(t('batch7.saved'));await refresh();}catch(e){toast.error((e as {message?:string})?.message?.includes('reason_required')?t('batch7.noReason'):t('batch7.actionFailed'));}finally{setBusy(false);}}
  async function demoAction(action:'seed'|'clear'|'reseed'){setBusy(true);try{await seedFn({data:{action}});toast.success(t(`batch7.${action==='clear'?'cleared':'seeded'}`));setPending(null);await refresh();}catch{toast.error(t('batch7.actionFailed'));}finally{setBusy(false);}}
  function confirm(action:string,id:string|null,payload:AdminRow={},demo=false){setReason('');setPending({action,id,payload,demo});}
  function change(s:AdminSection){setPage(0);setTarget(null);setSearch('');setMenu(null);setDrawer(false);void nav({to:'/admin',search:{section:s}});}

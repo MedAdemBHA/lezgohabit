@@ -86,6 +86,38 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_streak_resets: {
+        Row: {
+          day: string
+          is_demo: boolean
+          reason: string
+          season_id: string
+          user_id: string
+        }
+        Insert: {
+          day: string
+          is_demo?: boolean
+          reason: string
+          season_id: string
+          user_id: string
+        }
+        Update: {
+          day?: string
+          is_demo?: boolean
+          reason?: string
+          season_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_streak_resets_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       admin_suspicious_activity: {
         Row: {
           created_at: string
@@ -1987,6 +2019,7 @@ export type Database = {
         Returns: undefined
       }
       _require_admin: { Args: never; Returns: string }
+      _require_feature: { Args: { _key: string }; Returns: undefined }
       _sync_boss: { Args: { _bid: string; _uid: string }; Returns: undefined }
       activate_challenge: { Args: { _id?: string }; Returns: undefined }
       active_season: { Args: never; Returns: Json }
@@ -1995,6 +2028,7 @@ export type Database = {
         Returns: Json
       }
       admin_authorized: { Args: never; Returns: boolean }
+      admin_cleanup_account: { Args: { _user: string }; Returns: undefined }
       admin_clear_demo: { Args: never; Returns: Json }
       admin_dashboard: {
         Args: {
@@ -2113,6 +2147,7 @@ export type Database = {
         Returns: undefined
       }
       detox_overview: { Args: never; Returns: Json }
+      featured_creator_challenges: { Args: never; Returns: Json }
       handle_available: { Args: { _handle: string }; Returns: boolean }
       has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
       hit_boss: {

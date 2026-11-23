@@ -1,0 +1,1 @@
+DO $$ DECLARE f text; BEGIN SELECT pg_get_functiondef('public.admin_seed_demo(jsonb,boolean)'::regprocedure) INTO f; f:=replace(f,'ARRAY[''dumbbell'',''pullup'',''bodyweight'']','ARRAY[''dumbbells'',''pullup'',''bodyweight'']'); EXECUTE f; END $$;

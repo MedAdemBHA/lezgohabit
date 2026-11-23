@@ -1,0 +1,6 @@
+CREATE FUNCTION public.guard_profile_privileges() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$ BEGIN IF auth.uid() IS NOT NULL AND NOT EXISTS(SELECT 1 FROM public.profiles WHERE id=auth.uid() AND is_admin AND NOT is_demo) AND (NEW.is_admin IS DISTINCT FROM OLD.is_admin OR NEW.is_demo IS DISTINCT FROM OLD.is_demo OR NEW.demo_today IS DISTINCT FROM OLD.demo_today OR NEW.account_status IS DISTINCT FROM OLD.account_status) THEN RAISE EXCEPTION 'forbidden'; END IF; RETURN NEW; END $$;
+CREATE TRIGGER profile_privilege_guard BEFORE UPDATE ON public.profiles FOR EACH ROW EXECUTE FUNCTION public.guard_profile_privileges();
+REVOKE ALL ON FUNCTION public.guard_profile_privileges() FROM PUBLIC,anon,authenticated;
+UPDATE public.profiles SET is_admin=false WHERE is_demo;
+CREATE FUNCTION public.featured_creator_challenges() RETURNS jsonb LANGUAGE sql STABLE SECURITY DEFINER SET search_path=public AS $$ SELECT coalesce(jsonb_agg(jsonb_build_object('name',name,'code',code,'days',days)),'[]') FROM public.challenges WHERE approved AND featured AND public_board AND NOT archived AND NOT is_demo $$;
+REVOKE ALL ON FUNCTION public.featured_creator_challenges() FROM PUBLIC; GRANT EXECUTE ON FUNCTION public.featured_creator_challenges() TO anon,authenticated;

@@ -70,3 +70,11 @@ export const fingerprintProof=createServerFn({method:'POST'}).middleware([requir
  const {supabaseAdmin}=await import('@/integrations/supabase/client.server');
  const {error:writeError}=await supabaseAdmin.rpc('register_saved_proof',{_path:data.path,_fingerprint:fingerprint,_user:context.userId});if(writeError)throw new Error('proof_unavailable');return {ok:true};
 });
+
+export const adminAccount=createServerFn({method:'POST'}).middleware([requireSupabaseAuth]).inputValidator((v:unknown)=>z.object({action:z.enum(['ban','unban','delete_user']),user:z.string().uuid()}).parse(v)).handler(async({data,context})=>{
+ const {data:allowed,error}=await context.supabase.rpc('admin_authorized');if(error||allowed!==true)throw new Error('forbidden');
+ const mutation=data.action==='delete_user'?await context.supabase.rpc('admin_cleanup_account',{_user:data.user}):await context.supabase.rpc('admin_action',{_action:data.action,_target:data.user});if(mutation.error)throw new Error('user_protected');
+ const {supabaseAdmin}=await import('@/integrations/supabase/client.server');
+ const result=data.action==='delete_user'?await supabaseAdmin.auth.admin.deleteUser(data.user):await supabaseAdmin.auth.admin.updateUserById(data.user,{ban_duration:data.action==='ban'?'876000h':'none'});
+ if(result.error)throw new Error('account_update_incomplete');return {ok:true};
+});

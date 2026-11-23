@@ -1,0 +1,2 @@
+ALTER TABLE public.profiles DROP CONSTRAINT profiles_handle_check;
+ALTER TABLE public.profiles ADD CONSTRAINT profiles_handle_check CHECK(handle ~ '^[a-z0-9_]{3,20}$' OR (is_demo AND handle ~ '^[a-z0-9_.]{3,20}$'));
