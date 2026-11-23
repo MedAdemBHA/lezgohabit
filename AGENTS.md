@@ -69,3 +69,4 @@ use the editor.
 - Admin mutations use audited, allowlisted RPCs with server-checked access; roles remain protected separately from editable profiles.
 - Demo history uses isolated sample seasons and a server-owned simulated clock; sample clearing never touches official seasons or real players.
 - Shared demo sign-in and saved-proof hashing use authenticated/guarded server functions; credentials and salted device/network fingerprints never reach browser code.
+- Signature RPCs own capsule time locks and Moment claims to prevent premature reads and repeated displays.

@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedBossRouteImport } from './routes/_authenticated/boss'
 import { Route as AuthenticatedBuddiesRouteImport } from './routes/_authenticated/buddies'
+import { Route as AuthenticatedCapsuleRouteImport } from './routes/_authenticated/capsule'
 import { Route as AuthenticatedCommunityRouteImport } from './routes/_authenticated/community'
 import { Route as AuthenticatedCreateChallengeRouteImport } from './routes/_authenticated/create-challenge'
 import { Route as AuthenticatedCrewRouteImport } from './routes/_authenticated/crew'
@@ -22,6 +23,7 @@ import { Route as AuthenticatedCrewDetailsRouteImport } from './routes/_authenti
 import { Route as AuthenticatedDetoxRouteImport } from './routes/_authenticated/detox'
 import { Route as AuthenticatedHabitsRouteImport } from './routes/_authenticated/habits'
 import { Route as AuthenticatedLiftRouteImport } from './routes/_authenticated/lift'
+import { Route as AuthenticatedLightsOutRouteImport } from './routes/_authenticated/lights-out'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedRanksRouteImport } from './routes/_authenticated/ranks'
@@ -30,6 +32,7 @@ import { Route as AuthenticatedSeasonsRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedSmallWinsRouteImport } from './routes/_authenticated/small-wins'
 import { Route as AuthenticatedTodayRouteImport } from './routes/_authenticated/today'
+import { Route as AuthenticatedTrailRouteImport } from './routes/_authenticated/trail'
 import { Route as AuthenticatedWrappedRouteImport } from './routes/_authenticated/wrapped'
 import { Route as CCodeRouteImport } from './routes/c.$code'
 
@@ -60,6 +63,11 @@ const AuthenticatedBossRoute = AuthenticatedBossRouteImport.update({
 const AuthenticatedBuddiesRoute = AuthenticatedBuddiesRouteImport.update({
   id: '/buddies',
   path: '/buddies',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCapsuleRoute = AuthenticatedCapsuleRouteImport.update({
+  id: '/capsule',
+  path: '/capsule',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedCommunityRoute = AuthenticatedCommunityRouteImport.update({
@@ -97,6 +105,11 @@ const AuthenticatedHabitsRoute = AuthenticatedHabitsRouteImport.update({
 const AuthenticatedLiftRoute = AuthenticatedLiftRouteImport.update({
   id: '/lift',
   path: '/lift',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedLightsOutRoute = AuthenticatedLightsOutRouteImport.update({
+  id: '/lights-out',
+  path: '/lights-out',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
@@ -139,6 +152,11 @@ const AuthenticatedTodayRoute = AuthenticatedTodayRouteImport.update({
   path: '/today',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedTrailRoute = AuthenticatedTrailRouteImport.update({
+  id: '/trail',
+  path: '/trail',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedWrappedRoute = AuthenticatedWrappedRouteImport.update({
   id: '/wrapped',
   path: '/wrapped',
@@ -156,6 +174,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRoute
   '/boss': typeof AuthenticatedBossRoute
   '/buddies': typeof AuthenticatedBuddiesRoute
+  '/capsule': typeof AuthenticatedCapsuleRoute
   '/community': typeof AuthenticatedCommunityRoute
   '/create-challenge': typeof AuthenticatedCreateChallengeRoute
   '/crew': typeof AuthenticatedCrewRoute
@@ -163,6 +182,7 @@ export interface FileRoutesByFullPath {
   '/detox': typeof AuthenticatedDetoxRoute
   '/habits': typeof AuthenticatedHabitsRoute
   '/lift': typeof AuthenticatedLiftRoute
+  '/lights-out': typeof AuthenticatedLightsOutRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/ranks': typeof AuthenticatedRanksRoute
@@ -171,6 +191,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/small-wins': typeof AuthenticatedSmallWinsRoute
   '/today': typeof AuthenticatedTodayRoute
+  '/trail': typeof AuthenticatedTrailRoute
   '/wrapped': typeof AuthenticatedWrappedRoute
   '/c/$code': typeof CCodeRoute
 }
@@ -180,6 +201,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AuthenticatedAdminRoute
   '/boss': typeof AuthenticatedBossRoute
   '/buddies': typeof AuthenticatedBuddiesRoute
+  '/capsule': typeof AuthenticatedCapsuleRoute
   '/community': typeof AuthenticatedCommunityRoute
   '/create-challenge': typeof AuthenticatedCreateChallengeRoute
   '/crew': typeof AuthenticatedCrewRoute
@@ -187,6 +209,7 @@ export interface FileRoutesByTo {
   '/detox': typeof AuthenticatedDetoxRoute
   '/habits': typeof AuthenticatedHabitsRoute
   '/lift': typeof AuthenticatedLiftRoute
+  '/lights-out': typeof AuthenticatedLightsOutRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/ranks': typeof AuthenticatedRanksRoute
@@ -195,6 +218,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRoute
   '/small-wins': typeof AuthenticatedSmallWinsRoute
   '/today': typeof AuthenticatedTodayRoute
+  '/trail': typeof AuthenticatedTrailRoute
   '/wrapped': typeof AuthenticatedWrappedRoute
   '/c/$code': typeof CCodeRoute
 }
@@ -206,6 +230,7 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/boss': typeof AuthenticatedBossRoute
   '/_authenticated/buddies': typeof AuthenticatedBuddiesRoute
+  '/_authenticated/capsule': typeof AuthenticatedCapsuleRoute
   '/_authenticated/community': typeof AuthenticatedCommunityRoute
   '/_authenticated/create-challenge': typeof AuthenticatedCreateChallengeRoute
   '/_authenticated/crew': typeof AuthenticatedCrewRoute
@@ -213,6 +238,7 @@ export interface FileRoutesById {
   '/_authenticated/detox': typeof AuthenticatedDetoxRoute
   '/_authenticated/habits': typeof AuthenticatedHabitsRoute
   '/_authenticated/lift': typeof AuthenticatedLiftRoute
+  '/_authenticated/lights-out': typeof AuthenticatedLightsOutRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/ranks': typeof AuthenticatedRanksRoute
@@ -221,6 +247,7 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/small-wins': typeof AuthenticatedSmallWinsRoute
   '/_authenticated/today': typeof AuthenticatedTodayRoute
+  '/_authenticated/trail': typeof AuthenticatedTrailRoute
   '/_authenticated/wrapped': typeof AuthenticatedWrappedRoute
   '/c/$code': typeof CCodeRoute
 }
@@ -232,6 +259,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/boss'
     | '/buddies'
+    | '/capsule'
     | '/community'
     | '/create-challenge'
     | '/crew'
@@ -239,6 +267,7 @@ export interface FileRouteTypes {
     | '/detox'
     | '/habits'
     | '/lift'
+    | '/lights-out'
     | '/onboarding'
     | '/profile'
     | '/ranks'
@@ -247,6 +276,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/small-wins'
     | '/today'
+    | '/trail'
     | '/wrapped'
     | '/c/$code'
   fileRoutesByTo: FileRoutesByTo
@@ -256,6 +286,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/boss'
     | '/buddies'
+    | '/capsule'
     | '/community'
     | '/create-challenge'
     | '/crew'
@@ -263,6 +294,7 @@ export interface FileRouteTypes {
     | '/detox'
     | '/habits'
     | '/lift'
+    | '/lights-out'
     | '/onboarding'
     | '/profile'
     | '/ranks'
@@ -271,6 +303,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/small-wins'
     | '/today'
+    | '/trail'
     | '/wrapped'
     | '/c/$code'
   id:
@@ -281,6 +314,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/_authenticated/boss'
     | '/_authenticated/buddies'
+    | '/_authenticated/capsule'
     | '/_authenticated/community'
     | '/_authenticated/create-challenge'
     | '/_authenticated/crew'
@@ -288,6 +322,7 @@ export interface FileRouteTypes {
     | '/_authenticated/detox'
     | '/_authenticated/habits'
     | '/_authenticated/lift'
+    | '/_authenticated/lights-out'
     | '/_authenticated/onboarding'
     | '/_authenticated/profile'
     | '/_authenticated/ranks'
@@ -296,6 +331,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/small-wins'
     | '/_authenticated/today'
+    | '/_authenticated/trail'
     | '/_authenticated/wrapped'
     | '/c/$code'
   fileRoutesById: FileRoutesById
@@ -351,6 +387,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBuddiesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/capsule': {
+      id: '/_authenticated/capsule'
+      path: '/capsule'
+      fullPath: '/capsule'
+      preLoaderRoute: typeof AuthenticatedCapsuleRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/community': {
       id: '/_authenticated/community'
       path: '/community'
@@ -398,6 +441,13 @@ declare module '@tanstack/react-router' {
       path: '/lift'
       fullPath: '/lift'
       preLoaderRoute: typeof AuthenticatedLiftRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/lights-out': {
+      id: '/_authenticated/lights-out'
+      path: '/lights-out'
+      fullPath: '/lights-out'
+      preLoaderRoute: typeof AuthenticatedLightsOutRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/onboarding': {
@@ -456,6 +506,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTodayRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/trail': {
+      id: '/_authenticated/trail'
+      path: '/trail'
+      fullPath: '/trail'
+      preLoaderRoute: typeof AuthenticatedTrailRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/wrapped': {
       id: '/_authenticated/wrapped'
       path: '/wrapped'
@@ -477,6 +534,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedBossRoute: typeof AuthenticatedBossRoute
   AuthenticatedBuddiesRoute: typeof AuthenticatedBuddiesRoute
+  AuthenticatedCapsuleRoute: typeof AuthenticatedCapsuleRoute
   AuthenticatedCommunityRoute: typeof AuthenticatedCommunityRoute
   AuthenticatedCreateChallengeRoute: typeof AuthenticatedCreateChallengeRoute
   AuthenticatedCrewRoute: typeof AuthenticatedCrewRoute
@@ -484,6 +542,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDetoxRoute: typeof AuthenticatedDetoxRoute
   AuthenticatedHabitsRoute: typeof AuthenticatedHabitsRoute
   AuthenticatedLiftRoute: typeof AuthenticatedLiftRoute
+  AuthenticatedLightsOutRoute: typeof AuthenticatedLightsOutRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedRanksRoute: typeof AuthenticatedRanksRoute
@@ -492,6 +551,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedSmallWinsRoute: typeof AuthenticatedSmallWinsRoute
   AuthenticatedTodayRoute: typeof AuthenticatedTodayRoute
+  AuthenticatedTrailRoute: typeof AuthenticatedTrailRoute
   AuthenticatedWrappedRoute: typeof AuthenticatedWrappedRoute
 }
 
@@ -499,6 +559,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedBossRoute: AuthenticatedBossRoute,
   AuthenticatedBuddiesRoute: AuthenticatedBuddiesRoute,
+  AuthenticatedCapsuleRoute: AuthenticatedCapsuleRoute,
   AuthenticatedCommunityRoute: AuthenticatedCommunityRoute,
   AuthenticatedCreateChallengeRoute: AuthenticatedCreateChallengeRoute,
   AuthenticatedCrewRoute: AuthenticatedCrewRoute,
@@ -506,6 +567,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDetoxRoute: AuthenticatedDetoxRoute,
   AuthenticatedHabitsRoute: AuthenticatedHabitsRoute,
   AuthenticatedLiftRoute: AuthenticatedLiftRoute,
+  AuthenticatedLightsOutRoute: AuthenticatedLightsOutRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedRanksRoute: AuthenticatedRanksRoute,
@@ -514,6 +576,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedSmallWinsRoute: AuthenticatedSmallWinsRoute,
   AuthenticatedTodayRoute: AuthenticatedTodayRoute,
+  AuthenticatedTrailRoute: AuthenticatedTrailRoute,
   AuthenticatedWrappedRoute: AuthenticatedWrappedRoute,
 }
 

@@ -175,7 +175,7 @@ function ProfilePage() {
           ))}
         </div>
       )}
-      <div className="mt-2">
+      <Link to="/trail" className="mt-2 block" aria-label={t('batch8.viewTrail')}>
         <h2 className="mb-2 text-[13px] font-extrabold">{t("profile.trail")}</h2>
         <div className="season-trail">
           {Array.from({ length }, (_, i) => {
@@ -205,7 +205,8 @@ function ProfilePage() {
             );
           })}
         </div>
-      </div>
+      </Link>
+      <Link to="/lights-out"><StickerButton block variant="secondary">{t('batch8.lights')}</StickerButton></Link>
       <div className="mt-3 flex items-center justify-between">
         <h2 className="text-[13px] font-extrabold">
           {t("profile.badges").toLocaleUpperCase(i18n.language === "aeb" ? "ar" : i18n.language)}

@@ -42,6 +42,7 @@ import {
 } from "@/lib/today-rules";
 import { daysBetween, localHour, pad, useNow } from "@/lib/time";
 import { FitHeading } from "@/components/lezgo/fit-heading";
+import { TodayMoments } from "@/components/lezgo/signature/moments";
 export const Route = createFileRoute("/_authenticated/today")({
   head: () => pageHead("Today — lezgo", "Log today's gos and keep your go streak alive."),
   component: Today,
@@ -180,6 +181,8 @@ function Today() {
           if(value>0)setTinyWin(true);
           void qc.invalidateQueries({queryKey:["boss"]});
           void qc.invalidateQueries({queryKey:["ghost"]});
+          void qc.invalidateQueries({queryKey:["signature"]});
+          void qc.invalidateQueries({queryKey:["profileSummary"]});
         } catch (e) {
           toast(errKey(e) === "day_closed" ? t("today.closed") : t("common.error"));
           await qc.invalidateQueries({ queryKey: dq.queryKey });
@@ -289,7 +292,7 @@ function Today() {
   return (
     <AppShell todayLayout>
       <header className="today-top">
-        <Link to="/seasons" className="day-sticker" aria-label={t('batch5.seasons')}>
+        <Link to="/trail" className="day-sticker" aria-label={t('batch8.viewTrail')}>
           <span>{t("todayDesign.day")}</span>{" "}
           <Num>
             {pad(Math.min(Math.max(dayIndex, 1), seasonLength))}/{seasonLength}
@@ -385,6 +388,7 @@ function Today() {
         </div>
       </section>
       {closed && <p className="today-banner bg-card">{t("todayDesign.dayClosed")}</p>}
+      <TodayMoments missing={missing} pending={pending} onDone={h=>h.kind==='salat'||h.template?.key==='detox'?tap(h):log(h,Number(h.target))} />
       {score?.comeback && (
         <section className="today-banner bg-blue">
           <h2 className="font-extrabold">{t("todayDesign.comeBack")}</h2>

@@ -1,23 +1,194 @@
-import {createFileRoute,Link} from '@tanstack/react-router';
-import {useQuery,useQueryClient} from '@tanstack/react-query';
-import {useRef,useState} from 'react';
-import {useTranslation} from 'react-i18next';
-import {ArrowLeft,Share2,Lock,Trophy} from 'lucide-react';
-import {toast} from 'sonner';
-import {AppShell} from '@/components/lezgo/app-shell';
-import {FitHeading} from '@/components/lezgo/fit-heading';
-import {Num,StickerButton,inputCls} from '@/components/lezgo/ui';
-import {exportCard} from '@/components/lezgo/sharing/export-card';
-import {useBase} from '@/lib/data';
-import {wrappedQuery,challengeLink} from '@/lib/batch6-data';
-import {formatDayMonth,loc} from '@/lib/i18n';
-import {pageHead} from '@/lib/page-head';
-import {supabase} from '@/integrations/supabase/client';
-export const Route=createFileRoute('/_authenticated/wrapped')({validateSearch:(s:Record<string,unknown>)=>({season:typeof s['season']==='string'?s['season']:''}),head:()=>pageHead('Your Wrapped — lezgo','Your real season story: gos, habits, Boss wins and a note to your future self.'),component:WrappedPage});
-const COLORS=['lime','blue','pink','purple','card','orange'];
-function WrappedPage(){const {t,i18n}=useTranslation();const {uid,season,profile}=useBase();const search=Route.useSearch();const sid=search.season||season?.id||'';const qc=useQueryClient();const q=useQuery({...wrappedQuery(uid,sid),enabled:!!uid&&!!sid});const [square,setSquare]=useState(false);const [busy,setBusy]=useState(false);const [note,setNote]=useState('');const card=useRef<HTMLDivElement>(null);const capsule=useRef<HTMLDivElement>(null);const data=q.data;const s=data?.season;
-async function share(){if(!card.current)return;setBusy(true);try{await exportCard(card.current,`lezgo-wrapped-${s?.ends_on??''}`,square);if(capsule.current)await exportCard(capsule.current,'lezgo-time-capsule',square);}catch{toast(t('batch6.exportError'));}finally{setBusy(false);}}
-async function save(){setBusy(true);const r=await supabase.from('time_capsules').upsert({user_id:uid,season_id:sid,note});if(r.error)toast(t('common.error'));else{toast(t('batch6.noteSaved'));await qc.invalidateQueries({queryKey:['wrapped']});}setBusy(false);}
-const rows=(data?.stats??[]).map(stat=>({value:(stat.key==='sleep7'||stat.key==='sleep')?`${Math.floor(stat.value)}h ${Math.round((stat.value%1)*60)}m`:`${Number(stat.value).toFixed(stat.value%1?1:0)}${stat.unit&&stat.kind==='count'?` ${stat.unit}`:''}`,label:loc(stat.name,i18n.language)}));if((data?.lift_days??0)>0&&!rows.some(r=>r.label===t('batch6.workouts')))rows.unshift({value:String(data?.lift_days),label:t('batch6.workouts')});const tiles=[...rows.slice(0,5),{value:`${data?.bosses_done??0}/${data?.bosses_total??0}`,label:t('batch6.bosses')}];
-return <AppShell todayLayout><Link to="/seasons" className="self-start"><StickerButton variant="secondary" className="icon-control" aria-label={t('common.back')}><ArrowLeft className="rtl:-scale-x-100"/></StickerButton></Link>{q.isError?<StickerButton variant="secondary" onClick={()=>void q.refetch()}>{t('common.error')}</StickerButton>:data?.locked?<><div className="wrapped-lock"><Lock size={48}/><h1>{t('batch6.wrapped')}</h1><p>{t('batch6.wrappedLocked',{date:formatDayMonth(data.ends_on??season?.ends_on??'',i18n.language)})}</p></div><label className="font-bold">{t('batch6.note')}<textarea maxLength={2000} rows={5} value={note} onChange={e=>setNote(e.target.value)} className={`${inputCls} mt-2`}/></label><StickerButton block disabled={busy||!note.trim()} onClick={()=>void save()}>{t('batch6.saveNote')}</StickerButton></>:data&&s?<><div ref={card} className={`wrapped-card ${square?'square':''}`}><div className="wrapped-top"><span className="wrapped-pill num">{t('batch6.wrapped')}</span><bdi dir="ltr">@{data.handle} · {formatDayMonth(s.ends_on,i18n.language)}</bdi></div><div className="wrapped-heading"><FitHeading requestedSize={76} text={t('batch6.finished',{year:s.ends_on.slice(0,4)})} className="wrapped-finished"/><div className="wrapped-strong"><FitHeading requestedSize={80} text={t('batch6.strong')} className="m-0"/></div><div className="wrapped-star"><Trophy size={24}/><span>{t('batch6.rank',{n:data.rank??'—'})}</span></div></div><div className="wrapped-days"><Num>{data.days??0}/{Math.round((new Date(s.ends_on).getTime()-new Date(s.starts_on).getTime())/86400000)+1}</Num><span>{t('batch6.showedUp')}</span></div><div className="wrapped-stats">{tiles.map((v,i)=><div className="wrapped-stat" data-color={COLORS[i]} key={`${i}-${v.label}`}><Num>{v.value}</Num><span>{v.label}</span></div>)}</div><footer className="wrapped-footer"><strong>{data.crew?t('batch6.crew',{name:data.crew.name}):t('batch6.noCrew')}</strong>{data.crew&&<bdi dir="ltr">{challengeLink(data.crew.code)}</bdi>}<span className="share-brand">lez<span>go</span></span></footer></div>{data.capsule&&<div ref={capsule} className="capsule-card"><Num>{t('batch6.capsule')}</Num><h2>{t('batch6.note')}</h2><p>{data.capsule}</p><span className="share-brand">lez<span>go</span></span></div>}<div className="export-modes">{[false,true].map(sq=><StickerButton key={String(sq)} variant={sq===square?'lime':'secondary'} size="sm" onClick={()=>setSquare(sq)} aria-pressed={sq===square}>{t(sq?'batch6.square':'batch6.portrait')}</StickerButton>)}</div><StickerButton block variant="lime" disabled={busy} onClick={()=>void share()}><Share2 size={20}/>{t('batch6.shareCard')}</StickerButton></>:<p>{t('common.loading')}</p>}</AppShell>;
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { ArrowLeft, Share2, Lock, Trophy } from "lucide-react";
+import { toast } from "sonner";
+import { AppShell } from "@/components/lezgo/app-shell";
+import { FitHeading } from "@/components/lezgo/fit-heading";
+import { Num, StickerButton } from "@/components/lezgo/ui";
+import { exportCard } from "@/components/lezgo/sharing/export-card";
+import { useBase } from "@/lib/data";
+import { wrappedQuery, challengeLink } from "@/lib/batch6-data";
+import { formatDayMonth, loc } from "@/lib/i18n";
+import { pageHead } from "@/lib/page-head";
+import { signatureQuery } from "@/lib/signature-data";
+export const Route = createFileRoute("/_authenticated/wrapped")({
+  validateSearch: (s: Record<string, unknown>) => ({
+    season: typeof s["season"] === "string" ? s["season"] : "",
+  }),
+  head: () =>
+    pageHead(
+      "Your Wrapped — lezgo",
+      "Your real season story: gos, habits, Boss wins and a note to your future self.",
+    ),
+  component: WrappedPage,
+});
+const COLORS = ["lime", "blue", "pink", "purple", "card", "orange"];
+function WrappedPage() {
+  const { t, i18n } = useTranslation();
+  const { uid, season, profile } = useBase();
+  const search = Route.useSearch();
+  const sid = search.season || season?.id || "";
+  const q = useQuery({ ...wrappedQuery(uid, sid), enabled: !!uid && !!sid });
+  const [square, setSquare] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const signature = useQuery({ ...signatureQuery(uid, sid), enabled: !!uid && !!sid });
+  const card = useRef<HTMLDivElement>(null);
+  const capsule = useRef<HTMLDivElement>(null);
+  const data = q.data;
+  const s = data?.season;
+  async function share() {
+    if (!card.current) return;
+    setBusy(true);
+    try {
+      await exportCard(card.current, `lezgo-wrapped-${s?.ends_on ?? ""}`, square);
+      if (capsule.current) await exportCard(capsule.current, "lezgo-time-capsule", square);
+    } catch {
+      toast(t("batch6.exportError"));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const rows = (data?.stats ?? []).map((stat) => ({
+    value:
+      stat.key === "sleep7" || stat.key === "sleep"
+        ? `${Math.floor(stat.value)}h ${Math.round((stat.value % 1) * 60)}m`
+        : `${Number(stat.value).toFixed(stat.value % 1 ? 1 : 0)}${stat.unit && stat.kind === "count" ? ` ${stat.unit}` : ""}`,
+    label: loc(stat.name, i18n.language),
+  }));
+  if ((data?.lift_days ?? 0) > 0 && !rows.some((r) => r.label === t("batch6.workouts")))
+    rows.unshift({ value: String(data?.lift_days), label: t("batch6.workouts") });
+  const tiles = [
+    ...rows.slice(0, 5),
+    { value: `${data?.bosses_done ?? 0}/${data?.bosses_total ?? 0}`, label: t("batch6.bosses") },
+  ];
+  return (
+    <AppShell todayLayout>
+      <Link to="/seasons" className="self-start">
+        <StickerButton variant="secondary" className="icon-control" aria-label={t("common.back")}>
+          <ArrowLeft className="rtl:-scale-x-100" />
+        </StickerButton>
+      </Link>
+      {q.isError ? (
+        <StickerButton variant="secondary" onClick={() => void q.refetch()}>
+          {t("common.error")}
+        </StickerButton>
+      ) : data?.locked ? (
+        <>
+          <div className="wrapped-lock">
+            <Lock size={48} />
+            <h1>{t("batch6.wrapped")}</h1>
+            <p>
+              {t("batch6.wrappedLocked", {
+                date: formatDayMonth(data.ends_on ?? season?.ends_on ?? "", i18n.language),
+              })}
+            </p>
+          </div>
+          <Link to="/capsule">
+            <StickerButton block>{t("batch8.openNote")}</StickerButton>
+          </Link>
+        </>
+      ) : data && s ? (
+        <>
+          <div ref={card} className={`wrapped-card ${square ? "square" : ""}`}>
+            <div className="wrapped-top">
+              <span className="wrapped-pill num">{t("batch6.wrapped")}</span>
+              <bdi dir="ltr">
+                @{data.handle} · {formatDayMonth(s.ends_on, i18n.language)}
+              </bdi>
+            </div>
+            <div className="wrapped-heading">
+              <FitHeading
+                requestedSize={76}
+                text={t("batch6.finished", { year: s.ends_on.slice(0, 4) })}
+                className="wrapped-finished"
+              />
+              <div className="wrapped-strong">
+                <FitHeading requestedSize={80} text={t("batch6.strong")} className="m-0" />
+              </div>
+              <div className="wrapped-star">
+                <Trophy size={24} />
+                <span>{t("batch6.rank", { n: data.rank ?? "—" })}</span>
+              </div>
+            </div>
+            <div className="wrapped-days">
+              <Num>
+                {data.days ?? 0}/
+                {Math.round(
+                  (new Date(s.ends_on).getTime() - new Date(s.starts_on).getTime()) / 86400000,
+                ) + 1}
+              </Num>
+              <span>{t("batch6.showedUp")}</span>
+            </div>
+            <div className="wrapped-stats">
+              {tiles.map((v, i) => (
+                <div className="wrapped-stat" data-color={COLORS[i]} key={`${i}-${v.label}`}>
+                  <Num>{v.value}</Num>
+                  <span>{v.label}</span>
+                </div>
+              ))}
+            </div>
+            <footer className="wrapped-footer">
+              <strong>
+                {data.crew ? t("batch6.crew", { name: data.crew.name }) : t("batch6.noCrew")}
+              </strong>
+              {data.crew && <bdi dir="ltr">{challengeLink(data.crew.code)}</bdi>}
+              <span className="share-brand">
+                lez<span>go</span>
+              </span>
+            </footer>
+          </div>
+          {data.capsule && (
+            <div ref={capsule} className="capsule-card">
+              <Num>{t("batch6.capsule")}</Num>
+              <h2>{t("batch6.note")}</h2>
+              <p>{data.capsule}</p>
+              <span className="share-brand">
+                lez<span>go</span>
+              </span>
+            </div>
+          )}
+          <div className="export-modes">
+            {[false, true].map((sq) => (
+              <StickerButton
+                key={String(sq)}
+                variant={sq === square ? "lime" : "secondary"}
+                size="sm"
+                onClick={() => setSquare(sq)}
+                aria-pressed={sq === square}
+              >
+                {t(sq ? "batch6.square" : "batch6.portrait")}
+              </StickerButton>
+            ))}
+          </div>
+          <StickerButton block variant="lime" disabled={busy} onClick={() => void share()}>
+            <Share2 size={20} />
+            {t("batch6.shareCard")}
+          </StickerButton>
+        </>
+      ) : (
+        <p>{t("common.loading")}</p>
+      )}
+      {signature.data?.closes.length ? (
+        <section className="mt-6">
+          <h2 className="font-extrabold text-[20px]">{t("batch8.moods")}</h2>
+          {signature.data.closes.map((c) => (
+            <div key={c.day} className="flex justify-between gap-3 py-3 border-b border-border">
+              <Num>{formatDayMonth(c.day, i18n.language)}</Num>
+              <span>{t(`batch8.${c.mood}`)}</span>
+            </div>
+          ))}
+        </section>
+      ) : null}
+      {signature.data?.capsule.sealed && !signature.data.capsule.locked && (
+        <Link to="/capsule">
+          <StickerButton block variant="secondary">
+            {t("batch8.openNote")}
+          </StickerButton>
+        </Link>
+      )}
+    </AppShell>
+  );
 }

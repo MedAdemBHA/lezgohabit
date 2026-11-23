@@ -9,6 +9,7 @@ import { batch5en, batch5fr, batch5ar, batch5aeb } from "./batch5";
 
 import { batch6en, batch6fr, batch6ar, batch6aeb } from "./batch6";
 import { batch7en, batch7fr, batch7ar, batch7aeb } from "./batch7";
+import { batch8en, batch8fr, batch8ar, batch8aeb } from "./batch8";
 
 export const LANGS = ["en", "fr", "ar", "aeb"] as const;
 export type Lang = (typeof LANGS)[number];
@@ -19,10 +20,10 @@ export const LANG_KEY = "lezgo_lang";
 if (!i18n.isInitialized) {
   void i18n.use(initReactI18next).init({
     resources: {
-      en: { translation: { ...en, batch4: batch4en, batch5: batch5en, batch6: batch6en, batch7: batch7en } },
-      fr: { translation: { ...fr, batch4: batch4fr, batch5: batch5fr, batch6: batch6fr, batch7: batch7fr } },
-      ar: { translation: { ...ar, batch4: batch4ar, batch5: batch5ar, batch6: batch6ar, batch7: batch7ar } },
-      aeb: { translation: { ...aeb, batch4: batch4aeb, batch5: batch5aeb, batch6: batch6aeb, batch7: batch7aeb } },
+      en: { translation: { ...en, batch4: batch4en, batch5: batch5en, batch6: batch6en, batch7: batch7en, batch8: batch8en } },
+      fr: { translation: { ...fr, batch4: batch4fr, batch5: batch5fr, batch6: batch6fr, batch7: batch7fr, batch8: batch8fr } },
+      ar: { translation: { ...ar, batch4: batch4ar, batch5: batch5ar, batch6: batch6ar, batch7: batch7ar, batch8: batch8ar } },
+      aeb: { translation: { ...aeb, batch4: batch4aeb, batch5: batch5aeb, batch6: batch6aeb, batch7: batch7aeb, batch8: batch8aeb } },
     },
     lng: "en",
     fallbackLng: { aeb: ["ar", "en"], fr: ["en"], default: ["en"] },

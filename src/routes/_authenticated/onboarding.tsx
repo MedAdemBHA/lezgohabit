@@ -68,13 +68,12 @@ function Onboarding() {
       const { error } = await supabase.from("profiles").update({ display_name: name.trim() || profile.display_name, handle, country_code: country, language: i18n.language, onboarded: true }).eq("id", uid);
       if (error) throw error;
       await saveHabits(uid, season.id, picks, existing.data ?? []);
-      let goCrew = false;
-      if (mode === "crew" && code.length === 6) { await supabase.rpc("join_crew", { _code: code }).throwOnError(); goCrew = true; }
-      else if (mode === "crew" && crewName.trim()) { await supabase.rpc("create_crew", { _name: crewName.trim(), _kind: "squad", _max_members: 8 }).throwOnError(); goCrew = true; }
+      if (mode === "crew" && code.length === 6) { await supabase.rpc("join_crew", { _code: code }).throwOnError(); }
+      else if (mode === "crew" && crewName.trim()) { await supabase.rpc("create_crew", { _name: crewName.trim(), _kind: "squad", _max_members: 8 }).throwOnError(); }
       else await supabase.rpc("join_season", { _season_id: season.id, _mode: "solo" }).throwOnError();
       sessionStorage.removeItem("lezgo_pending_code");
       await qc.invalidateQueries();
-      void nav({ to: goCrew ? "/crew" : "/today" });
+      void nav({ to: "/capsule" });
     } catch (e) {
       const k = errKey(e);
       toast(k ? t(`crew.err_${k}`, { defaultValue: t("common.error") }) : t("common.error"));

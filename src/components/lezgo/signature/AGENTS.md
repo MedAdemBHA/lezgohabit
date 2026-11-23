@@ -1,0 +1,4 @@
+- Capsule bodies and audio paths are returned only by capsule_read after the owner-local opening date, so Wrapped cannot bypass sealing.
+- Day closes remain owner-private and do not change scores; the next-morning intention comes from yesterday's saved close.
+- Moment claims use authenticated database eligibility and uniqueness; component liveness tracks mounting, not changing query results, to avoid losing a claimed display during refetch.
+- Audio recording uses browser MediaRecorder with a fixed timeout and private Storage policies; never expose sealed audio via a service-role signing path.

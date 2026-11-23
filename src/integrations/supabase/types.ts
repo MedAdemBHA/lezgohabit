@@ -591,6 +591,51 @@ export type Database = {
           },
         ]
       }
+      capsules: {
+        Row: {
+          audio_url: string | null
+          body: string
+          is_demo: boolean
+          opens_on: string
+          sealed_at: string
+          season_id: string
+          user_id: string
+        }
+        Insert: {
+          audio_url?: string | null
+          body?: string
+          is_demo?: boolean
+          opens_on: string
+          sealed_at?: string
+          season_id: string
+          user_id: string
+        }
+        Update: {
+          audio_url?: string | null
+          body?: string
+          is_demo?: boolean
+          opens_on?: string
+          sealed_at?: string
+          season_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "capsules_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "capsules_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       challenge_squad_members: {
         Row: {
           is_demo: boolean
@@ -956,6 +1001,41 @@ export type Database = {
           },
         ]
       }
+      day_closes: {
+        Row: {
+          created_at: string
+          day: string
+          is_demo: boolean
+          mood: string
+          tomorrow: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          day: string
+          is_demo?: boolean
+          mood: string
+          tomorrow?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          day?: string
+          is_demo?: boolean
+          mood?: string
+          tomorrow?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "day_closes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       day_extras: {
         Row: {
           chaos_done: boolean
@@ -1240,6 +1320,77 @@ export type Database = {
           },
           {
             foreignKeyName: "lift_sets_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      moment_reminders: {
+        Row: {
+          day: string
+          due_at: string
+          is_demo: boolean
+          read_at: string | null
+          user_id: string
+        }
+        Insert: {
+          day: string
+          due_at: string
+          is_demo?: boolean
+          read_at?: string | null
+          user_id: string
+        }
+        Update: {
+          day?: string
+          due_at?: string
+          is_demo?: boolean
+          read_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "moment_reminders_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      moments_seen: {
+        Row: {
+          created_at: string
+          is_demo: boolean
+          key: string
+          season_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          is_demo?: boolean
+          key: string
+          season_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          is_demo?: boolean
+          key?: string
+          season_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "moments_seen_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "moments_seen_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
@@ -2083,6 +2234,11 @@ export type Database = {
         Returns: Json
       }
       can_read_post: { Args: { _id: string }; Returns: boolean }
+      capsule_audio_access: {
+        Args: { _path: string; _write?: boolean }
+        Returns: boolean
+      }
+      capsule_read: { Args: { _season_id: string }; Returns: Json }
       challenge_preview: { Args: { _code: string }; Returns: Json }
       checkin_upsert: {
         Args: {
@@ -2094,6 +2250,14 @@ export type Database = {
         Returns: Json
       }
       claim_demo_login: { Args: { _key: string }; Returns: boolean }
+      claim_moment: {
+        Args: { _key: string; _season_id: string }
+        Returns: boolean
+      }
+      close_my_day: {
+        Args: { _mood: string; _tomorrow?: string }
+        Returns: undefined
+      }
       create_boss_lesson: {
         Args: { _body: string; _boss_id: string; _seconds: number }
         Returns: string
@@ -2231,6 +2395,10 @@ export type Database = {
         Args: { _fingerprint: string; _path: string; _user: string }
         Returns: undefined
       }
+      remind_moment: {
+        Args: { _read?: boolean; _season_id: string }
+        Returns: undefined
+      }
       report_buddy: {
         Args: { _reason: string; _target: string }
         Returns: undefined
@@ -2267,6 +2435,10 @@ export type Database = {
         }
         Returns: Json
       }
+      seal_capsule: {
+        Args: { _audio_path?: string; _body?: string; _season_id: string }
+        Returns: undefined
+      }
       send_nudge: { Args: { _to_user: string }; Returns: boolean }
       set_chaos_done: {
         Args: { _day?: string; _done: boolean; _season_id: string }
@@ -2276,6 +2448,7 @@ export type Database = {
         Args: { _on: boolean; _slug: string }
         Returns: undefined
       }
+      signature_overview: { Args: { _season_id: string }; Returns: Json }
       solo_ghost: { Args: { _season_id: string }; Returns: Json }
       spin_daily_chaos: { Args: { _season_id: string }; Returns: Json }
       today_habit_points: {

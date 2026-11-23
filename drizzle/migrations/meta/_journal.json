@@ -288,6 +288,27 @@
       "when": 1795417023804,
       "tag": "0040_demo_cascade_reset",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1795417232130,
+      "tag": "0041_signature_experiences",
+      "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1795417467358,
+      "tag": "0042_signature_storage_and_cleanup",
+      "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "7",
+      "when": 1795417991815,
+      "tag": "0043_signature_halfway_badge",
+      "breakpoints": true
     }
   ]
 }

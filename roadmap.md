@@ -47,3 +47,10 @@ Club/Company remain contact-only as requested; Teach It records the author’s d
 - [x] Seed realistic demo history, shared sign-in/reset and safe clearing.
 - [x] Verify permissions, real admin/demo flows and RTL; save changes.
 - [ ] Guarantee shared demo email immutability: blocked by Cloud exposing no per-account email-change control. Password changes require the hidden current password, and account deletion is server-blocked.
+
+## Batch 8 — Signature experiences
+- [x] Add owner-private day closes, sealed capsules/audio and once-only moments.
+- [x] Build snake Trail, Lights out, Time capsule and four Moments in four languages/RTL.
+- [x] Connect Today, Profile, onboarding and Wrapped; show earned badge notifications.
+- [x] Verify signed-in saving, time locks, permissions and mobile/RTL; save changes.
+23:00 reminders are delivered inside the app only. Comeback and trophy eligibility use saved server results; their future-date automatic display was not exercised end-to-end.
