@@ -151,10 +151,12 @@ export const recordPresence = createServerFn({ method: "POST" })
   });
 export const fingerprintProof = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((v: unknown) => z.object({ path: z.string().max(300) }).parse(v))
+  .inputValidator((v: unknown) =>
+    z.object({ path: z.string().max(300), bucket: z.enum(["proofs", "habit-proofs"]).default("proofs") }).parse(v),
+  )
   .handler(async ({ data, context }) => {
     if (!data.path.startsWith(`${context.userId}/`)) throw new Error("forbidden");
-    const { data: blob, error } = await context.supabase.storage.from("proofs").download(data.path);
+    const { data: blob, error } = await context.supabase.storage.from(data.bucket).download(data.path);
     if (error || !blob || blob.size > 10_000_000) throw new Error("proof_unavailable");
     const hash = await crypto.subtle.digest("SHA-256", await blob.arrayBuffer());
     const fingerprint = Array.from(new Uint8Array(hash), (b) =>

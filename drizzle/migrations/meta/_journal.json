@@ -351,6 +351,62 @@
       "when": 1795419256901,
       "tag": "0049_notification_trigger_record_dispatch",
       "breakpoints": true
+    },
+    {
+      "idx": 50,
+      "version": "7",
+      "when": 1795422101885,
+      "tag": "0050_score_integrity_day_lock",
+      "breakpoints": true
+    },
+    {
+      "idx": 51,
+      "version": "7",
+      "when": 1795422323131,
+      "tag": "0051_score_integrity_lift_detox",
+      "breakpoints": true
+    },
+    {
+      "idx": 52,
+      "version": "7",
+      "when": 1795422362476,
+      "tag": "0052_score_integrity_proof_bonus",
+      "breakpoints": true
+    },
+    {
+      "idx": 53,
+      "version": "7",
+      "when": 1795422394020,
+      "tag": "0053_score_integrity_boss_single_bonus",
+      "breakpoints": true
+    },
+    {
+      "idx": 54,
+      "version": "7",
+      "when": 1795422421606,
+      "tag": "0054_score_integrity_boss_actions",
+      "breakpoints": true
+    },
+    {
+      "idx": 55,
+      "version": "7",
+      "when": 1795422472257,
+      "tag": "0055_score_integrity_demo_isolation_ranks",
+      "breakpoints": true
+    },
+    {
+      "idx": 56,
+      "version": "7",
+      "when": 1795422514177,
+      "tag": "0056_score_integrity_admin_demo_toggle",
+      "breakpoints": true
+    },
+    {
+      "idx": 57,
+      "version": "7",
+      "when": 1795422570170,
+      "tag": "0057_score_integrity_season_snapshot",
+      "breakpoints": true
     }
   ]
 }

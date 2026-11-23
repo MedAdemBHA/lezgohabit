@@ -33,15 +33,17 @@ export const adminQuery = (
   search = "",
   page = 0,
   target: string | null = null,
+  demo = false,
 ) =>
   queryOptions({
-    queryKey: ["admin", section, search, page, target],
+    queryKey: ["admin", section, search, page, target, demo],
     retry: false,
     queryFn: async () => {
       const { data, error } = await supabase.rpc("admin_dashboard", {
         _section: section,
         _search: search,
         _page: page,
+        _demo: demo,
         ...(target ? { _target: target } : {}),
       });
       if (error) throw error;

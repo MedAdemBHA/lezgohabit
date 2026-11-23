@@ -3,9 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { Camera } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useServerFn } from '@tanstack/react-start';
+import { fingerprintProof } from '@/lib/admin.functions';
 import { StickerButton } from '../ui';
 export function ProofCompose({ uid, seasonId, day, existingPath, onSaved }: { uid: string; seasonId: string; day: string; existingPath: string | null; onSaved: () => Promise<void> }) {
- const { t } = useTranslation(); const [file, setFile] = useState<File | null>(null); const [preview, setPreview] = useState(''); const [busy, setBusy] = useState(false);
+ const { t } = useTranslation(); const [file, setFile] = useState<File | null>(null); const [preview, setPreview] = useState(''); const [busy, setBusy] = useState(false); const proofFingerprint = useServerFn(fingerprintProof);
  useEffect(() => {
   if (file) { const url = URL.createObjectURL(file); setPreview(url); return () => URL.revokeObjectURL(url); }
   let alive = true;
@@ -19,8 +21,9 @@ export function ProofCompose({ uid, seasonId, day, existingPath, onSaved }: { ui
    path = `${uid}/${day}/${crypto.randomUUID()}.${ext}`;
    const uploaded = await supabase.storage.from('habit-proofs').upload(path,file,{ contentType: file.type });
    if (uploaded.error) throw uploaded.error;
+   await proofFingerprint({ data: { path, bucket: 'habit-proofs' } });
    const posted = await supabase.rpc('post_daily_proof',{ _season_id: seasonId, _path: path });
-   if (posted.error) { await supabase.storage.from('habit-proofs').remove([path]); throw posted.error; }
+   if (posted.error) { await supabase.storage.from('habit-proofs').remove([path]); if (posted.error.message.includes('duplicate_proof')) { toast(t('integrity.duplicateProof')); return; } if (posted.error.message.includes('day_final')) { toast(t('integrity.dayFinal')); return; } throw posted.error; }
    toast(t('todayDesign.proofPosted')); await onSaved();
   } catch { toast(t('common.error')); } finally { setBusy(false); }
  }

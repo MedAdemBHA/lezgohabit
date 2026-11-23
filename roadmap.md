@@ -66,3 +66,4 @@ Club/Company remain contact-only as requested; Teach It records the author’s d
 - [ ] Custom domain joinlezgo.com: requires domain ownership and DNS connection.
 Remaining limitations: shared demo email immutability remains unverified; future trophy/comeback automatic display requires future-date exercise. Prayer reminders may arrive up to five minutes after the ten-minute-before threshold. No app-store/native splash is supplied; standalone launch uses manifest colors/icons.
 
+- [x] Score integrity pass: final days + 03:00 lock job, append-only check-in history, timezone rule, boss single bonus/limits, lift best-of-3, proof bonus tied to post, 65 stack cap note, season snapshot, demo isolation, confirm steps, SQL tests (supabase/tests/score_integrity.sql).

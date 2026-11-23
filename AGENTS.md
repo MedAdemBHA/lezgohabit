@@ -39,7 +39,7 @@ use the editor.
 
 - Supplied habit artwork is represented by shared SVG components in `src/components/icons`; map template icons through HabitIcon so all screens reuse the same geometry.
 - The onboarding design uses ordered template-key groups and a shared 1–3 selection guard; crew/solo selection stays in a sheet before the existing finish RPC flow.
-- Locale-sensitive public Join content is gated by ClientOnly to prevent saved language changes racing lazy-route hydration; route metadata remains server-rendered.
+- Locale-sensitive Join content is ClientOnly to avoid hydration races; metadata stays server-rendered.
 - Public social proof uses a narrowly granted aggregate RPC over opted-in season participants, never broad profile reads.
 - Designed headings preserve explicit line breaks and shrink only when measured text overflows, rather than scaling with viewport width.
 
@@ -52,8 +52,8 @@ use the editor.
 - Badges are persistent earned achievements awarded from saved check-ins and scores by database logic; the Boss badge remains locked until verified Boss results exist.
 - Crew details and buddy actions use membership/participant-checked RPCs; buddy acceptance is mutual with serialized one-buddy enforcement.
 - Shared community-data queries/types serve Scoreboard, Profile and Crew details so privacy-aware summaries have one client contract.
-- Fixed-width stat labels keep their designed size unless measured words overflow, then shrink to the accessible minimum rather than splitting words.
-- Community posts use audience-checked RPCs, private proof storage, one reaction per user/post and serialized distinct-report moderation; faith keys/stats are projected only for the owner or explicit public consent.
+- Stat labels shrink only on measured overflow, never splitting words.
+- Community posts use audience-checked RPCs, private proof storage, one reaction per user/post and distinct-report moderation; faith data is projected only for owner/consent.
 - Proof uploads re-encode browser pixels as JPEG at a maximum 1280px edge, stripping metadata before upload; Today and feed Compose share this path and the existing server proof bonus.
 - Personal equipment, distance, prayer-method and reminder preferences live in owner-scoped user_preferences; reminder delivery is separate from saving preferences.
 - Kit preferences mirror into owner-readable profile equipment fields through a database trigger so Settings and Lift cannot diverge.
@@ -70,3 +70,4 @@ use the editor.
 - Demo history uses isolated sample seasons and a server-owned simulated clock; sample clearing never touches official seasons or real players.
 - Shared demo sign-in and saved-proof hashing use authenticated/guarded server functions; credentials and salted device/network fingerprints never reach browser code.
 - Signature RPCs own capsule time locks and Moment claims to prevent premature reads and repeated displays.
+- Final days (03:00 local/Close my day, 15-min integrity_tick), frozen season_results and demo isolation are enforced in Postgres; only audited admin RPCs may change final data.

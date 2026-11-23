@@ -677,3 +677,11 @@
 .app-status-compact .app-inbox-button {min-width:44px;min-height:44px;padding:0;}
 .today-top-end {flex-wrap:wrap;justify-content:flex-end;}
 @media(prefers-reduced-motion:reduce) {*,*::before,*::after {animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important;}}
+
+/* Score integrity: final-day locks, grace note, freshness label */
+.trail-tile .final-lock {position:absolute;top:-6px;inset-inline-end:-6px;display:grid;place-items:center;width:20px;height:20px;border-radius:999px;background:var(--card);border:2px solid var(--ink);}
+.trail-tile .final-lock svg {width:11px;height:11px;}
+.season-square[data-final=true] {outline:2px solid var(--ink);outline-offset:-4px;}
+.locks-note {display:inline-flex;align-items:center;gap:6px;align-self:flex-start;min-height:32px;padding:4px 12px;border-radius:999px;border:2px solid var(--ink);background:var(--yellow);font-size:13px;font-weight:700;}
+.board-updated {font-size:12px;font-weight:700;color:var(--muted-foreground);margin-top:-4px;}
+.scoring-cap {padding:12px 14px;border-radius:16px;border:2.5px solid var(--ink);background:var(--card);font-size:14px;font-weight:600;}

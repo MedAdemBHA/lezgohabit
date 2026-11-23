@@ -189,7 +189,8 @@ function ProfilePage() {
             return (
               <span
                 key={d}
-                title={d}
+                title={s?.finalized_at ? `${d} · ${t("integrity.final")}` : d}
+                data-final={!!s?.finalized_at}
                 data-state={state}
                 className={cn(
                   "season-square",

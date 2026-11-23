@@ -789,6 +789,45 @@ export type Database = {
           },
         ]
       }
+      checkin_events: {
+        Row: {
+          at: string
+          day: string
+          id: number
+          is_demo: boolean
+          new_detail: Json | null
+          new_value: number | null
+          old_detail: Json | null
+          old_value: number | null
+          user_habit_id: string
+          user_id: string
+        }
+        Insert: {
+          at?: string
+          day: string
+          id?: never
+          is_demo?: boolean
+          new_detail?: Json | null
+          new_value?: number | null
+          old_detail?: Json | null
+          old_value?: number | null
+          user_habit_id: string
+          user_id: string
+        }
+        Update: {
+          at?: string
+          day?: string
+          id?: never
+          is_demo?: boolean
+          new_detail?: Json | null
+          new_value?: number | null
+          old_detail?: Json | null
+          old_value?: number | null
+          user_habit_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       checkins: {
         Row: {
           created_at: string
@@ -889,6 +928,50 @@ export type Database = {
           },
         ]
       }
+      crew_results: {
+        Row: {
+          corrected_at: string | null
+          crew_id: string
+          frozen_at: string
+          is_demo: boolean
+          members: number
+          name: string
+          rank: number
+          score: number
+          season_id: string
+        }
+        Insert: {
+          corrected_at?: string | null
+          crew_id: string
+          frozen_at?: string
+          is_demo?: boolean
+          members: number
+          name: string
+          rank: number
+          score: number
+          season_id: string
+        }
+        Update: {
+          corrected_at?: string | null
+          crew_id?: string
+          frozen_at?: string
+          is_demo?: boolean
+          members?: number
+          name?: string
+          rank?: number
+          score?: number
+          season_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crew_results_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       crews: {
         Row: {
           archived: boolean
@@ -948,6 +1031,7 @@ export type Database = {
           completion: number
           crew_sync: boolean
           day: string
+          finalized_at: string | null
           habit_points: number
           is_demo: boolean
           multiplier: number
@@ -957,6 +1041,7 @@ export type Database = {
           stack_points: number
           streak: number
           total: number
+          tz: string | null
           user_id: string
         }
         Insert: {
@@ -964,6 +1049,7 @@ export type Database = {
           completion?: number
           crew_sync?: boolean
           day: string
+          finalized_at?: string | null
           habit_points?: number
           is_demo?: boolean
           multiplier?: number
@@ -973,6 +1059,7 @@ export type Database = {
           stack_points?: number
           streak?: number
           total?: number
+          tz?: string | null
           user_id: string
         }
         Update: {
@@ -980,6 +1067,7 @@ export type Database = {
           completion?: number
           crew_sync?: boolean
           day?: string
+          finalized_at?: string | null
           habit_points?: number
           is_demo?: boolean
           multiplier?: number
@@ -989,6 +1077,7 @@ export type Database = {
           stack_points?: number
           streak?: number
           total?: number
+          tz?: string | null
           user_id?: string
         }
         Relationships: [
@@ -1046,6 +1135,7 @@ export type Database = {
           is_demo: boolean
           lift_prs: number
           proof_path: string | null
+          proof_post_id: string | null
           proof_posted: boolean
           user_id: string
         }
@@ -1058,6 +1148,7 @@ export type Database = {
           is_demo?: boolean
           lift_prs?: number
           proof_path?: string | null
+          proof_post_id?: string | null
           proof_posted?: boolean
           user_id: string
         }
@@ -1070,6 +1161,7 @@ export type Database = {
           is_demo?: boolean
           lift_prs?: number
           proof_path?: string | null
+          proof_post_id?: string | null
           proof_posted?: boolean
           user_id?: string
         }
@@ -1747,8 +1839,11 @@ export type Database = {
           notif_crew: boolean
           notif_daily: boolean
           onboarded: boolean
+          pending_timezone: string | null
+          pending_timezone_from: string | null
           show_on_public_board: boolean
           timezone: string
+          timezone_changed_at: string | null
           units: string
         }
         Insert: {
@@ -1772,8 +1867,11 @@ export type Database = {
           notif_crew?: boolean
           notif_daily?: boolean
           onboarded?: boolean
+          pending_timezone?: string | null
+          pending_timezone_from?: string | null
           show_on_public_board?: boolean
           timezone?: string
+          timezone_changed_at?: string | null
           units?: string
         }
         Update: {
@@ -1797,8 +1895,11 @@ export type Database = {
           notif_crew?: boolean
           notif_daily?: boolean
           onboarded?: boolean
+          pending_timezone?: string | null
+          pending_timezone_from?: string | null
           show_on_public_board?: boolean
           timezone?: string
+          timezone_changed_at?: string | null
           units?: string
         }
         Relationships: []
@@ -2030,6 +2131,78 @@ export type Database = {
           },
         ]
       }
+      season_results: {
+        Row: {
+          active_days: number
+          best_streak: number
+          boss_points: number
+          corrected_at: string | null
+          crew_id: string | null
+          daily_points: number
+          frozen_at: string
+          is_demo: boolean
+          perfect_days: number
+          rank_country: number
+          rank_crew: number | null
+          rank_world: number
+          score: number
+          season_id: string
+          trophy: boolean
+          user_id: string
+        }
+        Insert: {
+          active_days: number
+          best_streak: number
+          boss_points: number
+          corrected_at?: string | null
+          crew_id?: string | null
+          daily_points: number
+          frozen_at?: string
+          is_demo?: boolean
+          perfect_days: number
+          rank_country: number
+          rank_crew?: number | null
+          rank_world: number
+          score: number
+          season_id: string
+          trophy: boolean
+          user_id: string
+        }
+        Update: {
+          active_days?: number
+          best_streak?: number
+          boss_points?: number
+          corrected_at?: string | null
+          crew_id?: string | null
+          daily_points?: number
+          frozen_at?: string
+          is_demo?: boolean
+          perfect_days?: number
+          rank_country?: number
+          rank_crew?: number | null
+          rank_world?: number
+          score?: number
+          season_id?: string
+          trophy?: boolean
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "season_results_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "season_results_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       season_trophies: {
         Row: {
           awarded_at: string
@@ -2072,6 +2245,7 @@ export type Database = {
           challenge_owned: boolean
           ends_on: string
           featured_habits: string[]
+          frozen_at: string | null
           id: string
           is_demo: boolean
           name: Json
@@ -2085,6 +2259,7 @@ export type Database = {
           challenge_owned?: boolean
           ends_on: string
           featured_habits?: string[]
+          frozen_at?: string | null
           id?: string
           is_demo?: boolean
           name: Json
@@ -2098,6 +2273,7 @@ export type Database = {
           challenge_owned?: boolean
           ends_on?: string
           featured_habits?: string[]
+          frozen_at?: string | null
           id?: string
           is_demo?: boolean
           name?: Json
@@ -2300,10 +2476,19 @@ export type Database = {
         Args: { _sid: string; _uid: string; _viewer: string }
         Returns: Json
       }
+      _caller_is_admin: { Args: never; Returns: boolean }
       _check_day_window: {
         Args: { _day: string; _user_id: string }
         Returns: undefined
       }
+      _day_is_final: { Args: { _day: string; _uid: string }; Returns: boolean }
+      _effective_tz: { Args: { _uid: string }; Returns: string }
+      _final_override: { Args: never; Returns: boolean }
+      _finalize_user_day: {
+        Args: { _day: string; _sid: string; _uid: string }
+        Returns: undefined
+      }
+      _freeze_season: { Args: { _sid: string }; Returns: undefined }
       _habit_completion: {
         Args: { _detail: Json; _kind: string; _target: number; _value: number }
         Returns: number
@@ -2312,6 +2497,10 @@ export type Database = {
       _notify: {
         Args: { _key: string; _type: string; _uid: string; _url?: string }
         Returns: undefined
+      }
+      _proof_is_duplicate: {
+        Args: { _path: string; _uid: string }
+        Returns: boolean
       }
       _rank_rows: {
         Args: {
@@ -2355,6 +2544,7 @@ export type Database = {
       _require_admin: { Args: never; Returns: string }
       _require_feature: { Args: { _key: string }; Returns: undefined }
       _sync_boss: { Args: { _bid: string; _uid: string }; Returns: undefined }
+      _viewer_demo: { Args: never; Returns: boolean }
       activate_challenge: { Args: { _id?: string }; Returns: undefined }
       active_season: { Args: never; Returns: Json }
       admin_action: {
@@ -2364,8 +2554,18 @@ export type Database = {
       admin_authorized: { Args: never; Returns: boolean }
       admin_cleanup_account: { Args: { _user: string }; Returns: undefined }
       admin_clear_demo: { Args: never; Returns: Json }
+      admin_correct_season_result: {
+        Args: {
+          _reason: string
+          _score: number
+          _season: string
+          _user: string
+        }
+        Returns: undefined
+      }
       admin_dashboard: {
         Args: {
+          _demo?: boolean
           _page?: number
           _search?: string
           _section?: string
@@ -2374,6 +2574,14 @@ export type Database = {
         Returns: Json
       }
       admin_overview: { Args: never; Returns: Json }
+      admin_recompute_final_day: {
+        Args: { _day: string; _reason: string; _season: string; _user: string }
+        Returns: Json
+      }
+      admin_remove_fake_proof: {
+        Args: { _post: string; _reason: string }
+        Returns: undefined
+      }
       admin_security_presence: {
         Args: { _device: string; _network: string }
         Returns: undefined
@@ -2517,12 +2725,15 @@ export type Database = {
       detox_overview: { Args: never; Returns: Json }
       enqueue_timed_notifications: { Args: never; Returns: number }
       featured_creator_challenges: { Args: never; Returns: Json }
+      finalize_due_days: { Args: never; Returns: number }
+      freeze_due_seasons: { Args: never; Returns: number }
       handle_available: { Args: { _handle: string }; Returns: boolean }
       has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
       hit_boss: {
         Args: { _amount?: number; _boss_id: string; _part?: string }
         Returns: undefined
       }
+      integrity_tick: { Args: never; Returns: Json }
       join_challenge: { Args: { _code: string }; Returns: string }
       join_crew: { Args: { _code: string }; Returns: string }
       join_season: {
@@ -2554,6 +2765,7 @@ export type Database = {
         Args: { _minutes: number; _path: string }
         Returns: undefined
       }
+      my_season_result: { Args: { _season_id: string }; Returns: Json }
       participating_countries: { Args: never; Returns: number }
       post_action: {
         Args: { _action: string; _post_id: string; _reason?: string }

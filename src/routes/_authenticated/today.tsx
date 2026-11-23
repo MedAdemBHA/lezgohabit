@@ -10,7 +10,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
-import { AlertTriangle, ArrowRight, Minus, Plus, Share2, RotateCcw } from "lucide-react";
+import { AlertTriangle, ArrowRight, Minus, Plus, Share2, RotateCcw, Lock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/lezgo/app-shell";
 import { CountUp } from "@/components/lezgo/count-up";
@@ -189,7 +189,7 @@ function Today() {
           void qc.invalidateQueries({queryKey:["profileSummary"]});
         } catch (e) {
           if (!navigator.onLine) { queueGo({uid,habit:h.id,day:today,value,detail}); toast(t("batch9.queued")); return; }
-          toast(errKey(e) === "day_closed" ? t("today.closed") : t("common.error"));
+          toast(errKey(e) === "day_final" ? t("integrity.dayFinal") : errKey(e) === "day_closed" ? t("today.closed") : t("common.error"));
           await qc.invalidateQueries({ queryKey: dq.queryKey });
         } finally {
           setPending((n) => n - 1);
@@ -322,6 +322,7 @@ function Today() {
           </span>
         </div>
       </header>
+      {!!now && localHour(tz, now) < 3 && <p className="locks-note num" role="status"><Lock size={14} aria-hidden />{t("integrity.locksAt")}</p>}
       {summary.data?.mode==="solo"&&<GhostBar uid={uid} sid={sid}/>}
       {tinyWin&&<Link to="/small-wins"><StickerButton block variant="lime" size="sm"><Share2 size={18}/>{t("batch6.winTitle")}</StickerButton></Link>}
       <section className="today-score" aria-busy={pending > 0}>

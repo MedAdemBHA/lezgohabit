@@ -93,7 +93,8 @@ function AdminPage() {
   const [detail, setDetail] = useState<AdminRow | null>(null);
   const [word, setWord] = useState("");
   const [wordLang, setWordLang] = useState("en");
-  const q = useQuery(adminQuery(section, search, page, target));
+  const [showDemo, setShowDemo] = useState(false);
+  const q = useQuery(adminQuery(section, search, page, target, showDemo));
   const seedFn = useServerFn(adminDemo);
   async function refresh() {
     await qc.invalidateQueries();
@@ -276,7 +277,18 @@ function AdminPage() {
                 <Num>S1</Num> · {loc(data.season.name, i18n.language)} · <Num>{d}/40</Num>
               </span>
             )}
-            {data.sample && <span className="admin-sample-pill num">{a("sample")}</span>}
+            {data.sample && (
+              <StickerButton
+                variant="ghost"
+                size="sm"
+                className="admin-sample-pill num"
+                aria-pressed={showDemo}
+                aria-label={t("integrity.showDemo")}
+                onClick={() => setShowDemo((v) => !v)}
+              >
+                {showDemo ? a("sample") : t("integrity.realPlayers")}
+              </StickerButton>
+            )}
             <div className="admin-language">
               {(["en", "ar"] as const).map((l) => (
                 <StickerButton

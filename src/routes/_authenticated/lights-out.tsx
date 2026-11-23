@@ -14,6 +14,7 @@ import { habitName } from "@/components/lezgo/today/habit-tile";
 import { useNow, pad } from "@/lib/time";
 import { pageHead } from "@/lib/page-head";
 import { supabase } from "@/integrations/supabase/client";
+import { ConfirmSheet } from "@/components/lezgo/confirm-sheet";
 export const Route = createFileRoute("/_authenticated/lights-out")({
   head: () =>
     pageHead(
@@ -34,6 +35,7 @@ function LightsOut() {
   const [mood, setMood] = useState<(typeof MOODS)[number] | null>(null);
   const [tomorrow, setTomorrow] = useState("");
   const [busy, setBusy] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const now = useNow();
   const byHabit = new Map(day.data?.checkins.map((c) => [c.user_habit_id, c]));
   const list = habits.data ?? [];
@@ -44,8 +46,9 @@ function LightsOut() {
     setBusy(true);
     const r = await supabase.rpc("close_my_day", { _mood: mood, _tomorrow: tomorrow });
     setBusy(false);
+    setConfirmOpen(false);
     if (r.error) {
-      toast.error(t("common.error"));
+      toast.error(t(r.error.message.includes("day_final") ? "integrity.dayFinal" : "common.error"));
       return;
     }
     await qc.invalidateQueries({ queryKey: ["signature"] });
@@ -134,12 +137,13 @@ function LightsOut() {
             block
             className="lights-submit"
             disabled={!mood || busy || !day.data}
-            onClick={() => void save()}
+            onClick={() => setConfirmOpen(true)}
           >
             {t("batch8.closeDay")}
           </StickerButton>
           <p>{t("batch8.privateMood")}</p>
         </footer>
+        <ConfirmSheet open={confirmOpen} title={t("integrity.closeTitle")} body={t("integrity.closeBody")} confirmLabel={t("integrity.closeConfirm")} busy={busy} onConfirm={() => void save()} onClose={() => setConfirmOpen(false)} />
       </div>
     </main>
   );

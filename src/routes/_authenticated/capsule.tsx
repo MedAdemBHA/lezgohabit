@@ -13,6 +13,7 @@ import { CAPSULE_MAX, RECORDING_SECONDS } from "@/lib/signature-rules";
 import { formatDayMonth } from "@/lib/i18n";
 import { pageHead } from "@/lib/page-head";
 import { supabase } from "@/integrations/supabase/client";
+import { ConfirmSheet } from "@/components/lezgo/confirm-sheet";
 export const Route = createFileRoute("/_authenticated/capsule")({
   head: () =>
     pageHead("Time capsule — lezgo", "Seal a private note or recording for your season-end self."),
@@ -26,6 +27,7 @@ function CapsulePage() {
   const q = useQuery({ ...signatureQuery(uid, sid), enabled: !!uid && !!sid });
   const [body, setBody] = useState("");
   const [busy, setBusy] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [recording, setRecording] = useState(false);
   const [seconds, setSeconds] = useState(0);
   const [audio, setAudio] = useState<Blob | null>(null);
@@ -109,6 +111,7 @@ function CapsulePage() {
   }
   async function seal() {
     if (!season || recording) return;
+    setConfirmOpen(false);
     setBusy(true);
     let path: string | null = null;
     try {
@@ -222,10 +225,11 @@ function CapsulePage() {
           <StickerButton
             block
             disabled={busy || recording || (!body.trim() && !audio) || !q.data}
-            onClick={() => void seal()}
+            onClick={() => setConfirmOpen(true)}
           >
             {t("batch8.seal")}
           </StickerButton>
+          <ConfirmSheet open={confirmOpen} title={t("integrity.sealTitle")} body={t("integrity.sealBody")} confirmLabel={t("integrity.sealConfirm")} busy={busy} onConfirm={() => void seal()} onClose={() => setConfirmOpen(false)} />
         </>
       )}
     </SignatureFrame>

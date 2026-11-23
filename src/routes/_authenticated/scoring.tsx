@@ -165,6 +165,7 @@ function Scoring() {
           </section>
         ))}
       </div>
+      <p className="scoring-cap">{t("integrity.stackCap")}</p>
       <h2 className="section-label mt-2">{t("batch4.boards")}</h2>
       <div className="flex flex-wrap gap-2">
         {(["country", "world", "crews", "average"] as const).map((s) => (

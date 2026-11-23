@@ -106,6 +106,7 @@ function Ranks() {
           })}
         </span>
       </div>
+      <p className="board-updated" role="status">{t("integrity.updated")}</p>
       <div className="board-segments" role="group" aria-label={t("socialDesign.scoreboard")}>
         {(["country", "world", "crews"] as const).map((s) => (
           <StickerButton

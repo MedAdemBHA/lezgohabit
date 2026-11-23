@@ -44,14 +44,17 @@ function Trail() {
                     const d = addDays(season.starts_on, n - 1);
                     const state = tileState(d, today, byDay.get(d));
                     const friends = data.crew.filter((c) => c.day === n).slice(0, 2);
+                    const final = !!byDay.get(d)?.finalized_at;
                     return (
                       <div
                         className="trail-tile"
                         data-state={state}
                         data-milestone={n === 20 || n === 40}
                         key={n}
-                        title={`${d} · ${t(`batch8.${state === "missed" ? "partial" : state === "future" ? "day" : state}`, { n })}`}
+                        data-final={final}
+                        title={`${d} · ${t(`batch8.${state === "missed" ? "partial" : state === "future" ? "day" : state}`, { n })}${final ? ` · ${t("integrity.final")}` : ""}`}
                       >
+                        {final && <span className="final-lock" aria-label={t("integrity.final")}><Lock aria-hidden /></span>}
                         {state === "perfect" ? (
                           <Star fill="currentColor" />
                         ) : state === "shield" ? (
