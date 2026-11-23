@@ -57,7 +57,7 @@ export function AppStatus({ profile, compact=false, hideBell=false }: { profile:
   return (
     <>
       <div className={compact ? "app-status-compact" : "app-status-strip"}>
-        {profile.is_demo && !compact && (
+        {false && !compact && (
           <>
             <span className="app-demo-sticker">{t("batch7.demoSticker")}</span>
             <StickerButton

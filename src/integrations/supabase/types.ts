@@ -1287,6 +1287,21 @@ export type Database = {
           },
         ]
       }
+      guest_sessions: {
+        Row: {
+          created_at: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+        }
+        Relationships: []
+      }
       habit_templates: {
         Row: {
           archived: boolean
@@ -2489,10 +2504,12 @@ export type Database = {
         Returns: undefined
       }
       _freeze_season: { Args: { _sid: string }; Returns: undefined }
+      _guest_guard: { Args: never; Returns: undefined }
       _habit_completion: {
         Args: { _detail: Json; _kind: string; _target: number; _value: number }
         Returns: number
       }
+      _is_guest: { Args: never; Returns: boolean }
       _local_today: { Args: { _user_id: string }; Returns: string }
       _notify: {
         Args: { _key: string; _type: string; _uid: string; _url?: string }
@@ -2573,6 +2590,7 @@ export type Database = {
         }
         Returns: Json
       }
+      admin_guest_sessions: { Args: never; Returns: Json }
       admin_overview: { Args: never; Returns: Json }
       admin_recompute_final_day: {
         Args: { _day: string; _reason: string; _season: string; _user: string }

@@ -1,3 +1,4 @@
+import { GuestChromeAuto } from "@/components/lezgo/guest";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -57,6 +58,7 @@ function LightsOut() {
   }
   return (
     <main className="lights-page">
+      <GuestChromeAuto />
       <div className="lights-inner">
         <header>
           <Num>

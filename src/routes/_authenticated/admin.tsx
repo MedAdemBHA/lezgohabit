@@ -1,3 +1,4 @@
+import { supabase } from "@/integrations/supabase/client";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -95,6 +96,7 @@ function AdminPage() {
   const [wordLang, setWordLang] = useState("en");
   const [showDemo, setShowDemo] = useState(false);
   const q = useQuery(adminQuery(section, search, page, target, showDemo));
+  const guests = useQuery({ queryKey: ["admin-guest-sessions"], refetchInterval: 60_000, queryFn: async () => { const { data, error } = await supabase.rpc("admin_guest_sessions"); if (error) throw error; return data as unknown as { today: number; week: number }; } });
   const seedFn = useServerFn(adminDemo);
   async function refresh() {
     await qc.invalidateQueries();
@@ -289,6 +291,7 @@ function AdminPage() {
                 {showDemo ? a("sample") : t("integrity.realPlayers")}
               </StickerButton>
             )}
+            {guests.data && <span className="admin-season-pill">{t("guest.sessionsToday")} · <Num>{guests.data.today}</Num></span>}
             <div className="admin-language">
               {(["en", "ar"] as const).map((l) => (
                 <StickerButton

@@ -1,9 +1,7 @@
 import { ClientOnly, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { enterDemo } from "@/lib/admin.functions";
+import { useQuery } from "@tanstack/react-query";
+import { ExploreAsGuest } from "@/components/lezgo/guest";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
 import { ArrowRight } from "lucide-react";
@@ -37,23 +35,7 @@ function Landing() {
   const { t, i18n } = useTranslation();
   const nav = useNavigate();
   const now = useNow();
-  const demoFn = useServerFn(enterDemo);
-  const qc = useQueryClient();
   const featured = useQuery({queryKey:['featuredCreators'],queryFn:async()=>{const {data,error}=await supabase.rpc('featured_creator_challenges');if(error)throw error;return data as unknown as {name:string;code:string;days:number}[];}});
-  const [demoBusy, setDemoBusy] = useState(false);
-  async function demo() {
-    setDemoBusy(true);
-    try {
-      const session = await demoFn();
-      await qc.cancelQueries();
-      qc.clear();
-      const { error } = await supabase.auth.setSession(session);
-      if (error) throw error;
-      await nav({ to: "/today" });
-    } catch (error) {
-      toast.error(t((error as { message?: string }).message?.includes("demo_rate_limit") ? "batch7.demoLimit" : "batch7.demoUnavailable"));
-    } finally { setDemoBusy(false); }
-  }
   const [codeOpen, setCodeOpen] = useState(false);
   const [code, setCode] = useState("");
   const left = splitMs(now ? winterArcEndLocal() - now.getTime() : 0);
@@ -72,7 +54,7 @@ function Landing() {
       <div className="join-actions">
         <StickerButton block className="join-primary" onClick={() => nav({ to: "/auth" })}>{t("common.cta")}</StickerButton>
         <StickerButton block variant="secondary" className="join-code" onClick={() => setCodeOpen(true)}>{t("landing.haveCode")}</StickerButton>
-        <StickerButton variant="ghost" className="demo-link !min-h-11" disabled={demoBusy} onClick={() => void demo()}>{t(demoBusy ? "batch7.demoSignin" : "design.demo")}</StickerButton>
+        <ExploreAsGuest />
         <p className="text-center text-[13px] font-semibold text-design-muted">{t("landing.footer")} · <bdi>EN · FR · عربي · تونسي</bdi></p>
       </div>
       <BottomSheet open={codeOpen} onClose={() => setCodeOpen(false)} title={t("landing.codeTitle")}>

@@ -132,6 +132,7 @@ export const enterDemo = createServerFn({ method: "POST" }).handler(async () => 
   });
   const { data, error } = await auth.auth.signInWithPassword({ email: "demo@lezgo.app", password });
   if (error || !data.session || data.user?.id !== ready.id) throw new Error("demo_unavailable");
+  await supabaseAdmin.from("guest_sessions").insert({});
   return { access_token: data.session.access_token, refresh_token: data.session.refresh_token };
 });
 export const recordPresence = createServerFn({ method: "POST" })

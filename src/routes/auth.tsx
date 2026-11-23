@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { ExploreAsGuest } from "@/components/lezgo/guest";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -75,6 +76,7 @@ function AuthPage() {
         <label className="flex min-h-11 items-center gap-3 text-[14px] font-bold"><input type="checkbox" checked={adult} onChange={e=>setAdult(e.target.checked)} className="size-5 accent-ink"/>{t("batch9.adult")}</label>
         <StickerButton block variant="secondary" className="google-button" onClick={google} disabled={busy || !adult}><GoogleG />{t("auth.google")}</StickerButton>
         <StickerButton block variant="ghost" className="email-button" onClick={() => setEmailOpen(true)} disabled={busy || !adult}><Mail size={20} strokeWidth={2.5} />{t("design.email")}</StickerButton>
+        <ExploreAsGuest />
         <p className="text-center text-[12px] font-semibold leading-[1.5] text-design-muted">{t("design.legal")} <StickerButton variant="ghost" className="legal-link" onClick={() => setLegal("terms")}>{t("design.terms")}</StickerButton> {t("design.andWord")} <StickerButton variant="ghost" className="legal-link" onClick={() => setLegal("privacy")}>{t("design.privacy")}</StickerButton></p>
       </div>
       <BottomSheet open={emailOpen} onClose={() => setEmailOpen(false)} title={t("design.email")}>{sent ? <p className="sticker bg-lime p-4 font-bold">{t("auth.linkSent")}</p> : <form onSubmit={magic} className="space-y-4"><Field label={t("auth.email")}><input dir="ltr" type="email" autoComplete="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder={t("auth.emailPh")} className={inputCls} /></Field><StickerButton block type="submit" disabled={busy}>{t("design.email")}</StickerButton></form>}</BottomSheet>

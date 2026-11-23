@@ -539,7 +539,7 @@ function Today() {
         </Link>
         <LangGrid
           onPick={async (language) => {
-            await supabase.from("profiles").update({ language }).eq("id", uid);
+            if (!profile?.is_demo) await supabase.from("profiles").update({ language }).eq("id", uid);
             await qc.invalidateQueries({ queryKey: profileQuery(uid).queryKey });
             setSettingsOpen(false);
           }}

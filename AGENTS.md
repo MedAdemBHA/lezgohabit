@@ -65,9 +65,10 @@ use the editor.
 - Boss progress and one-time level rewards are maintained by authenticated Postgres RPCs and saved-data triggers; season bonus rows remain separate from the daily cap and are included in season ranks.
 - Challenges have isolated seasons and participant-validated active selection; creator access lives in protected user_roles, and shared habits are guarded on every write path.
 - Small Wins and Wrapped use shared browser-only image exports with fixed 1080px output; private faith wins and summaries are removed before export or posting.
-- Invite metadata uses a narrow unauthenticated server function, while joining and active-season writes require signed-in membership checks.
+- Invite metadata is a narrow public server function; joining requires signed-in checks.
 - Admin mutations use audited, allowlisted RPCs with server-checked access; roles remain protected separately from editable profiles.
-- Demo history uses isolated sample seasons and a server-owned simulated clock; sample clearing never touches official seasons or real players.
-- Shared demo sign-in and saved-proof hashing use authenticated/guarded server functions; credentials and salted device/network fingerprints never reach browser code.
-- Signature RPCs own capsule time locks and Moment claims to prevent premature reads and repeated displays.
+- Demo uses isolated sample seasons and a server clock; clearing never touches real data.
+- Guest = read-only sample account via `_guest_guard()` in write RPCs + table triggers; keep it when redefining RPCs.
+- Demo sign-in and proof hashing run in guarded server functions; secrets never reach the browser.
+- Signature RPCs own capsule locks and once-only Moments.
 - Final days (03:00 local/Close my day, 15-min integrity_tick), frozen season_results and demo isolation are enforced in Postgres; only audited admin RPCs may change final data.

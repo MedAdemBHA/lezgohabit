@@ -685,3 +685,8 @@
 .locks-note {display:inline-flex;align-items:center;gap:6px;align-self:flex-start;min-height:32px;padding:4px 12px;border-radius:999px;border:2px solid var(--ink);background:var(--yellow);font-size:13px;font-weight:700;}
 .board-updated {font-size:12px;font-weight:700;color:var(--muted-foreground);margin-top:-4px;}
 .scoring-cap {padding:12px 14px;border-radius:16px;border:2.5px solid var(--ink);background:var(--card);font-size:14px;font-weight:600;}
+
+/* Guest mode */
+.guest-banner { display: flex; align-items: center; justify-content: center; gap: 0.5rem; min-height: 32px; padding: 4px 12px; background: var(--color-yellow, #FFD43B); border-bottom: 2.5px solid var(--color-ink, #111); font-size: 13px; font-weight: 800; line-height: 1.25; }
+.guest-banner-link { min-height: 32px; padding-inline: 8px; text-decoration: underline; text-underline-offset: 3px; font-weight: 800; }
+.guest-banner-link:focus-visible { outline: 3px solid var(--color-ink, #111); outline-offset: 2px; border-radius: 6px; }

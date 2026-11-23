@@ -11,6 +11,7 @@ import { AppStatus } from "./app-status";
 import { OfflineStatus } from "./launch/offline-status";
 import { daysBetween } from "@/lib/time";
 import { BadgeSignals } from "./signature/moments";
+import { GuestChrome } from "./guest";
 
 export function AppShell({ children, hideTabs, todayLayout = false }: { children: ReactNode; hideTabs?: boolean; todayLayout?: boolean }) {
   const { t, i18n } = useTranslation();
@@ -18,7 +19,7 @@ export function AppShell({ children, hideTabs, todayLayout = false }: { children
   const loc = useLocation();
   const applied = useRef(false);
   useEffect(() => {
-    if (profile && !applied.current) { applied.current = true; if (profile.language !== i18n.language) applyLang(profile.language); }
+    if (profile && !applied.current) { applied.current = true; if (!profile.is_demo && profile.onboarded && profile.language !== i18n.language) applyLang(profile.language); }
   }, [profile, i18n.language]);
 
   const tabs = [
@@ -30,6 +31,7 @@ export function AppShell({ children, hideTabs, todayLayout = false }: { children
   ];
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-[440px] flex-col bg-background">
+      <GuestChrome active={!!profile?.is_demo} />
       <AppStatus profile={profile} hideBell={loc.pathname==="/today"} />
       {profile && <OfflineStatus uid={profile.id} day={season ? Math.max(1, daysBetween(season.starts_on, new Intl.DateTimeFormat("en-CA",{timeZone:profile.timezone,year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date()))+1) : 1} />}
       <BadgeSignals />

@@ -146,7 +146,7 @@ function SettingsPage() {
             aria-pressed={i18n.language === lang}
             onClick={() => {
               applyLang(lang);
-              void update({ language: lang });
+              if (!profile.is_demo) void update({ language: lang });
             }}
           >
             {t(`batch4.${["english", "french", "arabic", "darja"][i]}`)}
