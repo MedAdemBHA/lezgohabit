@@ -2,7 +2,7 @@
 - [x] Match Join and Login in four languages; leave demo unwired and Apple hidden.
 - [x] Match habit onboarding, seed missing templates, preserve 1–3 limit and existing season/crew flow.
 - [x] Verify mobile, RTL, authenticated onboarding, tests, and save changes.
-Deferred by batch scope: demo sign-in awaits admin/demo batch; Lift, Boss, feed and legal documents remain placeholders.
+Deferred by batch scope: demo sign-in awaits admin/demo batch; Lift, Boss and legal documents remain placeholders.
 
 ## Batch 2 — Today
 - [x] Match Today header, score, progress, habit tiles and exact shared tab bar.
@@ -17,3 +17,11 @@ Deferred by batch scope: demo sign-in awaits admin/demo batch; Lift, Boss, feed 
 - [x] Add Seasons hub and Find a buddy destinations without duplicate routes.
 - [x] Verify real data, privacy, mobile and RTL flows; run tests and save changes.
 Boss K.O. stays locked until the later Boss batch supplies verified Boss results; no habit-based substitute is awarded.
+
+## Batch 4 — Feed, Compose, Settings and Scoring
+- [x] Add private-aware posts, reactions, reports and compressed proof storage; award first daily proof server-side.
+- [x] Build Feed and full-screen Compose with scopes, filters and moderation actions.
+- [x] Match Settings; persist units, prayer method/city, equipment and reminder preferences.
+- [x] Build server-calculated scoring playground and average/day ranks with linked board views.
+- [x] Verify signed-in posting/reactions/privacy, score rules, mobile/RTL and save changes.
+Reminder delivery remains outside this batch; settings save preferences. The calculator preserves floor((100 + 65) × 1.5) = 247 rather than displaying 248.

@@ -23,6 +23,7 @@ import { Route as AuthenticatedLiftRouteImport } from './routes/_authenticated/l
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedRanksRouteImport } from './routes/_authenticated/ranks'
+import { Route as AuthenticatedScoringRouteImport } from './routes/_authenticated/scoring'
 import { Route as AuthenticatedSeasonsRouteImport } from './routes/_authenticated/seasons'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedTodayRouteImport } from './routes/_authenticated/today'
@@ -98,6 +99,11 @@ const AuthenticatedRanksRoute = AuthenticatedRanksRouteImport.update({
   path: '/ranks',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedScoringRoute = AuthenticatedScoringRouteImport.update({
+  id: '/scoring',
+  path: '/scoring',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedSeasonsRoute = AuthenticatedSeasonsRouteImport.update({
   id: '/seasons',
   path: '/seasons',
@@ -133,6 +139,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/ranks': typeof AuthenticatedRanksRoute
+  '/scoring': typeof AuthenticatedScoringRoute
   '/seasons': typeof AuthenticatedSeasonsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/today': typeof AuthenticatedTodayRoute
@@ -152,6 +159,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/ranks': typeof AuthenticatedRanksRoute
+  '/scoring': typeof AuthenticatedScoringRoute
   '/seasons': typeof AuthenticatedSeasonsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/today': typeof AuthenticatedTodayRoute
@@ -173,6 +181,7 @@ export interface FileRoutesById {
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/ranks': typeof AuthenticatedRanksRoute
+  '/_authenticated/scoring': typeof AuthenticatedScoringRoute
   '/_authenticated/seasons': typeof AuthenticatedSeasonsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/today': typeof AuthenticatedTodayRoute
@@ -194,6 +203,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/profile'
     | '/ranks'
+    | '/scoring'
     | '/seasons'
     | '/settings'
     | '/today'
@@ -213,6 +223,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/profile'
     | '/ranks'
+    | '/scoring'
     | '/seasons'
     | '/settings'
     | '/today'
@@ -233,6 +244,7 @@ export interface FileRouteTypes {
     | '/_authenticated/onboarding'
     | '/_authenticated/profile'
     | '/_authenticated/ranks'
+    | '/_authenticated/scoring'
     | '/_authenticated/seasons'
     | '/_authenticated/settings'
     | '/_authenticated/today'
@@ -346,6 +358,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRanksRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/scoring': {
+      id: '/_authenticated/scoring'
+      path: '/scoring'
+      fullPath: '/scoring'
+      preLoaderRoute: typeof AuthenticatedScoringRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/seasons': {
       id: '/_authenticated/seasons'
       path: '/seasons'
@@ -389,6 +408,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedRanksRoute: typeof AuthenticatedRanksRoute
+  AuthenticatedScoringRoute: typeof AuthenticatedScoringRoute
   AuthenticatedSeasonsRoute: typeof AuthenticatedSeasonsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedTodayRoute: typeof AuthenticatedTodayRoute
@@ -406,6 +426,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedRanksRoute: AuthenticatedRanksRoute,
+  AuthenticatedScoringRoute: AuthenticatedScoringRoute,
   AuthenticatedSeasonsRoute: AuthenticatedSeasonsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedTodayRoute: AuthenticatedTodayRoute,

@@ -344,6 +344,145 @@ export type Database = {
           },
         ]
       }
+      post_hides: {
+        Row: {
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hides_author_profile"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_hides_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      post_reactions: {
+        Row: {
+          created_at: string
+          kind: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          kind: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          kind?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_reactions_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reactions_author_profile"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      posts: {
+        Row: {
+          body: string
+          created_at: string
+          crew_id: string | null
+          day: string
+          habit_key: string | null
+          hidden: boolean
+          id: string
+          image_url: string | null
+          is_demo: boolean
+          season_id: string
+          stats: Json
+          type: string
+          user_id: string
+          visibility: string
+        }
+        Insert: {
+          body?: string
+          created_at?: string
+          crew_id?: string | null
+          day: string
+          habit_key?: string | null
+          hidden?: boolean
+          id?: string
+          image_url?: string | null
+          is_demo?: boolean
+          season_id: string
+          stats?: Json
+          type: string
+          user_id: string
+          visibility?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          crew_id?: string | null
+          day?: string
+          habit_key?: string | null
+          hidden?: boolean
+          id?: string
+          image_url?: string | null
+          is_demo?: boolean
+          season_id?: string
+          stats?: Json
+          type?: string
+          user_id?: string
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "posts_author_profile"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "posts_crew_id_fkey"
+            columns: ["crew_id"]
+            isOneToOne: false
+            referencedRelation: "crews"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "posts_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -400,6 +539,42 @@ export type Database = {
           units?: string
         }
         Relationships: []
+      }
+      reports: {
+        Row: {
+          created_at: string
+          post_id: string
+          reason: string
+          reporter: string
+        }
+        Insert: {
+          created_at?: string
+          post_id: string
+          reason: string
+          reporter: string
+        }
+        Update: {
+          created_at?: string
+          post_id?: string
+          reason?: string
+          reporter?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reports_author_profile"
+            columns: ["reporter"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reports_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       respects: {
         Row: {
@@ -546,6 +721,50 @@ export type Database = {
           },
         ]
       }
+      user_preferences: {
+        Row: {
+          boss_alerts: boolean
+          daily_time: string
+          distance_unit: string
+          equipment: string[]
+          max_dumbbell: number
+          prayer_enabled: boolean
+          prayer_method: number
+          prayer_reminder: boolean
+          user_id: string
+        }
+        Insert: {
+          boss_alerts?: boolean
+          daily_time?: string
+          distance_unit?: string
+          equipment?: string[]
+          max_dumbbell?: number
+          prayer_enabled?: boolean
+          prayer_method?: number
+          prayer_reminder?: boolean
+          user_id: string
+        }
+        Update: {
+          boss_alerts?: boolean
+          daily_time?: string
+          distance_unit?: string
+          equipment?: string[]
+          max_dumbbell?: number
+          prayer_enabled?: boolean
+          prayer_method?: number
+          prayer_reminder?: boolean
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "preferences_author_profile"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -585,6 +804,24 @@ export type Database = {
           streak: number
         }[]
       }
+      _rank_rows_metric: {
+        Args: {
+          _country: string
+          _day: string
+          _metric: string
+          _period: string
+          _scope: string
+          _sid: string
+          _viewer: string
+        }
+        Returns: {
+          entity: string
+          joined: string
+          points: number
+          rnk: number
+          streak: number
+        }[]
+      }
       _recompute_with_crew: {
         Args: { _day: string; _season_id: string; _user_id: string }
         Returns: undefined
@@ -598,6 +835,7 @@ export type Database = {
         Args: { _search?: string; _season_id: string }
         Returns: Json
       }
+      can_read_post: { Args: { _id: string }; Returns: boolean }
       checkin_upsert: {
         Args: {
           _day?: string
@@ -609,6 +847,18 @@ export type Database = {
       }
       create_crew: {
         Args: { _kind: string; _max_members: number; _name: string }
+        Returns: string
+      }
+      create_post: {
+        Args: {
+          _body?: string
+          _habit_key?: string
+          _image_url?: string
+          _season_id: string
+          _stats?: Json
+          _type: string
+          _visibility?: string
+        }
         Returns: string
       }
       crew_activity: { Args: { _crew_id: string }; Returns: Json }
@@ -632,6 +882,10 @@ export type Database = {
       }
       leave_crew: { Args: { _crew_id: string }; Returns: undefined }
       participating_countries: { Args: never; Returns: number }
+      post_action: {
+        Args: { _action: string; _post_id: string; _reason?: string }
+        Returns: undefined
+      }
       post_daily_proof: {
         Args: { _path: string; _season_id: string }
         Returns: Json
@@ -639,6 +893,19 @@ export type Database = {
       profile_summary: {
         Args: { _season_id: string; _share?: boolean }
         Returns: Json
+      }
+      proof_feed: {
+        Args: {
+          _before?: string
+          _filter?: string
+          _scope?: string
+          _season_id: string
+        }
+        Returns: Json
+      }
+      react_post: {
+        Args: { _kind: string; _post_id: string }
+        Returns: undefined
       }
       recompute_day: {
         Args: { _day: string; _season_id: string; _user_id: string }
@@ -650,6 +917,28 @@ export type Database = {
           _period: string
           _scope: string
           _season_id: string
+        }
+        Returns: Json
+      }
+      scoreboard_v4: {
+        Args: {
+          _country_code?: string
+          _metric?: string
+          _period: string
+          _scope: string
+          _season_id: string
+        }
+        Returns: Json
+      }
+      scoring_preview: {
+        Args: {
+          _chaos: boolean
+          _crew: boolean
+          _done: number
+          _lift: number
+          _picked: number
+          _proof: boolean
+          _streak: number
         }
         Returns: Json
       }

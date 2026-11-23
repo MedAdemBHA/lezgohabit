@@ -1,0 +1,16 @@
+CREATE FUNCTION public._rank_rows_metric(_sid uuid,_scope text,_period text,_country text,_day date,_viewer uuid,_metric text) RETURNS TABLE(entity uuid,rnk bigint,points numeric,streak integer,joined timestamptz) LANGUAGE sql STABLE SECURITY DEFINER SET search_path=public AS $$
+ WITH base AS (SELECT r.*,CASE WHEN _metric='average' THEN round(r.points::numeric/greatest(1,_day-greatest(s.starts_on,CASE _period WHEN 'today' THEN _day WHEN 'week' THEN date_trunc('week',_day)::date ELSE s.starts_on END,(r.joined AT TIME ZONE coalesce(p.timezone,'Africa/Tunis'))::date)+1),2) ELSE r.points::numeric END AS score FROM public._rank_rows(_sid,_scope,_period,_country,_day,_viewer) r JOIN public.seasons s ON s.id=_sid LEFT JOIN public.profiles p ON p.id=r.entity)
+ SELECT entity,row_number() OVER(ORDER BY score DESC,streak DESC,joined ASC,entity),score,streak,joined FROM base
+$$;
+REVOKE ALL ON FUNCTION public._rank_rows_metric(uuid,text,text,text,date,uuid,text) FROM PUBLIC,anon,authenticated;
+CREATE FUNCTION public.scoreboard_v4(_season_id uuid,_scope text,_period text,_country_code text DEFAULT 'TN',_metric text DEFAULT 'total') RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path=public AS $$ DECLARE uid uuid:=auth.uid(); d date; res jsonb; BEGIN
+ IF uid IS NULL THEN RAISE EXCEPTION 'not_authenticated'; END IF;
+ IF _scope NOT IN ('world','country','crews') OR _period NOT IN ('today','week','season') OR _metric NOT IN ('total','average') THEN RAISE EXCEPTION 'invalid_scope'; END IF;
+ d:=public._local_today(uid);
+ WITH current_rows AS (SELECT * FROM public._rank_rows_metric(_season_id,_scope,_period,_country_code,d,uid,_metric)), yesterday AS (SELECT * FROM public._rank_rows_metric(_season_id,_scope,_period,_country_code,d-1,uid,_metric)), rendered AS (
+ SELECT r.rnk,CASE WHEN _scope='crews' THEN EXISTS(SELECT 1 FROM public.crew_members m WHERE m.crew_id=r.entity AND m.user_id=uid) ELSE r.entity=uid END AS mine,
+ jsonb_build_object('rank',r.rnk,'user_id',CASE WHEN _scope<>'crews' THEN r.entity END,'crew_id',CASE WHEN _scope='crews' THEN r.entity END,'display_name',coalesce(p.display_name,c.name),'handle',p.handle,'avatar_url',p.avatar_url,'country_code',p.country_code,'streak',r.streak,'points',r.points,'previous_rank',y.rnk,'is_me',CASE WHEN _scope='crews' THEN EXISTS(SELECT 1 FROM public.crew_members m WHERE m.crew_id=r.entity AND m.user_id=uid) ELSE r.entity=uid END,'members',CASE WHEN _scope='crews' THEN (SELECT count(*) FROM public.crew_members m WHERE m.crew_id=r.entity) END,'stat',CASE WHEN _scope<>'crews' THEN public._best_habit_stat(r.entity,_season_id,uid) END) AS row FROM current_rows r LEFT JOIN yesterday y ON y.entity=r.entity LEFT JOIN public.profiles p ON p.id=r.entity LEFT JOIN public.crews c ON c.id=r.entity)
+ SELECT jsonb_build_object('rows',coalesce((SELECT jsonb_agg(row ORDER BY rnk) FROM rendered WHERE rnk<=100),'[]'::jsonb),'me',(SELECT row FROM rendered WHERE mine LIMIT 1)) INTO res; RETURN res;
+END $$;
+REVOKE ALL ON FUNCTION public.scoreboard_v4(uuid,text,text,text,text) FROM PUBLIC,anon;
+GRANT EXECUTE ON FUNCTION public.scoreboard_v4(uuid,text,text,text,text) TO authenticated,service_role;

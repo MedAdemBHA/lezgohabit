@@ -1,17 +1,157 @@
-import { createFileRoute,Link } from '@tanstack/react-router';
-import { useQuery,useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { ArrowLeft,Search,UserPlus } from 'lucide-react';
-import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
-import { AppShell } from '@/components/lezgo/app-shell';
-import { Avatar,Field,StickerButton,inputCls } from '@/components/lezgo/ui';
-import { buddyQuery,type Buddy } from '@/lib/community-data';
-import { useBase } from '@/lib/data';
-import { pageHead } from '@/lib/page-head';
-export const Route=createFileRoute('/_authenticated/buddies')({head:()=>pageHead('Find a buddy — lezgo','Invite a season buddy and keep showing up together.'),component:Buddies});
-function Buddies(){const {t}=useTranslation();const {uid,season}=useBase();const qc=useQueryClient();const [input,setInput]=useState('');const [search,setSearch]=useState('');const [busy,setBusy]=useState<string|null>(null);const q=useQuery({...buddyQuery(uid,season?.id??'',search),enabled:!!uid&&!!season});
- async function action(type:string,target:string){setBusy(target);const {error}=await supabase.rpc('buddy_action',{_action:type,_target:target});setBusy(null);if(error){toast(error.message.includes('buddy_limit')?t('socialDesign.buddyLimit'):t('common.error'));return;}await qc.invalidateQueries({queryKey:['buddies']});}
- function person(b:Buddy,kind:'buddy'|'incoming'|'result'){return <div key={b.user_id} className="flex flex-wrap items-center gap-3 rounded-[18px] bg-card p-3 sticker-border shadow-hard"><Avatar id={b.user_id} name={b.display_name} url={b.avatar_url} size={40}/><div className="min-w-0 flex-1"><p className="truncate text-[18px] font-extrabold">{b.display_name}</p><p className="text-[13px] font-semibold"><bdi dir="ltr">@{b.handle}</bdi> · {t('socialDesign.streakStat',{n:b.streak})}</p></div>{kind==='incoming'?<div className="flex w-full justify-end gap-2"><StickerButton variant="ghost" size="sm" disabled={busy===b.user_id} onClick={()=>void action('decline',b.user_id)}>{t('socialDesign.decline')}</StickerButton><StickerButton variant="lime" size="sm" disabled={busy===b.user_id} onClick={()=>void action('accept',b.user_id)}>{t('socialDesign.accept')}</StickerButton></div>:<StickerButton variant={kind==='buddy'?'ghost':'yellow'} size="sm" disabled={busy===b.user_id||b.status==='pending'} onClick={()=>void action(kind==='buddy'?'remove':'invite',b.user_id)}>{t(kind==='buddy'?'socialDesign.removeBuddy':b.status==='pending'?'socialDesign.requested':'socialDesign.sendRequest')}</StickerButton>}</div>}
- return <AppShell todayLayout><Link to="/profile" className="self-start"><StickerButton variant="secondary" className="habit-back" aria-label={t('common.back')}><ArrowLeft className="rtl:-scale-x-100"/></StickerButton></Link><h1 className="text-[36px] font-extrabold">{t('socialDesign.findBuddy')}</h1>{q.data?.buddy?<>{person(q.data.buddy,'buddy')}</>:<><UserPlus size={40}/><p className="font-semibold">{t('socialDesign.findBuddySub')}</p></>}{(q.data?.incoming.length??0)>0&&<><h2 className="mt-3 font-extrabold">{t('socialDesign.buddyRequests')}</h2>{q.data?.incoming.map(b=>person(b,'incoming'))}</>}{!q.data?.buddy&&<form className="flex items-end gap-2" onSubmit={e=>{e.preventDefault();setSearch(input.trim());}}><div className="min-w-0 flex-1"><Field label={t('socialDesign.searchBuddy')}><input className={inputCls} dir="ltr" value={input} maxLength={20} onChange={e=>setInput(e.target.value)}/></Field></div><StickerButton type="submit" variant="lime" disabled={input.trim().length<2} aria-label={t('socialDesign.searchBuddy')} className="size-[50px] p-0"><Search size={22}/></StickerButton></form>}{q.isPending?<p>{t('common.loading')}</p>:q.isError?<StickerButton variant="secondary" onClick={()=>void q.refetch()}>{t('common.error')}</StickerButton>:<>{!q.data?.buddy&&q.data?.results.map(b=>person(b,'result'))}{search&&q.data?.results.length===0&&<p>{t('socialDesign.noResults')}</p>}</>}</AppShell>}
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { ArrowLeft, Search, UserPlus } from "lucide-react";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { CommunitySwitch } from "@/components/lezgo/community/community-switch";
+import { AppShell } from "@/components/lezgo/app-shell";
+import { Avatar, Field, StickerButton, inputCls } from "@/components/lezgo/ui";
+import { buddyQuery, type Buddy } from "@/lib/community-data";
+import { useBase } from "@/lib/data";
+import { pageHead } from "@/lib/page-head";
+export const Route = createFileRoute("/_authenticated/buddies")({
+  head: () =>
+    pageHead("Find a buddy — lezgo", "Invite a season buddy and keep showing up together."),
+  component: Buddies,
+});
+function Buddies() {
+  const { t } = useTranslation();
+  const { uid, season } = useBase();
+  const qc = useQueryClient();
+  const [input, setInput] = useState("");
+  const [search, setSearch] = useState("");
+  const [busy, setBusy] = useState<string | null>(null);
+  const q = useQuery({ ...buddyQuery(uid, season?.id ?? "", search), enabled: !!uid && !!season });
+  async function action(type: string, target: string) {
+    setBusy(target);
+    const { error } = await supabase.rpc("buddy_action", { _action: type, _target: target });
+    setBusy(null);
+    if (error) {
+      toast(
+        error.message.includes("buddy_limit") ? t("socialDesign.buddyLimit") : t("common.error"),
+      );
+      return;
+    }
+    await qc.invalidateQueries({ queryKey: ["buddies"] });
+  }
+  function person(b: Buddy, kind: "buddy" | "incoming" | "result") {
+    return (
+      <div
+        key={b.user_id}
+        className="flex flex-wrap items-center gap-3 rounded-[18px] bg-card p-3 sticker-border shadow-hard"
+      >
+        <Avatar id={b.user_id} name={b.display_name} url={b.avatar_url} size={40} />
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-[18px] font-extrabold">{b.display_name}</p>
+          <p className="text-[13px] font-semibold">
+            <bdi dir="ltr">@{b.handle}</bdi> · {t("socialDesign.streakStat", { n: b.streak })}
+          </p>
+        </div>
+        {kind === "incoming" ? (
+          <div className="flex w-full justify-end gap-2">
+            <StickerButton
+              variant="ghost"
+              size="sm"
+              disabled={busy === b.user_id}
+              onClick={() => void action("decline", b.user_id)}
+            >
+              {t("socialDesign.decline")}
+            </StickerButton>
+            <StickerButton
+              variant="lime"
+              size="sm"
+              disabled={busy === b.user_id}
+              onClick={() => void action("accept", b.user_id)}
+            >
+              {t("socialDesign.accept")}
+            </StickerButton>
+          </div>
+        ) : (
+          <StickerButton
+            variant={kind === "buddy" ? "ghost" : "yellow"}
+            size="sm"
+            disabled={busy === b.user_id || b.status === "pending"}
+            onClick={() => void action(kind === "buddy" ? "remove" : "invite", b.user_id)}
+          >
+            {t(
+              kind === "buddy"
+                ? "socialDesign.removeBuddy"
+                : b.status === "pending"
+                  ? "socialDesign.requested"
+                  : "socialDesign.sendRequest",
+            )}
+          </StickerButton>
+        )}
+      </div>
+    );
+  }
+  return (
+    <AppShell todayLayout>
+      <CommunitySwitch active="buddies" />
+      <Link to="/profile" className="self-start">
+        <StickerButton variant="secondary" className="habit-back" aria-label={t("common.back")}>
+          <ArrowLeft className="rtl:-scale-x-100" />
+        </StickerButton>
+      </Link>
+      <h1 className="text-[36px] font-extrabold">{t("socialDesign.findBuddy")}</h1>
+      {q.data?.buddy ? (
+        <>{person(q.data.buddy, "buddy")}</>
+      ) : (
+        <>
+          <UserPlus size={40} />
+          <p className="font-semibold">{t("socialDesign.findBuddySub")}</p>
+        </>
+      )}
+      {(q.data?.incoming.length ?? 0) > 0 && (
+        <>
+          <h2 className="mt-3 font-extrabold">{t("socialDesign.buddyRequests")}</h2>
+          {q.data?.incoming.map((b) => person(b, "incoming"))}
+        </>
+      )}
+      {!q.data?.buddy && (
+        <form
+          className="flex items-end gap-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            setSearch(input.trim());
+          }}
+        >
+          <div className="min-w-0 flex-1">
+            <Field label={t("socialDesign.searchBuddy")}>
+              <input
+                className={inputCls}
+                dir="ltr"
+                value={input}
+                maxLength={20}
+                onChange={(e) => setInput(e.target.value)}
+              />
+            </Field>
+          </div>
+          <StickerButton
+            type="submit"
+            variant="lime"
+            disabled={input.trim().length < 2}
+            aria-label={t("socialDesign.searchBuddy")}
+            className="size-[50px] p-0"
+          >
+            <Search size={22} />
+          </StickerButton>
+        </form>
+      )}
+      {q.isPending ? (
+        <p>{t("common.loading")}</p>
+      ) : q.isError ? (
+        <StickerButton variant="secondary" onClick={() => void q.refetch()}>
+          {t("common.error")}
+        </StickerButton>
+      ) : (
+        <>
+          {!q.data?.buddy && q.data?.results.map((b) => person(b, "result"))}
+          {search && q.data?.results.length === 0 && <p>{t("socialDesign.noResults")}</p>}
+        </>
+      )}
+    </AppShell>
+  );
+}

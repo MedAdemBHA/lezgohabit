@@ -57,6 +57,34 @@
       "when": 1795392449665,
       "tag": "0007_literal_buddy_handle_search",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1795392628913,
+      "tag": "0008_proof_feed_settings_and_calculator",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1795392651936,
+      "tag": "0009_average_day_scoreboard",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1795392943913,
+      "tag": "0010_feed_account_cleanup",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1795393000761,
+      "tag": "0011_restrict_feed_data_api_grants",
+      "breakpoints": true
     }
   ]
 }
