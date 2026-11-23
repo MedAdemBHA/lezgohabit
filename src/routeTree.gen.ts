@@ -16,6 +16,7 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedBossRouteImport } from './routes/_authenticated/boss'
 import { Route as AuthenticatedBuddiesRouteImport } from './routes/_authenticated/buddies'
 import { Route as AuthenticatedCommunityRouteImport } from './routes/_authenticated/community'
+import { Route as AuthenticatedCreateChallengeRouteImport } from './routes/_authenticated/create-challenge'
 import { Route as AuthenticatedCrewRouteImport } from './routes/_authenticated/crew'
 import { Route as AuthenticatedCrewDetailsRouteImport } from './routes/_authenticated/crew-details'
 import { Route as AuthenticatedDetoxRouteImport } from './routes/_authenticated/detox'
@@ -27,7 +28,9 @@ import { Route as AuthenticatedRanksRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedScoringRouteImport } from './routes/_authenticated/scoring'
 import { Route as AuthenticatedSeasonsRouteImport } from './routes/_authenticated/seasons'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedSmallWinsRouteImport } from './routes/_authenticated/small-wins'
 import { Route as AuthenticatedTodayRouteImport } from './routes/_authenticated/today'
+import { Route as AuthenticatedWrappedRouteImport } from './routes/_authenticated/wrapped'
 import { Route as CCodeRouteImport } from './routes/c.$code'
 
 const IndexRoute = IndexRouteImport.update({
@@ -64,6 +67,12 @@ const AuthenticatedCommunityRoute = AuthenticatedCommunityRouteImport.update({
   path: '/community',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCreateChallengeRoute =
+  AuthenticatedCreateChallengeRouteImport.update({
+    id: '/create-challenge',
+    path: '/create-challenge',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCrewRoute = AuthenticatedCrewRouteImport.update({
   id: '/crew',
   path: '/crew',
@@ -120,9 +129,19 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedSmallWinsRoute = AuthenticatedSmallWinsRouteImport.update({
+  id: '/small-wins',
+  path: '/small-wins',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedTodayRoute = AuthenticatedTodayRouteImport.update({
   id: '/today',
   path: '/today',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedWrappedRoute = AuthenticatedWrappedRouteImport.update({
+  id: '/wrapped',
+  path: '/wrapped',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const CCodeRoute = CCodeRouteImport.update({
@@ -138,6 +157,7 @@ export interface FileRoutesByFullPath {
   '/boss': typeof AuthenticatedBossRoute
   '/buddies': typeof AuthenticatedBuddiesRoute
   '/community': typeof AuthenticatedCommunityRoute
+  '/create-challenge': typeof AuthenticatedCreateChallengeRoute
   '/crew': typeof AuthenticatedCrewRoute
   '/crew-details': typeof AuthenticatedCrewDetailsRoute
   '/detox': typeof AuthenticatedDetoxRoute
@@ -149,7 +169,9 @@ export interface FileRoutesByFullPath {
   '/scoring': typeof AuthenticatedScoringRoute
   '/seasons': typeof AuthenticatedSeasonsRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/small-wins': typeof AuthenticatedSmallWinsRoute
   '/today': typeof AuthenticatedTodayRoute
+  '/wrapped': typeof AuthenticatedWrappedRoute
   '/c/$code': typeof CCodeRoute
 }
 export interface FileRoutesByTo {
@@ -159,6 +181,7 @@ export interface FileRoutesByTo {
   '/boss': typeof AuthenticatedBossRoute
   '/buddies': typeof AuthenticatedBuddiesRoute
   '/community': typeof AuthenticatedCommunityRoute
+  '/create-challenge': typeof AuthenticatedCreateChallengeRoute
   '/crew': typeof AuthenticatedCrewRoute
   '/crew-details': typeof AuthenticatedCrewDetailsRoute
   '/detox': typeof AuthenticatedDetoxRoute
@@ -170,7 +193,9 @@ export interface FileRoutesByTo {
   '/scoring': typeof AuthenticatedScoringRoute
   '/seasons': typeof AuthenticatedSeasonsRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/small-wins': typeof AuthenticatedSmallWinsRoute
   '/today': typeof AuthenticatedTodayRoute
+  '/wrapped': typeof AuthenticatedWrappedRoute
   '/c/$code': typeof CCodeRoute
 }
 export interface FileRoutesById {
@@ -182,6 +207,7 @@ export interface FileRoutesById {
   '/_authenticated/boss': typeof AuthenticatedBossRoute
   '/_authenticated/buddies': typeof AuthenticatedBuddiesRoute
   '/_authenticated/community': typeof AuthenticatedCommunityRoute
+  '/_authenticated/create-challenge': typeof AuthenticatedCreateChallengeRoute
   '/_authenticated/crew': typeof AuthenticatedCrewRoute
   '/_authenticated/crew-details': typeof AuthenticatedCrewDetailsRoute
   '/_authenticated/detox': typeof AuthenticatedDetoxRoute
@@ -193,7 +219,9 @@ export interface FileRoutesById {
   '/_authenticated/scoring': typeof AuthenticatedScoringRoute
   '/_authenticated/seasons': typeof AuthenticatedSeasonsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/small-wins': typeof AuthenticatedSmallWinsRoute
   '/_authenticated/today': typeof AuthenticatedTodayRoute
+  '/_authenticated/wrapped': typeof AuthenticatedWrappedRoute
   '/c/$code': typeof CCodeRoute
 }
 export interface FileRouteTypes {
@@ -205,6 +233,7 @@ export interface FileRouteTypes {
     | '/boss'
     | '/buddies'
     | '/community'
+    | '/create-challenge'
     | '/crew'
     | '/crew-details'
     | '/detox'
@@ -216,7 +245,9 @@ export interface FileRouteTypes {
     | '/scoring'
     | '/seasons'
     | '/settings'
+    | '/small-wins'
     | '/today'
+    | '/wrapped'
     | '/c/$code'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -226,6 +257,7 @@ export interface FileRouteTypes {
     | '/boss'
     | '/buddies'
     | '/community'
+    | '/create-challenge'
     | '/crew'
     | '/crew-details'
     | '/detox'
@@ -237,7 +269,9 @@ export interface FileRouteTypes {
     | '/scoring'
     | '/seasons'
     | '/settings'
+    | '/small-wins'
     | '/today'
+    | '/wrapped'
     | '/c/$code'
   id:
     | '__root__'
@@ -248,6 +282,7 @@ export interface FileRouteTypes {
     | '/_authenticated/boss'
     | '/_authenticated/buddies'
     | '/_authenticated/community'
+    | '/_authenticated/create-challenge'
     | '/_authenticated/crew'
     | '/_authenticated/crew-details'
     | '/_authenticated/detox'
@@ -259,7 +294,9 @@ export interface FileRouteTypes {
     | '/_authenticated/scoring'
     | '/_authenticated/seasons'
     | '/_authenticated/settings'
+    | '/_authenticated/small-wins'
     | '/_authenticated/today'
+    | '/_authenticated/wrapped'
     | '/c/$code'
   fileRoutesById: FileRoutesById
 }
@@ -319,6 +356,13 @@ declare module '@tanstack/react-router' {
       path: '/community'
       fullPath: '/community'
       preLoaderRoute: typeof AuthenticatedCommunityRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/create-challenge': {
+      id: '/_authenticated/create-challenge'
+      path: '/create-challenge'
+      fullPath: '/create-challenge'
+      preLoaderRoute: typeof AuthenticatedCreateChallengeRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/crew': {
@@ -398,11 +442,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/small-wins': {
+      id: '/_authenticated/small-wins'
+      path: '/small-wins'
+      fullPath: '/small-wins'
+      preLoaderRoute: typeof AuthenticatedSmallWinsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/today': {
       id: '/_authenticated/today'
       path: '/today'
       fullPath: '/today'
       preLoaderRoute: typeof AuthenticatedTodayRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/wrapped': {
+      id: '/_authenticated/wrapped'
+      path: '/wrapped'
+      fullPath: '/wrapped'
+      preLoaderRoute: typeof AuthenticatedWrappedRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/c/$code': {
@@ -420,6 +478,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBossRoute: typeof AuthenticatedBossRoute
   AuthenticatedBuddiesRoute: typeof AuthenticatedBuddiesRoute
   AuthenticatedCommunityRoute: typeof AuthenticatedCommunityRoute
+  AuthenticatedCreateChallengeRoute: typeof AuthenticatedCreateChallengeRoute
   AuthenticatedCrewRoute: typeof AuthenticatedCrewRoute
   AuthenticatedCrewDetailsRoute: typeof AuthenticatedCrewDetailsRoute
   AuthenticatedDetoxRoute: typeof AuthenticatedDetoxRoute
@@ -431,7 +490,9 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedScoringRoute: typeof AuthenticatedScoringRoute
   AuthenticatedSeasonsRoute: typeof AuthenticatedSeasonsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedSmallWinsRoute: typeof AuthenticatedSmallWinsRoute
   AuthenticatedTodayRoute: typeof AuthenticatedTodayRoute
+  AuthenticatedWrappedRoute: typeof AuthenticatedWrappedRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -439,6 +500,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBossRoute: AuthenticatedBossRoute,
   AuthenticatedBuddiesRoute: AuthenticatedBuddiesRoute,
   AuthenticatedCommunityRoute: AuthenticatedCommunityRoute,
+  AuthenticatedCreateChallengeRoute: AuthenticatedCreateChallengeRoute,
   AuthenticatedCrewRoute: AuthenticatedCrewRoute,
   AuthenticatedCrewDetailsRoute: AuthenticatedCrewDetailsRoute,
   AuthenticatedDetoxRoute: AuthenticatedDetoxRoute,
@@ -450,7 +512,9 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedScoringRoute: AuthenticatedScoringRoute,
   AuthenticatedSeasonsRoute: AuthenticatedSeasonsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedSmallWinsRoute: AuthenticatedSmallWinsRoute,
   AuthenticatedTodayRoute: AuthenticatedTodayRoute,
+  AuthenticatedWrappedRoute: AuthenticatedWrappedRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

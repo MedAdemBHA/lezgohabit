@@ -37,12 +37,14 @@ export const profileQuery = (uid: string) => queryOptions({
 export const seasonQuery = queryOptions({
   queryKey: ["season", "live"],
   queryFn: async () => {
-    const { data, error } = await supabase.from("seasons").select("*").eq("status", "live").order("starts_on").limit(1).maybeSingle();
+    const { data, error } = await supabase.from("seasons").select("*").eq("status", "live").eq("challenge_owned", false).order("starts_on").limit(1).maybeSingle();
     if (error) throw error;
     return data;
   },
   staleTime: 5 * 60_000,
 });
+
+export const activeSeasonQuery = (uid:string) => queryOptions({queryKey:['activeSeason',uid],queryFn:async()=>{const {data,error}=await supabase.rpc('active_season');if(error)throw error;return data as unknown as Season|null;}});
 
 export const templatesQuery = queryOptions({
   queryKey: ["templates"],
@@ -105,7 +107,7 @@ export function useBase() {
   const user = useUser();
   const uid = user?.id ?? "";
   const profile = useQuery({ ...profileQuery(uid), enabled: !!uid });
-  const season = useQuery(seasonQuery);
+  const season = useQuery({ ...activeSeasonQuery(uid), enabled: !!uid });
   const tz = profile.data?.timezone ?? "Africa/Tunis";
   const today = localDate(tz);
   return { user, uid, profile: profile.data, season: season.data, tz, today, loading: user === undefined || profile.isLoading || season.isLoading };

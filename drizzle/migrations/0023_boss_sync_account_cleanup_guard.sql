@@ -1,0 +1,1 @@
+DO $$ DECLARE definition text; BEGIN SELECT pg_get_functiondef('public._sync_boss(uuid,uuid)'::regprocedure) INTO definition; definition:=replace(definition,'IF NOT FOUND OR NOT EXISTS(SELECT 1 FROM public.season_entries','IF NOT FOUND OR NOT EXISTS(SELECT 1 FROM public.profiles WHERE id=_uid) OR NOT EXISTS(SELECT 1 FROM public.season_entries'); EXECUTE definition; END $$;

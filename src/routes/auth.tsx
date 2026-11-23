@@ -36,8 +36,9 @@ function AuthPage() {
   const countries = useQuery({ queryKey: ["participating-countries"], queryFn: async () => { const { data, error } = await supabase.rpc("participating_countries"); if (error) throw error; return data; }, staleTime: 60_000 });
 
   useEffect(() => {
-    void supabase.auth.getUser().then(({ data }) => { if (data.user) void nav({ to: "/today", replace: true }); });
-    const { data } = supabase.auth.onAuthStateChange((_e, s) => { if (s) void nav({ to: "/today", replace: true }); });
+    const go=()=>{const code=sessionStorage.getItem('lezgo_challenge_invite');if(code&&/^[A-Z0-9]{6}$/.test(code)){sessionStorage.removeItem('lezgo_challenge_invite');void nav({to:'/c/$code',params:{code},replace:true});}else void nav({to:'/today',replace:true});};
+    void supabase.auth.getUser().then(({ data }) => { if (data.user) go(); });
+    const { data } = supabase.auth.onAuthStateChange((_e, s) => { if (s) go(); });
     return () => data.subscription.unsubscribe();
   }, [nav]);
 
@@ -46,7 +47,8 @@ function AuthPage() {
     const r = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin + "/auth" });
     if (r.error) { toast(t("common.error")); setBusy(false); return; }
     if (r.redirected) return;
-    void nav({ to: "/today", replace: true });
+    const code=sessionStorage.getItem("lezgo_challenge_invite");
+    if(code&&/^[A-Z0-9]{6}$/.test(code)) {sessionStorage.removeItem("lezgo_challenge_invite");void nav({to:"/c/$code",params:{code}});} else void nav({ to: "/today", replace: true });
   }
   async function magic(e: React.FormEvent) {
     e.preventDefault();

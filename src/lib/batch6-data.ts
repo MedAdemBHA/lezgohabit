@@ -1,0 +1,18 @@
+import { queryOptions } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import type { Database } from '@/integrations/supabase/types';
+export type Boss = Database['public']['Tables']['bosses']['Row'];
+export type Challenge = Database['public']['Tables']['challenges']['Row'];
+export type BossLevel = {key:'rookie'|'pro'|'beast';target:number;bonus:number};
+export type BossOverview = {boss:Boss|null;entry:{level:string;progress:number;completed_at:string|null}|null;awarded:string[];bonus:number;next:Boss[];country:string;community:number;community_target:number;leaders:{display_name:string;handle:string;progress:number}[]};
+export type Wrapped = {locked:boolean;ends_on?:string;season?:Database['public']['Tables']['seasons']['Row'];handle?:string;days?:number;rank?:number|null;stats?:{key:string;name:Record<string,string>;kind:string;unit:string|null;value:number}[];lift_days?:number;bosses_done?:number;bosses_total?:number;crew?:{name:string;code:string}|null;capsule?:string|null};
+export const bossQuery=(uid:string,sid:string)=>queryOptions({queryKey:['boss',uid,sid],queryFn:async()=>{const {data,error}=await supabase.rpc('boss_overview',{_season_id:sid});if(error)throw error;return data as unknown as BossOverview;}});
+export const wrappedQuery=(uid:string,sid:string)=>queryOptions({queryKey:['wrapped',uid,sid],queryFn:async()=>{const {data,error}=await supabase.rpc('wrapped_summary',{_season_id:sid});if(error)throw error;return data as unknown as Wrapped;}});
+export const challengesQuery=(uid:string)=>queryOptions({queryKey:['challenges',uid],queryFn:async()=>{const {data,error}=await supabase.from('challenges').select('*').order('created_at',{ascending:false});if(error)throw error;return data;}});
+export const rolesQuery=(uid:string)=>queryOptions({queryKey:['roles',uid],queryFn:async()=>{const {data,error}=await supabase.from('user_roles').select('role').eq('user_id',uid);if(error)throw error;return data.map(r=>r.role);}});
+export const ghostQuery=(uid:string,sid:string)=>queryOptions({queryKey:['ghost',uid,sid],queryFn:async()=>{const {data,error}=await supabase.rpc('solo_ghost',{_season_id:sid});if(error)throw error;return data as unknown as {points:number|null;starts_on:string|null;current:number};}});
+export const TEMPLATE_DAYS={winter_arc:40,ramadan:30,summer_body:45,reading:21,steps:30,custom:7} as const;
+export type TemplateKey=keyof typeof TEMPLATE_DAYS;
+export type Audience='solo'|'duo'|'squad'|'club'|'company'|'creator';
+export const AUDIENCE_SIZE={solo:'1',duo:'2',squad:'3–10',club:'11–100',company:'100+',creator:'2–50'};
+export const challengeLink=(code:string)=>`https://joinlezgo.com/c/${encodeURIComponent(code)}`;

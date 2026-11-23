@@ -32,3 +32,11 @@ Reminder delivery remains outside this batch; settings save preferences. The cal
 - [x] Match Find a Buddy and Seasons with four languages and mirrored layouts.
 - [x] Test scoring, consent, privacy and timer rules; verify signed-in flows/mobile/RTL and save changes.
 Season reminders are saved only; delivery remains separate. Upcoming dates use 2027; Ramadan and September dates are provisional.
+
+## Batch 6 — Boss, Challenges, Small Wins and Wrapped
+- [x] Add authoritative Boss progress, one-time season bonuses, creator grants and challenge membership rules.
+- [x] Match Boss Fight and challenge creation/invite/solo ghost flows.
+- [x] Build Small Wins and Wrapped from saved results, with private-faith-safe image export and feed sharing.
+- [x] Verify scoring, permissions, saved flows and four-language/mobile layouts; save changes.
+
+Club/Company remain contact-only as requested; Teach It records the author’s declared lesson duration (60 seconds minimum), not video verification. Boss windows follow calendar weeks after the opening Sunday.

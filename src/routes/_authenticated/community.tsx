@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { infiniteQueryOptions, useSuspenseInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { infiniteQueryOptions, useSuspenseInfiniteQuery, useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Plus, Smartphone } from "lucide-react";
@@ -11,7 +11,7 @@ import { CommunitySwitch } from "@/components/lezgo/community/community-switch";
 import { Compose } from "@/components/lezgo/community/compose";
 import { PostCard } from "@/components/lezgo/community/post-card";
 import { fetchFeed } from "@/lib/feed-data";
-import { useBase, seasonQuery, habitsQuery } from "@/lib/data";
+import { useBase, activeSeasonQuery, habitsQuery } from "@/lib/data";
 import { loc } from "@/lib/i18n";
 import { pageHead } from "@/lib/page-head";
 function postsOptions(uid: string, sid: string, scope = "everyone", filter = "all") {
@@ -27,7 +27,7 @@ export const Route = createFileRoute("/_authenticated/community")({
   head: () =>
     pageHead("Proof feed — lezgo", "Daily proof, thoughts and wins from your crew and community."),
   loader: async ({ context }) => {
-    const season = await context.queryClient.ensureQueryData(seasonQuery);
+    const season = await context.queryClient.ensureQueryData(activeSeasonQuery(context.user.id));
     if (season)
       await context.queryClient.ensureInfiniteQueryData(postsOptions(context.user.id, season.id));
   },
@@ -35,7 +35,8 @@ export const Route = createFileRoute("/_authenticated/community")({
 });
 function Community() {
   const { t, i18n } = useTranslation();
-  const { uid, season } = useBase();
+  const uid=Route.useRouteContext().user.id;
+  const {data:season}=useSuspenseQuery(activeSeasonQuery(uid));
   const [scope, setScope] = useState("everyone");
   const [filter, setFilter] = useState("all");
   const [compose, setCompose] = useState(false);
@@ -49,7 +50,7 @@ function Community() {
   for (const p of rows) if (p.habit_key) filters.set(p.habit_key, loc(p.habit_name, i18n.language));
   return (
     <AppShell todayLayout>
-      <CommunitySwitch active="feed" />
+      <CommunitySwitch active="feed" /><div className="community-actions"><Link to="/create-challenge"><StickerButton variant="secondary" size="sm"><Plus size={18}/>{t("batch6.create")}</StickerButton></Link><Link to="/small-wins"><StickerButton variant="lime" size="sm">{t("batch6.winTitle")}</StickerButton></Link></div>
       <Link to="/detox" className="self-end">
         <StickerButton variant="secondary" size="sm"><Smartphone size={18}/>{t('batch5.detox')}</StickerButton>
       </Link>

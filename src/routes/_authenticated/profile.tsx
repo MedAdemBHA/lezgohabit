@@ -271,6 +271,9 @@ function ProfilePage() {
         </span>
         <ChevronRight className="shrink-0 rtl:-scale-x-100" />
       </Link>
+      <Link to="/create-challenge"><StickerButton block variant="lime">{t("batch6.create")}</StickerButton></Link>
+      <Link to="/small-wins"><StickerButton block variant="secondary">{t("batch6.winTitle")}</StickerButton></Link>
+      <Link to="/wrapped" search={{season:season.id}}><StickerButton block variant="secondary">{t("batch6.wrapped")}</StickerButton></Link>
       {profile.is_admin && (
         <Link to="/admin">
           <StickerButton block variant="secondary">

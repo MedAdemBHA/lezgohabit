@@ -62,10 +62,11 @@ const link = (code: string) => `https://joinlezgo.com/c/${code}`;
 
 function CrewPage() {
   const { uid, season } = useBase();
+  const {t}=useTranslation();
   const mine = useQuery({ ...myCrewQuery(uid, season?.id ?? ""), enabled: !!uid && !!season });
   return (
     <AppShell>
-      <CommunitySwitch active="crew" />
+      <CommunitySwitch active="crew" /><Link to="/create-challenge"><StickerButton block variant="lime"><Plus size={18}/>{t("batch6.create")}</StickerButton></Link>
       {mine.isLoading || !season ? null : mine.data ? <CrewToday crewId={mine.data} /> : <NoCrew />}
     </AppShell>
   );

@@ -62,3 +62,7 @@ use the editor.
 - Adult buddy discovery uses privacy-aware RPC matching and buddy_requests for consent, blocks, reports and duo membership; duo and crew sync share one bonus.
 - Season reminders and earned trophies are owner-readable records; trophies are awarded only by saved-score triggers, never browser claims.
 - Scoring playground results and average/day ranks are computed in Postgres; average divides by elapsed local participation days, including missed days, to avoid rewarding skipped check-ins.
+- Boss progress and one-time level rewards are maintained by authenticated Postgres RPCs and saved-data triggers; season bonus rows remain separate from the daily cap and are included in season ranks.
+- Challenges have isolated seasons and participant-validated active selection; creator access lives in protected user_roles, and shared habits are guarded on every write path.
+- Small Wins and Wrapped use shared browser-only image exports with fixed 1080px output; private faith wins and summaries are removed before export or posting.
+- Invite metadata uses a narrow unauthenticated server function, while joining and active-season writes require signed-in membership checks.

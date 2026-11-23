@@ -120,6 +120,55 @@
       "when": 1795394643338,
       "tag": "0016_detox_reward_ceiling",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1795394977392,
+      "tag": "0017_boss_and_challenge_tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1795395050181,
+      "tag": "0018_challenge_membership_and_active_season",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1795395153400,
+      "tag": "0019_boss_progress_and_once_only_rewards",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1795395242313,
+      "tag": "0020_season_bonus_ranks_and_wrapped",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1795395421074,
+      "tag": "0021_private_challenge_shares_and_boss_lessons",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1795395813664,
+      "tag": "0022_wrapped_average_and_challenge_invite_integrity",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1795396054134,
+      "tag": "0023_boss_sync_account_cleanup_guard",
+      "breakpoints": true
     }
   ]
 }

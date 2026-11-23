@@ -1,3 +1,5 @@
+import { GhostBar } from "@/components/lezgo/sharing/ghost-bar";
+import { summaryQuery } from "@/lib/community-data";
 import { pageHead } from "@/lib/page-head";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -57,6 +59,8 @@ function Today() {
   const qc = useQueryClient();
   const { uid, season, today, tz, profile } = useBase();
   const sid = season?.id ?? "";
+  const summary=useQuery({...summaryQuery(uid,sid),enabled:!!uid&&!!sid});
+  const [tinyWin,setTinyWin]=useState(false);
   const habits = useQuery({ ...habitsQuery(uid, sid), enabled: !!uid && !!sid });
   const mine = useQuery({ ...myCrewQuery(uid, sid), enabled: !!uid && !!sid });
   const dq = dayQuery(uid, sid, today);
@@ -172,6 +176,9 @@ function Today() {
             points: allocation.data as unknown as HabitPoints[],
           }));
           if (writeRevision === revision.current) await reconcile();
+          if(value>0)setTinyWin(true);
+          void qc.invalidateQueries({queryKey:["boss"]});
+          void qc.invalidateQueries({queryKey:["ghost"]});
         } catch (e) {
           toast(errKey(e) === "day_closed" ? t("today.closed") : t("common.error"));
           await qc.invalidateQueries({ queryKey: dq.queryKey });
@@ -305,6 +312,8 @@ function Today() {
           </span>
         </div>
       </header>
+      {summary.data?.mode==="solo"&&<GhostBar uid={uid} sid={sid}/>}
+      {tinyWin&&<Link to="/small-wins"><StickerButton block variant="lime" size="sm"><Share2 size={18}/>{t("batch6.winTitle")}</StickerButton></Link>}
       <section className="today-score" aria-busy={pending > 0}>
         <div className="today-score-row">
           <div className="score-heading">
@@ -626,7 +635,7 @@ function Today() {
           className="mt-4"
           onClick={() => {
             setPerfectOpen(false);
-            setWinOpen(true);
+            void navigate({to:"/small-wins"});
           }}
         >
           {t("batch4.shareWin")}
