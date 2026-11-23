@@ -306,7 +306,7 @@ function SettingsPage() {
         <LogOut size={20} />
         {t("settings.signOut")}
       </StickerButton>
-      <StickerButton block variant="danger" onClick={() => setSheet("delete")}>
+      <StickerButton block variant="danger" disabled={profile.is_demo} onClick={() => setSheet("delete")}>
         <Trash2 size={20} />
         {t("settings.deleteAccount")}
       </StickerButton>

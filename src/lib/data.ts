@@ -49,7 +49,7 @@ export const activeSeasonQuery = (uid:string) => queryOptions({queryKey:['active
 export const templatesQuery = queryOptions({
   queryKey: ["templates"],
   queryFn: async () => {
-    const { data, error } = await supabase.from("habit_templates").select("*").order("sort");
+    const { data, error } = await supabase.from("habit_templates").select("*").eq("archived", false).order("sort");
     if (error) throw error;
     return data;
   },
@@ -109,7 +109,7 @@ export function useBase() {
   const profile = useQuery({ ...profileQuery(uid), enabled: !!uid });
   const season = useQuery({ ...activeSeasonQuery(uid), enabled: !!uid });
   const tz = profile.data?.timezone ?? "Africa/Tunis";
-  const today = localDate(tz);
+  const today = profile.data?.is_demo && profile.data.demo_today ? profile.data.demo_today : localDate(tz);
   return { user, uid, profile: profile.data, season: season.data, tz, today, loading: user === undefined || profile.isLoading || season.isLoading };
 }
 

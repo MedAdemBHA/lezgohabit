@@ -169,6 +169,27 @@
       "when": 1795396054134,
       "tag": "0023_boss_sync_account_cleanup_guard",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1795396324266,
+      "tag": "0024_admin_audit_and_demo_controls",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1795396391693,
+      "tag": "0025_admin_dashboard_and_demo_clock",
+      "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1795396534279,
+      "tag": "0026_transactional_demo_seed",
+      "breakpoints": true
     }
   ]
 }

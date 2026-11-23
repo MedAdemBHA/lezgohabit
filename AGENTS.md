@@ -66,3 +66,6 @@ use the editor.
 - Challenges have isolated seasons and participant-validated active selection; creator access lives in protected user_roles, and shared habits are guarded on every write path.
 - Small Wins and Wrapped use shared browser-only image exports with fixed 1080px output; private faith wins and summaries are removed before export or posting.
 - Invite metadata uses a narrow unauthenticated server function, while joining and active-season writes require signed-in membership checks.
+- Admin mutations use audited, allowlisted RPCs with server-checked access; roles remain protected separately from editable profiles.
+- Demo history uses isolated sample seasons and a server-owned simulated clock; sample clearing never touches official seasons or real players.
+- Shared demo sign-in and saved-proof hashing use authenticated/guarded server functions; credentials and salted device/network fingerprints never reach browser code.

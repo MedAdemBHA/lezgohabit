@@ -7,6 +7,7 @@ import { useBase } from "@/lib/data";
 import { LezgoMark } from "./brand";
 import { Avatar } from "./ui";
 import { TabIcon } from "@/components/icons/tab-icons";
+import { AppStatus } from "./app-status";
 
 export function AppShell({ children, hideTabs, todayLayout = false }: { children: ReactNode; hideTabs?: boolean; todayLayout?: boolean }) {
   const { t, i18n } = useTranslation();
@@ -26,6 +27,7 @@ export function AppShell({ children, hideTabs, todayLayout = false }: { children
   ];
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-[440px] flex-col bg-background">
+      <AppStatus profile={profile} />
       {!todayLayout && <header className="sticky top-0 z-30 flex items-center justify-between bg-background/95 px-4 py-3 backdrop-blur">
         <Link to="/today" aria-label="lezgo"><LezgoMark size={40} /></Link>
         <Link to="/profile" aria-label={t("common.openProfile")} className="press rounded-full shadow-hard-sm">

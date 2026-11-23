@@ -25,6 +25,7 @@ export type Post = {
 export type Preferences = Database["public"]["Tables"]["user_preferences"]["Row"];
 export const defaultPreferences = (uid: string): Preferences => ({
   user_id: uid,
+  is_demo: false,
   active_challenge_id: null,
   distance_unit: "km",
   prayer_enabled: true,

@@ -139,6 +139,7 @@ function Today() {
           id: `tmp-${h.id}`,
           user_id: uid,
           user_habit_id: h.id,
+          is_demo: profile?.is_demo ?? false,
           day: today,
           created_at: new Date().toISOString(),
         }),

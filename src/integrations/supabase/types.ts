@@ -14,21 +14,212 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_events: {
+        Row: {
+          created_at: string
+          device_key: string | null
+          id: string
+          is_demo: boolean
+          kind: string
+          network_key: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_key?: string | null
+          id?: string
+          is_demo?: boolean
+          kind: string
+          network_key?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          device_key?: string | null
+          id?: string
+          is_demo?: boolean
+          kind?: string
+          network_key?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      admin_audit_log: {
+        Row: {
+          action: string
+          admin_id: string
+          created_at: string
+          id: string
+          payload: Json
+          target: string | null
+        }
+        Insert: {
+          action: string
+          admin_id: string
+          created_at?: string
+          id?: string
+          payload?: Json
+          target?: string | null
+        }
+        Update: {
+          action?: string
+          admin_id?: string
+          created_at?: string
+          id?: string
+          payload?: Json
+          target?: string | null
+        }
+        Relationships: []
+      }
+      admin_feature_flags: {
+        Row: {
+          enabled: boolean
+          key: string
+        }
+        Insert: {
+          enabled?: boolean
+          key: string
+        }
+        Update: {
+          enabled?: boolean
+          key?: string
+        }
+        Relationships: []
+      }
+      admin_suspicious_activity: {
+        Row: {
+          created_at: string
+          day: string | null
+          detail: Json
+          id: string
+          is_demo: boolean
+          kind: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          day?: string | null
+          detail?: Json
+          id?: string
+          is_demo?: boolean
+          kind: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          day?: string | null
+          detail?: Json
+          id?: string
+          is_demo?: boolean
+          kind?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      admin_word_filters: {
+        Row: {
+          enabled: boolean
+          id: string
+          language: string
+          word: string
+        }
+        Insert: {
+          enabled?: boolean
+          id?: string
+          language: string
+          word: string
+        }
+        Update: {
+          enabled?: boolean
+          id?: string
+          language?: string
+          word?: string
+        }
+        Relationships: []
+      }
+      announcement_receipts: {
+        Row: {
+          announcement_id: string
+          is_demo: boolean
+          read_at: string
+          user_id: string
+        }
+        Insert: {
+          announcement_id: string
+          is_demo?: boolean
+          read_at?: string
+          user_id: string
+        }
+        Update: {
+          announcement_id?: string
+          is_demo?: boolean
+          read_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "announcement_receipts_announcement_id_fkey"
+            columns: ["announcement_id"]
+            isOneToOne: false
+            referencedRelation: "announcements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      announcements: {
+        Row: {
+          body: Json
+          country: string | null
+          id: string
+          is_demo: boolean
+          language: string | null
+          scheduled_at: string
+          season_id: string | null
+          title: Json
+        }
+        Insert: {
+          body: Json
+          country?: string | null
+          id?: string
+          is_demo?: boolean
+          language?: string | null
+          scheduled_at?: string
+          season_id?: string | null
+          title: Json
+        }
+        Update: {
+          body?: Json
+          country?: string | null
+          id?: string
+          is_demo?: boolean
+          language?: string | null
+          scheduled_at?: string
+          season_id?: string | null
+          title?: Json
+        }
+        Relationships: []
+      }
       badges: {
         Row: {
           awarded_at: string
+          is_demo: boolean
           key: string
           season_id: string
           user_id: string
         }
         Insert: {
           awarded_at?: string
+          is_demo?: boolean
           key: string
           season_id: string
           user_id: string
         }
         Update: {
           awarded_at?: string
+          is_demo?: boolean
           key?: string
           season_id?: string
           user_id?: string
@@ -48,6 +239,7 @@ export type Database = {
           awarded_at: string
           boss_id: string
           id: string
+          is_demo: boolean
           level: string
           points: number
           season_id: string
@@ -57,6 +249,7 @@ export type Database = {
           awarded_at?: string
           boss_id: string
           id?: string
+          is_demo?: boolean
           level: string
           points: number
           season_id: string
@@ -66,6 +259,7 @@ export type Database = {
           awarded_at?: string
           boss_id?: string
           id?: string
+          is_demo?: boolean
           level?: string
           points?: number
           season_id?: string
@@ -99,6 +293,7 @@ export type Database = {
         Row: {
           boss_id: string
           completed_at: string | null
+          is_demo: boolean
           level: string
           progress: number
           user_id: string
@@ -106,6 +301,7 @@ export type Database = {
         Insert: {
           boss_id: string
           completed_at?: string | null
+          is_demo?: boolean
           level?: string
           progress?: number
           user_id: string
@@ -113,6 +309,7 @@ export type Database = {
         Update: {
           boss_id?: string
           completed_at?: string | null
+          is_demo?: boolean
           level?: string
           progress?: number
           user_id?: string
@@ -140,6 +337,7 @@ export type Database = {
           boss_id: string
           created_at: string
           id: string
+          is_demo: boolean
           part: string | null
           user_id: string
         }
@@ -148,6 +346,7 @@ export type Database = {
           boss_id: string
           created_at?: string
           id?: string
+          is_demo?: boolean
           part?: string | null
           user_id: string
         }
@@ -156,6 +355,7 @@ export type Database = {
           boss_id?: string
           created_at?: string
           id?: string
+          is_demo?: boolean
           part?: string | null
           user_id?: string
         }
@@ -178,44 +378,53 @@ export type Database = {
       }
       bosses: {
         Row: {
+          archived: boolean
           color: string
           ends_at: string
           exercise_key: string | null
           id: string
+          is_demo: boolean
           levels: Json
           metric: string
           name: Json
           rule: Json
           season_id: string
           slug: string
+          sponsor: string | null
           starts_at: string
           week_no: number
         }
         Insert: {
+          archived?: boolean
           color?: string
           ends_at: string
           exercise_key?: string | null
           id?: string
+          is_demo?: boolean
           levels: Json
           metric: string
           name: Json
           rule: Json
           season_id: string
           slug: string
+          sponsor?: string | null
           starts_at: string
           week_no: number
         }
         Update: {
+          archived?: boolean
           color?: string
           ends_at?: string
           exercise_key?: string | null
           id?: string
+          is_demo?: boolean
           levels?: Json
           metric?: string
           name?: Json
           rule?: Json
           season_id?: string
           slug?: string
+          sponsor?: string | null
           starts_at?: string
           week_no?: number
         }
@@ -234,6 +443,7 @@ export type Database = {
           created_at: string
           from_user: string
           id: string
+          is_demo: boolean
           status: string
           to_user: string
         }
@@ -241,6 +451,7 @@ export type Database = {
           created_at?: string
           from_user: string
           id?: string
+          is_demo?: boolean
           status?: string
           to_user: string
         }
@@ -248,6 +459,7 @@ export type Database = {
           created_at?: string
           from_user?: string
           id?: string
+          is_demo?: boolean
           status?: string
           to_user?: string
         }
@@ -259,6 +471,7 @@ export type Database = {
           crew_id: string | null
           from_user: string
           id: string
+          is_demo: boolean
           status: string
           to_user: string
         }
@@ -267,6 +480,7 @@ export type Database = {
           crew_id?: string | null
           from_user: string
           id?: string
+          is_demo?: boolean
           status?: string
           to_user: string
         }
@@ -275,6 +489,7 @@ export type Database = {
           crew_id?: string | null
           from_user?: string
           id?: string
+          is_demo?: boolean
           status?: string
           to_user?: string
         }
@@ -306,6 +521,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          is_demo: boolean
           reason: string
           reporter: string
           target: string
@@ -313,6 +529,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          is_demo?: boolean
           reason: string
           reporter: string
           target: string
@@ -320,6 +537,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          is_demo?: boolean
           reason?: string
           reporter?: string
           target?: string
@@ -343,14 +561,17 @@ export type Database = {
       }
       challenge_squad_members: {
         Row: {
+          is_demo: boolean
           squad_id: string
           user_id: string
         }
         Insert: {
+          is_demo?: boolean
           squad_id: string
           user_id: string
         }
         Update: {
+          is_demo?: boolean
           squad_id?: string
           user_id?: string
         }
@@ -375,16 +596,19 @@ export type Database = {
         Row: {
           challenge_id: string
           id: string
+          is_demo: boolean
           name: string
         }
         Insert: {
           challenge_id: string
           id?: string
+          is_demo?: boolean
           name: string
         }
         Update: {
           challenge_id?: string
           id?: string
+          is_demo?: boolean
           name?: string
         }
         Relationships: [
@@ -399,12 +623,15 @@ export type Database = {
       }
       challenges: {
         Row: {
+          approved: boolean
+          archived: boolean
           audience: string
           code: string
           created_at: string
           crew_id: string | null
           days: number
           faith_allowed: boolean
+          featured: boolean
           habit_keys: string[]
           id: string
           is_demo: boolean
@@ -418,12 +645,15 @@ export type Database = {
           weekly_bosses: boolean
         }
         Insert: {
+          approved?: boolean
+          archived?: boolean
           audience: string
           code: string
           created_at?: string
           crew_id?: string | null
           days: number
           faith_allowed?: boolean
+          featured?: boolean
           habit_keys?: string[]
           id?: string
           is_demo?: boolean
@@ -437,12 +667,15 @@ export type Database = {
           weekly_bosses?: boolean
         }
         Update: {
+          approved?: boolean
+          archived?: boolean
           audience?: string
           code?: string
           created_at?: string
           crew_id?: string | null
           days?: number
           faith_allowed?: boolean
+          featured?: boolean
           habit_keys?: string[]
           id?: string
           is_demo?: boolean
@@ -485,6 +718,7 @@ export type Database = {
           day: string
           detail: Json | null
           id: string
+          is_demo: boolean
           user_habit_id: string
           user_id: string
           value: number
@@ -494,6 +728,7 @@ export type Database = {
           day: string
           detail?: Json | null
           id?: string
+          is_demo?: boolean
           user_habit_id: string
           user_id: string
           value?: number
@@ -503,6 +738,7 @@ export type Database = {
           day?: string
           detail?: Json | null
           id?: string
+          is_demo?: boolean
           user_habit_id?: string
           user_id?: string
           value?: number
@@ -517,21 +753,51 @@ export type Database = {
           },
         ]
       }
+      creator_referrals: {
+        Row: {
+          code: string
+          featured: boolean
+          id: string
+          is_demo: boolean
+          signups: number
+          user_id: string
+        }
+        Insert: {
+          code: string
+          featured?: boolean
+          id?: string
+          is_demo?: boolean
+          signups?: number
+          user_id: string
+        }
+        Update: {
+          code?: string
+          featured?: boolean
+          id?: string
+          is_demo?: boolean
+          signups?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       crew_members: {
         Row: {
           crew_id: string
+          is_demo: boolean
           joined_at: string
           role: string
           user_id: string
         }
         Insert: {
           crew_id: string
+          is_demo?: boolean
           joined_at?: string
           role?: string
           user_id: string
         }
         Update: {
           crew_id?: string
+          is_demo?: boolean
           joined_at?: string
           role?: string
           user_id?: string
@@ -548,9 +814,11 @@ export type Database = {
       }
       crews: {
         Row: {
+          archived: boolean
           code: string
           created_at: string
           id: string
+          is_demo: boolean
           is_public: boolean
           kind: string
           max_members: number
@@ -560,9 +828,11 @@ export type Database = {
           season_id: string
         }
         Insert: {
+          archived?: boolean
           code: string
           created_at?: string
           id?: string
+          is_demo?: boolean
           is_public?: boolean
           kind?: string
           max_members?: number
@@ -572,9 +842,11 @@ export type Database = {
           season_id: string
         }
         Update: {
+          archived?: boolean
           code?: string
           created_at?: string
           id?: string
+          is_demo?: boolean
           is_public?: boolean
           kind?: string
           max_members?: number
@@ -600,6 +872,7 @@ export type Database = {
           crew_sync: boolean
           day: string
           habit_points: number
+          is_demo: boolean
           multiplier: number
           perfect: boolean
           season_id: string
@@ -615,6 +888,7 @@ export type Database = {
           crew_sync?: boolean
           day: string
           habit_points?: number
+          is_demo?: boolean
           multiplier?: number
           perfect?: boolean
           season_id: string
@@ -630,6 +904,7 @@ export type Database = {
           crew_sync?: boolean
           day?: string
           habit_points?: number
+          is_demo?: boolean
           multiplier?: number
           perfect?: boolean
           season_id?: string
@@ -656,6 +931,7 @@ export type Database = {
           chaos_spins: number
           day: string
           detox_points: number
+          is_demo: boolean
           lift_prs: number
           proof_path: string | null
           proof_posted: boolean
@@ -667,6 +943,7 @@ export type Database = {
           chaos_spins?: number
           day: string
           detox_points?: number
+          is_demo?: boolean
           lift_prs?: number
           proof_path?: string | null
           proof_posted?: boolean
@@ -678,10 +955,29 @@ export type Database = {
           chaos_spins?: number
           day?: string
           detox_points?: number
+          is_demo?: boolean
           lift_prs?: number
           proof_path?: string | null
           proof_posted?: boolean
           user_id?: string
+        }
+        Relationships: []
+      }
+      demo_login_limits: {
+        Row: {
+          hits: number
+          key: string
+          window_start: string
+        }
+        Insert: {
+          hits?: number
+          key: string
+          window_start: string
+        }
+        Update: {
+          hits?: number
+          key?: string
+          window_start?: string
         }
         Relationships: []
       }
@@ -692,6 +988,7 @@ export type Database = {
           b: string
           b_avg_min: number | null
           id: string
+          is_demo: boolean
           status: string
           week_start: string
         }
@@ -701,6 +998,7 @@ export type Database = {
           b: string
           b_avg_min?: number | null
           id?: string
+          is_demo?: boolean
           status?: string
           week_start: string
         }
@@ -710,6 +1008,7 @@ export type Database = {
           b?: string
           b_avg_min?: number | null
           id?: string
+          is_demo?: boolean
           status?: string
           week_start?: string
         }
@@ -736,6 +1035,7 @@ export type Database = {
           day: string
           ended_at: string | null
           id: string
+          is_demo: boolean
           last_seen_at: string
           minutes: number
           season_id: string
@@ -747,6 +1047,7 @@ export type Database = {
           day: string
           ended_at?: string | null
           id?: string
+          is_demo?: boolean
           last_seen_at?: string
           minutes: number
           season_id: string
@@ -758,6 +1059,7 @@ export type Database = {
           day?: string
           ended_at?: string | null
           id?: string
+          is_demo?: boolean
           last_seen_at?: string
           minutes?: number
           season_id?: string
@@ -783,12 +1085,14 @@ export type Database = {
       }
       habit_templates: {
         Row: {
+          archived: boolean
           category: string
           color: string | null
           default_target: number
           description: Json
           icon: string
           id: string
+          is_demo: boolean
           is_faith: boolean
           key: string
           kind: string
@@ -797,12 +1101,14 @@ export type Database = {
           unit: string | null
         }
         Insert: {
+          archived?: boolean
           category: string
           color?: string | null
           default_target?: number
           description: Json
           icon: string
           id?: string
+          is_demo?: boolean
           is_faith?: boolean
           key: string
           kind: string
@@ -811,12 +1117,14 @@ export type Database = {
           unit?: string | null
         }
         Update: {
+          archived?: boolean
           category?: string
           color?: string | null
           default_target?: number
           description?: Json
           icon?: string
           id?: string
+          is_demo?: boolean
           is_faith?: boolean
           key?: string
           kind?: string
@@ -830,6 +1138,7 @@ export type Database = {
         Row: {
           equipment: string
           id: string
+          is_demo: boolean
           key: string
           name: Json
           sort: number
@@ -837,6 +1146,7 @@ export type Database = {
         Insert: {
           equipment: string
           id?: string
+          is_demo?: boolean
           key: string
           name: Json
           sort?: number
@@ -844,6 +1154,7 @@ export type Database = {
         Update: {
           equipment?: string
           id?: string
+          is_demo?: boolean
           key?: string
           name?: Json
           sort?: number
@@ -910,6 +1221,7 @@ export type Database = {
           crew_id: string
           day: string
           from_user: string
+          is_demo: boolean
           to_user: string
         }
         Insert: {
@@ -917,6 +1229,7 @@ export type Database = {
           crew_id: string
           day: string
           from_user: string
+          is_demo?: boolean
           to_user: string
         }
         Update: {
@@ -924,6 +1237,7 @@ export type Database = {
           crew_id?: string
           day?: string
           from_user?: string
+          is_demo?: boolean
           to_user?: string
         }
         Relationships: [
@@ -938,14 +1252,17 @@ export type Database = {
       }
       post_hides: {
         Row: {
+          is_demo: boolean
           post_id: string
           user_id: string
         }
         Insert: {
+          is_demo?: boolean
           post_id: string
           user_id: string
         }
         Update: {
+          is_demo?: boolean
           post_id?: string
           user_id?: string
         }
@@ -969,18 +1286,21 @@ export type Database = {
       post_reactions: {
         Row: {
           created_at: string
+          is_demo: boolean
           kind: string
           post_id: string
           user_id: string
         }
         Insert: {
           created_at?: string
+          is_demo?: boolean
           kind: string
           post_id: string
           user_id: string
         }
         Update: {
           created_at?: string
+          is_demo?: boolean
           kind?: string
           post_id?: string
           user_id?: string
@@ -1080,11 +1400,13 @@ export type Database = {
       }
       profiles: {
         Row: {
+          account_status: string
           avatar_url: string | null
           birth_date: string | null
           city: string | null
           country_code: string
           created_at: string
+          demo_today: string | null
           display_name: string
           equipment: string[]
           faith_public: boolean
@@ -1092,6 +1414,7 @@ export type Database = {
           handle: string
           id: string
           is_admin: boolean
+          is_demo: boolean
           language: string
           max_dumbbell_kg: number
           notif_crew: boolean
@@ -1102,11 +1425,13 @@ export type Database = {
           units: string
         }
         Insert: {
+          account_status?: string
           avatar_url?: string | null
           birth_date?: string | null
           city?: string | null
           country_code?: string
           created_at?: string
+          demo_today?: string | null
           display_name?: string
           equipment?: string[]
           faith_public?: boolean
@@ -1114,6 +1439,7 @@ export type Database = {
           handle: string
           id: string
           is_admin?: boolean
+          is_demo?: boolean
           language?: string
           max_dumbbell_kg?: number
           notif_crew?: boolean
@@ -1124,11 +1450,13 @@ export type Database = {
           units?: string
         }
         Update: {
+          account_status?: string
           avatar_url?: string | null
           birth_date?: string | null
           city?: string | null
           country_code?: string
           created_at?: string
+          demo_today?: string | null
           display_name?: string
           equipment?: string[]
           faith_public?: boolean
@@ -1136,6 +1464,7 @@ export type Database = {
           handle?: string
           id?: string
           is_admin?: boolean
+          is_demo?: boolean
           language?: string
           max_dumbbell_kg?: number
           notif_crew?: boolean
@@ -1147,21 +1476,48 @@ export type Database = {
         }
         Relationships: []
       }
+      proof_fingerprints: {
+        Row: {
+          created_at: string
+          fingerprint: string
+          is_demo: boolean
+          path: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          fingerprint: string
+          is_demo?: boolean
+          path: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          fingerprint?: string
+          is_demo?: boolean
+          path?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       reports: {
         Row: {
           created_at: string
+          is_demo: boolean
           post_id: string
           reason: string
           reporter: string
         }
         Insert: {
           created_at?: string
+          is_demo?: boolean
           post_id: string
           reason: string
           reporter: string
         }
         Update: {
           created_at?: string
+          is_demo?: boolean
           post_id?: string
           reason?: string
           reporter?: string
@@ -1187,16 +1543,19 @@ export type Database = {
         Row: {
           checkin_id: string
           created_at: string
+          is_demo: boolean
           user_id: string
         }
         Insert: {
           checkin_id: string
           created_at?: string
+          is_demo?: boolean
           user_id: string
         }
         Update: {
           checkin_id?: string
           created_at?: string
+          is_demo?: boolean
           user_id?: string
         }
         Relationships: [
@@ -1212,18 +1571,21 @@ export type Database = {
       screen_time_logs: {
         Row: {
           day: string
+          is_demo: boolean
           proof_url: string
           social_minutes: number
           user_id: string
         }
         Insert: {
           day: string
+          is_demo?: boolean
           proof_url: string
           social_minutes: number
           user_id: string
         }
         Update: {
           day?: string
+          is_demo?: boolean
           proof_url?: string
           social_minutes?: number
           user_id?: string
@@ -1241,6 +1603,7 @@ export type Database = {
       season_entries: {
         Row: {
           comeback_used: boolean
+          is_demo: boolean
           joined_at: string
           mode: string
           season_id: string
@@ -1248,6 +1611,7 @@ export type Database = {
         }
         Insert: {
           comeback_used?: boolean
+          is_demo?: boolean
           joined_at?: string
           mode?: string
           season_id: string
@@ -1255,6 +1619,7 @@ export type Database = {
         }
         Update: {
           comeback_used?: boolean
+          is_demo?: boolean
           joined_at?: string
           mode?: string
           season_id?: string
@@ -1272,14 +1637,17 @@ export type Database = {
       }
       season_reminders: {
         Row: {
+          is_demo: boolean
           season_slug: string
           user_id: string
         }
         Insert: {
+          is_demo?: boolean
           season_slug: string
           user_id: string
         }
         Update: {
+          is_demo?: boolean
           season_slug?: string
           user_id?: string
         }
@@ -1303,16 +1671,19 @@ export type Database = {
       season_trophies: {
         Row: {
           awarded_at: string
+          is_demo: boolean
           season_id: string
           user_id: string
         }
         Insert: {
           awarded_at?: string
+          is_demo?: boolean
           season_id: string
           user_id: string
         }
         Update: {
           awarded_at?: string
+          is_demo?: boolean
           season_id?: string
           user_id?: string
         }
@@ -1335,9 +1706,12 @@ export type Database = {
       }
       seasons: {
         Row: {
+          archived: boolean
           challenge_owned: boolean
           ends_on: string
+          featured_habits: string[]
           id: string
+          is_demo: boolean
           name: Json
           slug: string
           starts_on: string
@@ -1345,9 +1719,12 @@ export type Database = {
           theme_color: string
         }
         Insert: {
+          archived?: boolean
           challenge_owned?: boolean
           ends_on: string
+          featured_habits?: string[]
           id?: string
+          is_demo?: boolean
           name: Json
           slug: string
           starts_on: string
@@ -1355,9 +1732,12 @@ export type Database = {
           theme_color?: string
         }
         Update: {
+          archived?: boolean
           challenge_owned?: boolean
           ends_on?: string
+          featured_habits?: string[]
           id?: string
+          is_demo?: boolean
           name?: Json
           slug?: string
           starts_on?: string
@@ -1368,16 +1748,19 @@ export type Database = {
       }
       time_capsules: {
         Row: {
+          is_demo: boolean
           note: string
           season_id: string
           user_id: string
         }
         Insert: {
+          is_demo?: boolean
           note: string
           season_id: string
           user_id: string
         }
         Update: {
+          is_demo?: boolean
           note?: string
           season_id?: string
           user_id?: string
@@ -1405,6 +1788,7 @@ export type Database = {
           created_at: string
           custom_name: string | null
           id: string
+          is_demo: boolean
           kind: string
           position: number
           season_id: string
@@ -1418,6 +1802,7 @@ export type Database = {
           created_at?: string
           custom_name?: string | null
           id?: string
+          is_demo?: boolean
           kind: string
           position?: number
           season_id: string
@@ -1431,6 +1816,7 @@ export type Database = {
           created_at?: string
           custom_name?: string | null
           id?: string
+          is_demo?: boolean
           kind?: string
           position?: number
           season_id?: string
@@ -1463,6 +1849,7 @@ export type Database = {
           daily_time: string
           distance_unit: string
           equipment: string[]
+          is_demo: boolean
           max_dumbbell: number
           prayer_enabled: boolean
           prayer_method: number
@@ -1475,6 +1862,7 @@ export type Database = {
           daily_time?: string
           distance_unit?: string
           equipment?: string[]
+          is_demo?: boolean
           max_dumbbell?: number
           prayer_enabled?: boolean
           prayer_method?: number
@@ -1487,6 +1875,7 @@ export type Database = {
           daily_time?: string
           distance_unit?: string
           equipment?: string[]
+          is_demo?: boolean
           max_dumbbell?: number
           prayer_enabled?: boolean
           prayer_method?: number
@@ -1513,16 +1902,19 @@ export type Database = {
       user_roles: {
         Row: {
           id: string
+          is_demo: boolean
           role: string
           user_id: string
         }
         Insert: {
           id?: string
+          is_demo?: boolean
           role: string
           user_id: string
         }
         Update: {
           id?: string
+          is_demo?: boolean
           role?: string
           user_id?: string
         }
@@ -1533,6 +1925,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      _account_now: { Args: { _uid: string }; Returns: string }
+      _admin_audit: {
+        Args: { _action: string; _payload?: Json; _target?: string }
+        Returns: undefined
+      }
       _award_badges: {
         Args: { _sid: string; _uid: string }
         Returns: undefined
@@ -1589,10 +1986,35 @@ export type Database = {
         Args: { _day: string; _season_id: string; _user_id: string }
         Returns: undefined
       }
+      _require_admin: { Args: never; Returns: string }
       _sync_boss: { Args: { _bid: string; _uid: string }; Returns: undefined }
       activate_challenge: { Args: { _id?: string }; Returns: undefined }
       active_season: { Args: never; Returns: Json }
+      admin_action: {
+        Args: { _action: string; _payload?: Json; _target?: string }
+        Returns: Json
+      }
+      admin_authorized: { Args: never; Returns: boolean }
+      admin_clear_demo: { Args: never; Returns: Json }
+      admin_dashboard: {
+        Args: {
+          _page?: number
+          _search?: string
+          _section?: string
+          _target?: string
+        }
+        Returns: Json
+      }
       admin_overview: { Args: never; Returns: Json }
+      admin_security_presence: {
+        Args: { _device: string; _network: string }
+        Returns: undefined
+      }
+      admin_seed_demo: {
+        Args: { _people: Json; _replace?: boolean }
+        Returns: Json
+      }
+      app_feature_flags: { Args: never; Returns: Json }
       assign_sub_squad: {
         Args: { _squad: string; _user: string }
         Returns: undefined
@@ -1637,6 +2059,7 @@ export type Database = {
         }
         Returns: Json
       }
+      claim_demo_login: { Args: { _key: string }; Returns: boolean }
       create_boss_lesson: {
         Args: { _body: string; _boss_id: string; _seconds: number }
         Returns: string
@@ -1680,6 +2103,7 @@ export type Database = {
       crew_details: { Args: { _crew_id: string }; Returns: Json }
       crew_today: { Args: { _crew_id: string }; Returns: Json }
       delete_my_account: { Args: never; Returns: undefined }
+      demo_reset_day: { Args: never; Returns: undefined }
       detox_action: {
         Args: { _action: string; _minutes?: number; _session?: string }
         Returns: Json
@@ -1762,6 +2186,14 @@ export type Database = {
       }
       recompute_day: {
         Args: { _day: string; _season_id: string; _user_id: string }
+        Returns: undefined
+      }
+      register_proof_fingerprint: {
+        Args: { _fingerprint: string; _path: string }
+        Returns: undefined
+      }
+      register_saved_proof: {
+        Args: { _fingerprint: string; _path: string; _user: string }
         Returns: undefined
       }
       report_buddy: {
