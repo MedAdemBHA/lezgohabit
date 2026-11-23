@@ -37,7 +37,7 @@ export function AppShell({ children, hideTabs, todayLayout = false }: { children
         <nav className="main-tab-wrap">
           <div className="main-tab-bar">
             {tabs.map(({ to, label, kind }) => {
-              const active = loc.pathname.startsWith(to) || (to === "/community" && loc.pathname.startsWith("/crew"));
+              const active = loc.pathname.startsWith(to) || (to === "/community" && (loc.pathname.startsWith("/crew") || loc.pathname === "/buddies"));
               return (
                 <Link key={to} to={to} aria-current={active ? "page" : undefined} className={cn("main-tab",
                   active ? "bg-ink text-lime" : "text-ink")}>

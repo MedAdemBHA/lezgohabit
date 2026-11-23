@@ -26,7 +26,11 @@ function SettingsPage() {
     qc.setQueryData(profileQuery(uid).queryKey, (old: Profile | undefined) => (old ? { ...old, ...p } : old));
     const { error } = await supabase.from("profiles").update(p).eq("id", uid);
     if (error) { toast(t("common.error")); void qc.invalidateQueries({ queryKey: ["profile"] }); }
-    else void qc.invalidateQueries({ queryKey: ["leaderboard"] });
+    else {
+      void qc.invalidateQueries({ queryKey: ["leaderboard"] });
+      void qc.invalidateQueries({ queryKey: ["scoreboard"] });
+      void qc.invalidateQueries({ queryKey: ["profileSummary"] });
+    }
   }
   async function signOut() {
     await qc.cancelQueries(); qc.clear();

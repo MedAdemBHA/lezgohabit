@@ -48,3 +48,8 @@ use the editor.
 - Daily spins and proof bonus writes use authenticated SECURITY DEFINER RPCs over day_extras; proof photos stay in an owner-only private bucket with validated uploaded paths.
 - Prayer times use an authenticated server function that reads the caller's saved city and lets Aladhan derive its timezone; missing cities prompt setup, never fabricated timings.
 - Protected server functions attach the bearer via attachAppBearer in start.ts; it complements existing request and CSRF middleware.
+- Scoreboard movement and ghost windows are computed by authenticated database RPCs; private faith stats are filtered there, not by presentation code.
+- Badges are persistent earned achievements awarded from saved check-ins and scores by database logic; the Boss badge remains locked until verified Boss results exist.
+- Crew details and buddy actions use membership/participant-checked RPCs; buddy acceptance is mutual with serialized one-buddy enforcement.
+- Shared community-data queries/types serve Scoreboard, Profile and Crew details so privacy-aware summaries have one client contract.
+- Fixed-width stat labels keep their designed size unless measured words overflow, then shrink to the accessible minimum rather than splitting words.

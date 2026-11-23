@@ -151,7 +151,7 @@ function CrewToday({ crewId }: { crewId: string }) {
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h1 className="text-[30px] font-extrabold leading-tight">{t("crew.title")}</h1>
-          <p className="truncate text-[15px] font-bold text-muted-foreground">{crew.name} · {t("crew.membersCount", { n: members.length })}</p>
+          <Link to="/crew-details" className="block min-h-11 truncate text-[15px] font-bold text-muted-foreground underline">{crew.name} · {t("crew.membersCount", { n: members.length })}</Link>
         </div>
         <div className="flex shrink-0 flex-col items-end gap-2">
           <Chip as="span" active><Num>#{crew.rank}</Num></Chip>

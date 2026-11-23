@@ -1,0 +1,1 @@
+REVOKE INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER ON public.badges FROM authenticated,anon; REVOKE INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER ON public.buddy_links FROM authenticated,anon; GRANT SELECT ON public.badges,public.buddy_links TO authenticated;

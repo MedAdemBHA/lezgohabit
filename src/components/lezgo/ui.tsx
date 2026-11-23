@@ -4,6 +4,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import { initials } from "@/lib/community-rules";
 
 export function StickerCard({ className, ...p }: React.HTMLAttributes<HTMLDivElement>) {
   return <div className={cn("sticker p-4", className)} {...p} />;
@@ -97,16 +98,16 @@ export function Num({ children, className }: { children: React.ReactNode; classN
   return <bdi dir="ltr" className={cn("num", className)}>{children}</bdi>;
 }
 
-const AV_COLORS = ["bg-pink", "bg-blue", "bg-purple", "bg-teal", "bg-yellow", "bg-orange", "bg-lime"];
+const AV_COLORS = ["bg-lime", "bg-yellow", "bg-blue", "bg-pink", "bg-purple", "bg-teal"];
 export function colorFor(id: string) {
   let h = 0; for (const c of id) h = (h * 31 + c.charCodeAt(0)) >>> 0;
-  return AV_COLORS[h % AV_COLORS.length]!;
+  return AV_COLORS[h % AV_COLORS.length] ?? "bg-lime";
 }
 export function Avatar({ id, name, url, size = 40, className }: { id: string; name: string; url?: string | null | undefined; size?: number; className?: string }) {
   return (
     <span className={cn("grid shrink-0 place-items-center overflow-hidden rounded-full font-extrabold sticker-border", colorFor(id), className)}
       style={{ width: size, height: size, fontSize: size * 0.4 }}>
-      {url ? <img src={url} alt="" className="size-full object-cover" referrerPolicy="no-referrer" /> : (name || "?").trim().charAt(0).toUpperCase()}
+      {url ? <img src={url} alt="" className="size-full object-cover" referrerPolicy="no-referrer" /> : initials(name)}
     </span>
   );
 }

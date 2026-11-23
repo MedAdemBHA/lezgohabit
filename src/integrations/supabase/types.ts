@@ -14,6 +14,59 @@ export type Database = {
   }
   public: {
     Tables: {
+      badges: {
+        Row: {
+          awarded_at: string
+          key: string
+          season_id: string
+          user_id: string
+        }
+        Insert: {
+          awarded_at?: string
+          key: string
+          season_id: string
+          user_id: string
+        }
+        Update: {
+          awarded_at?: string
+          key?: string
+          season_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "badges_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      buddy_links: {
+        Row: {
+          created_at: string
+          from_user: string
+          id: string
+          status: string
+          to_user: string
+        }
+        Insert: {
+          created_at?: string
+          from_user: string
+          id?: string
+          status?: string
+          to_user: string
+        }
+        Update: {
+          created_at?: string
+          from_user?: string
+          id?: string
+          status?: string
+          to_user?: string
+        }
+        Relationships: []
+      }
       checkins: {
         Row: {
           created_at: string
@@ -498,6 +551,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      _award_badges: {
+        Args: { _sid: string; _uid: string }
+        Returns: undefined
+      }
+      _best_habit_stat: {
+        Args: { _sid: string; _uid: string; _viewer: string }
+        Returns: Json
+      }
       _check_day_window: {
         Args: { _day: string; _user_id: string }
         Returns: undefined
@@ -507,11 +568,36 @@ export type Database = {
         Returns: number
       }
       _local_today: { Args: { _user_id: string }; Returns: string }
+      _rank_rows: {
+        Args: {
+          _country: string
+          _day: string
+          _period: string
+          _scope: string
+          _sid: string
+          _viewer: string
+        }
+        Returns: {
+          entity: string
+          joined: string
+          points: number
+          rnk: number
+          streak: number
+        }[]
+      }
       _recompute_with_crew: {
         Args: { _day: string; _season_id: string; _user_id: string }
         Returns: undefined
       }
       admin_overview: { Args: never; Returns: Json }
+      buddy_action: {
+        Args: { _action: string; _target: string }
+        Returns: undefined
+      }
+      buddy_directory: {
+        Args: { _search?: string; _season_id: string }
+        Returns: Json
+      }
       checkin_upsert: {
         Args: {
           _day?: string
@@ -526,6 +612,7 @@ export type Database = {
         Returns: string
       }
       crew_activity: { Args: { _crew_id: string }; Returns: Json }
+      crew_details: { Args: { _crew_id: string }; Returns: Json }
       crew_today: { Args: { _crew_id: string }; Returns: Json }
       delete_my_account: { Args: never; Returns: undefined }
       handle_available: { Args: { _handle: string }; Returns: boolean }
@@ -543,20 +630,35 @@ export type Database = {
         }
         Returns: Json
       }
+      leave_crew: { Args: { _crew_id: string }; Returns: undefined }
       participating_countries: { Args: never; Returns: number }
       post_daily_proof: {
         Args: { _path: string; _season_id: string }
+        Returns: Json
+      }
+      profile_summary: {
+        Args: { _season_id: string; _share?: boolean }
         Returns: Json
       }
       recompute_day: {
         Args: { _day: string; _season_id: string; _user_id: string }
         Returns: undefined
       }
+      scoreboard: {
+        Args: {
+          _country_code?: string
+          _period: string
+          _scope: string
+          _season_id: string
+        }
+        Returns: Json
+      }
       send_nudge: { Args: { _to_user: string }; Returns: boolean }
       set_chaos_done: {
         Args: { _day?: string; _done: boolean; _season_id: string }
         Returns: Json
       }
+      solo_ghost: { Args: { _season_id: string }; Returns: Json }
       spin_daily_chaos: { Args: { _season_id: string }; Returns: Json }
       today_habit_points: {
         Args: { _day: string; _season_id: string }

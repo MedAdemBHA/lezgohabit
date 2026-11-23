@@ -14,13 +14,16 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedBossRouteImport } from './routes/_authenticated/boss'
+import { Route as AuthenticatedBuddiesRouteImport } from './routes/_authenticated/buddies'
 import { Route as AuthenticatedCommunityRouteImport } from './routes/_authenticated/community'
 import { Route as AuthenticatedCrewRouteImport } from './routes/_authenticated/crew'
+import { Route as AuthenticatedCrewDetailsRouteImport } from './routes/_authenticated/crew-details'
 import { Route as AuthenticatedHabitsRouteImport } from './routes/_authenticated/habits'
 import { Route as AuthenticatedLiftRouteImport } from './routes/_authenticated/lift'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedRanksRouteImport } from './routes/_authenticated/ranks'
+import { Route as AuthenticatedSeasonsRouteImport } from './routes/_authenticated/seasons'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedTodayRouteImport } from './routes/_authenticated/today'
 import { Route as CCodeRouteImport } from './routes/c.$code'
@@ -49,6 +52,11 @@ const AuthenticatedBossRoute = AuthenticatedBossRouteImport.update({
   path: '/boss',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedBuddiesRoute = AuthenticatedBuddiesRouteImport.update({
+  id: '/buddies',
+  path: '/buddies',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedCommunityRoute = AuthenticatedCommunityRouteImport.update({
   id: '/community',
   path: '/community',
@@ -59,6 +67,12 @@ const AuthenticatedCrewRoute = AuthenticatedCrewRouteImport.update({
   path: '/crew',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCrewDetailsRoute =
+  AuthenticatedCrewDetailsRouteImport.update({
+    id: '/crew-details',
+    path: '/crew-details',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedHabitsRoute = AuthenticatedHabitsRouteImport.update({
   id: '/habits',
   path: '/habits',
@@ -84,6 +98,11 @@ const AuthenticatedRanksRoute = AuthenticatedRanksRouteImport.update({
   path: '/ranks',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedSeasonsRoute = AuthenticatedSeasonsRouteImport.update({
+  id: '/seasons',
+  path: '/seasons',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -105,13 +124,16 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/boss': typeof AuthenticatedBossRoute
+  '/buddies': typeof AuthenticatedBuddiesRoute
   '/community': typeof AuthenticatedCommunityRoute
   '/crew': typeof AuthenticatedCrewRoute
+  '/crew-details': typeof AuthenticatedCrewDetailsRoute
   '/habits': typeof AuthenticatedHabitsRoute
   '/lift': typeof AuthenticatedLiftRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/ranks': typeof AuthenticatedRanksRoute
+  '/seasons': typeof AuthenticatedSeasonsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/today': typeof AuthenticatedTodayRoute
   '/c/$code': typeof CCodeRoute
@@ -121,13 +143,16 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/boss': typeof AuthenticatedBossRoute
+  '/buddies': typeof AuthenticatedBuddiesRoute
   '/community': typeof AuthenticatedCommunityRoute
   '/crew': typeof AuthenticatedCrewRoute
+  '/crew-details': typeof AuthenticatedCrewDetailsRoute
   '/habits': typeof AuthenticatedHabitsRoute
   '/lift': typeof AuthenticatedLiftRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/ranks': typeof AuthenticatedRanksRoute
+  '/seasons': typeof AuthenticatedSeasonsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/today': typeof AuthenticatedTodayRoute
   '/c/$code': typeof CCodeRoute
@@ -139,13 +164,16 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/boss': typeof AuthenticatedBossRoute
+  '/_authenticated/buddies': typeof AuthenticatedBuddiesRoute
   '/_authenticated/community': typeof AuthenticatedCommunityRoute
   '/_authenticated/crew': typeof AuthenticatedCrewRoute
+  '/_authenticated/crew-details': typeof AuthenticatedCrewDetailsRoute
   '/_authenticated/habits': typeof AuthenticatedHabitsRoute
   '/_authenticated/lift': typeof AuthenticatedLiftRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/ranks': typeof AuthenticatedRanksRoute
+  '/_authenticated/seasons': typeof AuthenticatedSeasonsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/today': typeof AuthenticatedTodayRoute
   '/c/$code': typeof CCodeRoute
@@ -157,13 +185,16 @@ export interface FileRouteTypes {
     | '/auth'
     | '/admin'
     | '/boss'
+    | '/buddies'
     | '/community'
     | '/crew'
+    | '/crew-details'
     | '/habits'
     | '/lift'
     | '/onboarding'
     | '/profile'
     | '/ranks'
+    | '/seasons'
     | '/settings'
     | '/today'
     | '/c/$code'
@@ -173,13 +204,16 @@ export interface FileRouteTypes {
     | '/auth'
     | '/admin'
     | '/boss'
+    | '/buddies'
     | '/community'
     | '/crew'
+    | '/crew-details'
     | '/habits'
     | '/lift'
     | '/onboarding'
     | '/profile'
     | '/ranks'
+    | '/seasons'
     | '/settings'
     | '/today'
     | '/c/$code'
@@ -190,13 +224,16 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/admin'
     | '/_authenticated/boss'
+    | '/_authenticated/buddies'
     | '/_authenticated/community'
     | '/_authenticated/crew'
+    | '/_authenticated/crew-details'
     | '/_authenticated/habits'
     | '/_authenticated/lift'
     | '/_authenticated/onboarding'
     | '/_authenticated/profile'
     | '/_authenticated/ranks'
+    | '/_authenticated/seasons'
     | '/_authenticated/settings'
     | '/_authenticated/today'
     | '/c/$code'
@@ -246,6 +283,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBossRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/buddies': {
+      id: '/_authenticated/buddies'
+      path: '/buddies'
+      fullPath: '/buddies'
+      preLoaderRoute: typeof AuthenticatedBuddiesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/community': {
       id: '/_authenticated/community'
       path: '/community'
@@ -258,6 +302,13 @@ declare module '@tanstack/react-router' {
       path: '/crew'
       fullPath: '/crew'
       preLoaderRoute: typeof AuthenticatedCrewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/crew-details': {
+      id: '/_authenticated/crew-details'
+      path: '/crew-details'
+      fullPath: '/crew-details'
+      preLoaderRoute: typeof AuthenticatedCrewDetailsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/habits': {
@@ -295,6 +346,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRanksRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/seasons': {
+      id: '/_authenticated/seasons'
+      path: '/seasons'
+      fullPath: '/seasons'
+      preLoaderRoute: typeof AuthenticatedSeasonsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/settings': {
       id: '/_authenticated/settings'
       path: '/settings'
@@ -322,13 +380,16 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedBossRoute: typeof AuthenticatedBossRoute
+  AuthenticatedBuddiesRoute: typeof AuthenticatedBuddiesRoute
   AuthenticatedCommunityRoute: typeof AuthenticatedCommunityRoute
   AuthenticatedCrewRoute: typeof AuthenticatedCrewRoute
+  AuthenticatedCrewDetailsRoute: typeof AuthenticatedCrewDetailsRoute
   AuthenticatedHabitsRoute: typeof AuthenticatedHabitsRoute
   AuthenticatedLiftRoute: typeof AuthenticatedLiftRoute
   AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedRanksRoute: typeof AuthenticatedRanksRoute
+  AuthenticatedSeasonsRoute: typeof AuthenticatedSeasonsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedTodayRoute: typeof AuthenticatedTodayRoute
 }
@@ -336,13 +397,16 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedBossRoute: AuthenticatedBossRoute,
+  AuthenticatedBuddiesRoute: AuthenticatedBuddiesRoute,
   AuthenticatedCommunityRoute: AuthenticatedCommunityRoute,
   AuthenticatedCrewRoute: AuthenticatedCrewRoute,
+  AuthenticatedCrewDetailsRoute: AuthenticatedCrewDetailsRoute,
   AuthenticatedHabitsRoute: AuthenticatedHabitsRoute,
   AuthenticatedLiftRoute: AuthenticatedLiftRoute,
   AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedRanksRoute: AuthenticatedRanksRoute,
+  AuthenticatedSeasonsRoute: AuthenticatedSeasonsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedTodayRoute: AuthenticatedTodayRoute,
 }
