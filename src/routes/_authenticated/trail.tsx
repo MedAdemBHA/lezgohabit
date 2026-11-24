@@ -118,7 +118,7 @@ function Trail() {
           {(!historyEntry || historyEntry.status === "active") && <Link to="/capsule" className="trail-milestone bg-ink text-lime">
             <Lock />
             <div>
-              <strong>{t("batch8.dayNote")}</strong>
+                <strong>{t("batch8.dayNote", { n: data.length })}</strong>
               <p>{t("batch8.opens", { date: formatDayMonth(season.ends_on, i18n.language) })}</p>
             </div>
             <ArrowRight className="ms-auto rtl:-scale-x-100" />

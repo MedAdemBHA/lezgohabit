@@ -16,8 +16,8 @@ import { errKey } from "@/lib/data";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
-  head: () => ({ meta: [{ title: "Sign in — lezgo" }, { name: "description", content: "Sign in to lezgo with Google or a magic link." },
-    { property: "og:title", content: "Sign in — lezgo" }, { property: "og:description", content: "Start your 40-day season." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
+  head: () => ({ meta: [{ title: "Sign in — lezgo" }, { name: "description", content: "Sign in to start a challenge on lezgo." },
+    { property: "og:title", content: "Sign in — lezgo" }, { property: "og:description", content: "Start a challenge on lezgo." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }] }),
   component: AuthPage,
 });
 

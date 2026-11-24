@@ -18,7 +18,7 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "lezgo — Show up. Lezgo. | Winter Arc season" },
-      { name: "description", content: "Join Winter Arc: a 40-day habit season with friends, your crew or all of Tunisia. Check in under a minute a day." },
+      { name: "description", content: "Choose a lezgo challenge, find your crew, and check in under a minute a day." },
       { property: "og:title", content: "lezgo — Winter Arc · Season 1" },
       { property: "og:description", content: "Pick 1 to 6 habits, check in daily, climb your challenge board." },
       { property: "og:type", content: "website" },

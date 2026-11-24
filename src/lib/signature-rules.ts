@@ -2,7 +2,7 @@ export const MOODS = ["strong", "proud", "okay", "tired", "low"] as const;
 export const CAPSULE_MAX = 1000;
 export const TOMORROW_MAX = 120;
 export const RECORDING_SECONDS = 30;
-export function snakeDays(length = 40) {
+export function snakeDays(length: number) {
   return Array.from({ length: Math.ceil(length / 8) }, (_, row) => {
     const days = Array.from(
       { length: Math.min(8, length - row * 8) },

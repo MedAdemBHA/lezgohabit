@@ -13,14 +13,18 @@ import confetti from "canvas-confetti";
 import { AlertTriangle, ArrowRight, Minus, Plus, Share2, RotateCcw, Lock, MoreHorizontal } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/lezgo/app-shell";
-import { CountUp } from "@/components/lezgo/count-up";
-import { ChaosIcon } from "@/components/icons";
 import { GlobeIcon, TodayFlame } from "@/components/icons/tab-icons";
 import { BottomSheet, Avatar, Field, Num, StickerButton, inputCls } from "@/components/lezgo/ui";
 import { LangGrid } from "@/components/lezgo/lang-switcher";
 import { HabitTile, habitName } from "@/components/lezgo/today/habit-tile";
 import { SalatCard } from "@/components/lezgo/today/salat-card";
-import { CountCard } from "@/components/lezgo/today/count-card";
+import { ChallengeTitle } from "@/components/lezgo/today/challenge-title";
+import { TodayScoreCard } from "@/components/lezgo/today/score-card";
+import { BonusSection, NewFeature } from "@/components/lezgo/today/bonus-section";
+import { DailyDare } from "@/components/lezgo/today/daily-dare";
+import { BossMini } from "@/components/lezgo/today/boss-mini";
+import { TodayCrewStrip } from "@/components/lezgo/today/crew-strip";
+import { ScoringSheet } from "@/components/lezgo/scoring-sheet";
 import { Compose } from "@/components/lezgo/community/compose";
 import {
   dayQuery,
@@ -43,11 +47,12 @@ import {
   DAILY_DARE_COUNT,
   streakAtRisk,
 } from "@/lib/today-rules";
-import { daysBetween, localHour, pad, useNow } from "@/lib/time";
+import { daysBetween, localHour, useNow } from "@/lib/time";
 import { FitHeading } from "@/components/lezgo/fit-heading";
 import { TodayMoments } from "@/components/lezgo/signature/moments";
 import { ChallengeSurrenderSheet } from "@/components/lezgo/challenge-surrender-sheet";
 import { loc } from "@/lib/i18n";
+import { bossQuery } from "@/lib/batch6-data";
 export const Route = createFileRoute("/_authenticated/today")({
   head: () => pageHead("Today — lezgo", "Log today's gos and keep your go streak alive."),
   component: Today,
@@ -83,8 +88,11 @@ function Today() {
   const [quitHabit, setQuitHabit] = useState<UserHabit | null>(null);
   const [timerSession, setTimerSession] = useState<TimerSession | null>(null);
   const [proofOpen, setProofOpen] = useState(false);
+  const [scoringOpen, setScoringOpen] = useState(false);
   const [winOpen, setWinOpen] = useState(false);
   const [bonusBusy, setBonusBusy] = useState(false);
+  const [newDismissed, setNewDismissed] = useState<Record<string, boolean>>({});
+  const [newReady, setNewReady] = useState(false);
   const [pending, setPending] = useState(0);
   const revision = useRef(0);
   const queue = useRef<Promise<void>>(Promise.resolve());
@@ -97,7 +105,20 @@ function Today() {
   const missing = list.filter((_, i) => (comps[i] ?? 0) < 1);
   const avg = list.length ? comps.reduce((a, b) => a + b, 0) / list.length : 0;
   const dayIndex = season ? daysBetween(season.starts_on, today) + 1 : 1;
-  const seasonLength = season ? daysBetween(season.starts_on, season.ends_on) + 1 : 40;
+  const seasonLength = season ? daysBetween(season.starts_on, season.ends_on) + 1 : 1;
+  const newKey = `lezgo_today_new_${uid}_${sid}`;
+  useEffect(() => {
+    if (!uid || !sid) return;
+    try { setNewDismissed(JSON.parse(localStorage.getItem(newKey) ?? "{}") as Record<string, boolean>); } catch { setNewDismissed({}); }
+    setNewReady(true);
+  }, [uid, sid, newKey]);
+  const showNew = (key: string, minDay: number) => newReady && dayIndex >= minDay && !newDismissed[key];
+  function dismissNew(key: string) {
+    const next = { ...newDismissed, [key]: true };
+    setNewDismissed(next);
+    try { localStorage.setItem(newKey, JSON.stringify(next)); } catch { /* storage can be unavailable */ }
+  }
+  const bossOverview = useQuery({ ...bossQuery(uid, sid), enabled: !!uid && !!sid && showNew("boss", 3) });
   const closed = !!season && (today < season.starts_on || today > season.ends_on);
   const atRisk = !!now && streakAtRisk(localHour(tz, now), avg, list.length > 0, closed);
   const salat = list.find((h) => h.kind === "salat");
@@ -356,31 +377,12 @@ function Today() {
     log(quitHabit, 1);
     setQuitHabit(null);
   }
-  const stacks = [
-    { key: "perfect", points: 20, on: !!score?.perfect, color: "lime", action: null },
-    {
-      key: "proof",
-      points: 10,
-      on: !!data?.extras?.proof_posted,
-      color: "card",
-      action: () => setProofOpen(true),
-    },
-    { key: "chaos", points: 10, on: chaosDone, color: "purple", action: () => void toggleChaos() },
-    ...(mine.data
-      ? [{ key: "crew", points: 10, on: !!score?.crew_sync, color: "blue", action: null }]
-      : []),
-    ...(list.some((h) => h.kind === "lift") || (data?.extras?.lift_prs ?? 0) > 0
-      ? [
-          {
-            key: "lift",
-            points: 5,
-            on: (data?.extras?.lift_prs ?? 0) > 0,
-            color: "orange",
-            action: null,
-          },
-        ]
-      : []),
-  ];
+  const progressHabits = list.map((habit,index) => ({
+    id: habit.id,
+    name: habitName(habit,t,i18n.language),
+    color: habit.template?.color ?? habitColor(habit.template?.key ?? "",habit.template?.category ?? ""),
+    completion: comps[index] ?? 0,
+  }));
   if (!profile)
     return (
       <AppShell todayLayout>
@@ -399,12 +401,7 @@ function Today() {
   return (
     <AppShell todayLayout>
       <header className="today-top">
-        <Link to="/trail" search={{ season: "" }} className="day-sticker" aria-label={t('batch8.viewTrail')}>
-          <span>{t("todayDesign.day")}</span>{" "}
-          <Num>
-            {pad(Math.min(Math.max(dayIndex, 1), seasonLength))}/{seasonLength}
-          </Num>
-        </Link>
+        <ChallengeTitle season={season} day={dayIndex} length={seasonLength} />
         <div className="today-top-end">
           <AppStatus profile={profile} compact />
           <StickerButton
@@ -421,111 +418,11 @@ function Today() {
           >
             <GlobeIcon />
           </StickerButton>
-          <span className="streak-pill">
-            <TodayFlame />
-            <span>
-              <Num>{score?.streak ?? 0}</Num> {t("todayDesign.days")} ·{" "}
-              <Num>×{Number(score?.multiplier ?? 1).toFixed(2)}</Num>
-            </span>
-          </span>
         </div>
       </header>
       {!!now && localHour(tz, now) < 3 && <p className="locks-note num" role="status"><Lock size={14} aria-hidden />{t("integrity.locksAt")}</p>}
-      {summary.data?.mode==="solo"&&<GhostBar uid={uid} sid={sid}/>}
-      {tinyWin&&<Link to="/small-wins"><StickerButton block variant="lime" size="sm"><Share2 size={18}/>{t("batch6.winTitle")}</StickerButton></Link>}
-      <section className="today-score" aria-busy={pending > 0}>
-        <div className="today-score-row">
-          <div className="score-heading">
-            <FitHeading text={t("todayDesign.today")} className="today-title" requestedSize={40} />
-            <p className="score-breakdown">
-              <span>
-                {t("todayDesign.habits")} <Num>{fmtVal(Number(score?.habit_points ?? 0))}</Num> +{" "}
-                {t("todayDesign.stacks")} <Num>{fmtVal(Number(score?.stack_points ?? 0))}</Num> ×{" "}
-                <Num>{Number(score?.multiplier ?? 1).toFixed(2)}</Num>
-              </span>
-            </p>
-          </div>
-          <div className="score-total">
-            <CountUp value={score?.total ?? 0} className="today-score-number" />
-            <span>{t("common.pts")}</span>
-          </div>
-        </div>
-        <div className="habit-progress">
-          {list.map((h, i) => (
-            <div
-              key={h.id}
-              className="progress-segment"
-              role="progressbar"
-              aria-label={habitName(h, t, i18n.language)}
-              aria-valuenow={Math.round((comps[i] ?? 0) * 100)}
-              aria-valuemin={0}
-              aria-valuemax={100}
-            >
-              <span
-                data-color={
-                  h.template?.color ?? habitColor(h.template?.key ?? "", h.template?.category ?? "")
-                }
-                className="progress-fill"
-                style={{ width: `${(comps[i] ?? 0) * 100}%` }}
-              />
-            </div>
-          ))}
-        </div>
-        <Link to="/scoring" className="today-scoring-link">
-          {t("socialDesign.scoring")}
-          <ArrowRight size={14} className="rtl:-scale-x-100" />
-        </Link>
-        <div className="today-stacks">
-          <span className="stacks-label">{t("todayDesign.stacksLabel")}</span>
-          {stacks.map((s) =>
-            s.action ? (
-              <StickerButton
-                variant="ghost"
-                key={s.key}
-                className={`stack-chip ${s.on ? "is-on" : ""}`}
-                data-color={s.color}
-                aria-pressed={s.on}
-                onClick={s.action}
-                disabled={disabled || bonusBusy}
-              >
-                {t(`todayDesign.${s.key}`)} <Num>+{s.points}</Num>
-              </StickerButton>
-            ) : (
-              <span
-                key={s.key}
-                data-color={s.color}
-                className={`stack-chip ${s.on ? "is-on" : ""}`}
-              >
-                {t(`todayDesign.${s.key}`)} <Num>+{s.points}</Num>
-              </span>
-            ),
-          )}
-        </div>
-      </section>
+      <TodayScoreCard score={score} habits={progressHabits} busy={pending > 0} onOpen={() => setScoringOpen(true)} />
       {closed && <p className="today-banner bg-card">{t("todayDesign.dayClosed")}</p>}
-      <TodayMoments missing={missing} pending={pending} onDone={h=>h.kind==='salat'||h.kind==='timer'||h.kind==='quit'||h.template?.key==='detox'?tap(h):log(h,Number(h.target))} />
-      {score?.comeback && (
-        <section className="today-banner bg-blue">
-          <h2 className="font-extrabold">{t("todayDesign.comeBack")}</h2>
-          <p>{t("todayDesign.comebackBody")}</p>
-        </section>
-      )}
-      {atRisk && (
-        <section className="today-banner bg-yellow">
-          <h2 className="flex items-center gap-2 font-extrabold">
-            <AlertTriangle size={20} />
-            {t("today.riskTitle")}
-          </h2>
-          <p>{t("today.riskBody")}</p>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {missing.map((h) => (
-              <StickerButton variant="secondary" size="sm" key={h.id} onClick={() => tap(h)}>
-                {habitName(h, t, i18n.language)}
-              </StickerButton>
-            ))}
-          </div>
-        </section>
-      )}
       {day.error && (
         <StickerButton variant="secondary" onClick={() => void day.refetch()}>
           {t("common.error")} · {t("todayDesign.retry")}
@@ -533,7 +430,7 @@ function Today() {
       )}
       {list.length ? (
         <div className="today-habit-grid">
-          {list.map((h) => (
+          {list.filter((habit) => habit.kind !== "salat").map((h) => (
             <HabitTile
               key={h.id}
               habit={h}
@@ -550,9 +447,6 @@ function Today() {
       ) : (
         <div className="today-banner bg-card">
           <p>{t("today.noHabits")}</p>
-          <Link to="/habits" className="font-extrabold underline">
-            {t("today.pickHabits")}
-          </Link>
         </div>
       )}
       {salat && (
@@ -580,48 +474,20 @@ function Today() {
           />
         </div>
       )}
-      {list
-        .filter((h) => h.kind === "count")
-        .map((h) => (
-          <CountCard
-            key={h.id}
-            habit={h}
-            value={Number(byHabit.get(h.id)?.value ?? 0)}
-            onIncrement={() => tap(h)}
-            onEdit={() => setStepper(h)}
-            disabled={disabled}
-          />
-        ))}
-      <section className="daily-chaos">
-        <ChaosIcon size={30} className="shrink-0" />
-        <div className="chaos-copy">
-          <h2>
-            {t("todayDesign.chaosTitle")} · <Num>+10</Num>
-          </h2>
-          <p>{dares[chaosIndex]}</p>
-        </div>
-        <div className="chaos-actions">
-          <StickerButton
-            variant="secondary"
-            className="chaos-spin"
-            disabled={disabled || bonusBusy || !canSpin(spins)}
-            title={canSpin(spins) ? t("todayDesign.spin") : t("todayDesign.spinLimit")}
-            onClick={() => void spin()}
-          >
-            {t("todayDesign.spin")}
-          </StickerButton>
-          <StickerButton
-            variant="ghost"
-            className={`chaos-do ${chaosDone ? "is-done" : ""}`}
-            aria-pressed={chaosDone}
-            disabled={disabled || bonusBusy}
-            onClick={() => void toggleChaos()}
-          >
-            {t(chaosDone ? "todayDesign.done" : "todayDesign.doIt")}
-          </StickerButton>
-        </div>
-      </section>
-      {missing.length === 0 && list.length > 0 && (
+      {dayIndex >= 2 && <BonusSection uid={uid} seasonId={sid} points={Number(score?.stack_points ?? 0)}>
+        {score?.comeback && <section className="today-banner bg-blue"><h2 className="font-extrabold">{t("todayDesign.comeBack")}</h2><p>{t("todayDesign.comebackBody")}</p></section>}
+        {atRisk && <section className="today-banner bg-yellow"><h2 className="flex items-center gap-2 font-extrabold"><AlertTriangle size={20}/>{t("today.riskTitle")}</h2><p>{t("today.riskBody")}</p><div className="mt-2 flex flex-wrap gap-2">{missing.map((habit)=><StickerButton variant="secondary" size="sm" key={habit.id} onClick={()=>tap(habit)}>{habitName(habit,t,i18n.language)}</StickerButton>)}</div></section>}
+        <TodayMoments missing={missing} pending={pending} onDone={(habit)=>habit.kind==='salat'||habit.kind==='timer'||habit.kind==='quit'||habit.template?.key==='detox'?tap(habit):log(habit,Number(habit.target))} />
+        <DailyDare text={dares[chaosIndex] ?? ""} done={chaosDone} canSpin={canSpin(spins)} busy={disabled || bonusBusy} onSpin={() => void spin()} onToggle={() => void toggleChaos()} />
+        {tinyWin && <Link to="/small-wins"><StickerButton block variant="lime" size="sm"><Share2 size={18}/>{t("batch6.winTitle")}</StickerButton></Link>}
+        <div className="flex flex-wrap gap-2"><StickerButton variant="secondary" onClick={()=>setProofOpen(true)}>{t("todayDesign.proof")}</StickerButton><Link to="/small-wins"><StickerButton variant="secondary">{t("batch6.winTitle")}</StickerButton></Link></div>
+      </BonusSection>}
+      {showNew("ghost",2) && summary.data?.mode === "solo" && <NewFeature title={t("todayDesign.ghostNew")} onDismiss={()=>dismissNew("ghost")}><GhostBar uid={uid} sid={sid}/></NewFeature>}
+      {showNew("streak",2) && <NewFeature title={t("todayDesign.streakNew")} onDismiss={()=>dismissNew("streak")}><div className="streak-pill"><TodayFlame/><span><Num>{score?.streak ?? 0}</Num> {t("todayDesign.days")} · ×<Num>{Number(score?.multiplier ?? 1).toFixed(2)}</Num></span></div></NewFeature>}
+      {showNew("boss",3) && bossOverview.data?.boss && <NewFeature title={t("batch6.boss")} onDismiss={()=>dismissNew("boss")}><BossMini overview={bossOverview.data}/></NewFeature>}
+      {showNew("capsule",3) && <NewFeature title={t("todayDesign.capsuleNew")} onDismiss={()=>dismissNew("capsule")}><Link to="/capsule"><StickerButton block variant="secondary">{t("batch8.capsule")}<ArrowRight size={18} className="rtl:-scale-x-100"/></StickerButton></Link></NewFeature>}
+      {showNew("crew",2) && <NewFeature title={t("todayDesign.crew")} onDismiss={()=>dismissNew("crew")}><TodayCrewStrip uid={uid} seasonId={sid}/></NewFeature>}
+      {dayIndex >= 2 && missing.length === 0 && list.length > 0 && (
         <Link to="/ranks" className="today-next">
           {t("today.nextDone")}
           <ArrowRight size={18} className="rtl:-scale-x-100" />
@@ -649,6 +515,7 @@ function Today() {
         open={surrenderOpen}
         onClose={() => setSurrenderOpen(false)}
       />
+      <ScoringSheet open={scoringOpen} onClose={() => setScoringOpen(false)} />
       <BottomSheet
         open={settingsOpen}
         onClose={() => setSettingsOpen(false)}
