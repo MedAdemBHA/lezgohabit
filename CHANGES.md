@@ -21,6 +21,7 @@ Apply these files in order after confirming `0062_own_hosting_cron` is recorded:
 6. `drizzle/migrations/0068_challenge_board_scopes.sql`
 7. `drizzle/migrations/0069_local_participation_consistency.sql`
 8. `drizzle/migrations/0070_winter_arc_sleep7_seed.sql`
+9. `drizzle/migrations/0071_fix_freeze_season_alias.sql`
 
 Codex did not apply these migrations or push the branch. The legacy overlap fallback remains in `0063`; it preserves existing check-ins and classifies mismatched official entries as private personal history.
 
@@ -42,3 +43,15 @@ Codex did not apply these migrations or push the branch. The legacy overlap fall
 
 - Personal challenges remain solo-only and use existing library templates. Custom-named personal habits and personal crews need a separate snapshot contract and game-rule decision.
 - The existing `virtual:pwa-register` resolution issue remains in the Vitest routing suite.
+
+## Applied to Supabase (2026-11-24, by Claude)
+
+All migrations 0062–0071 are applied to project `yjkniwjneqmtatwozcpv` and recorded in its migration history.
+`scripts/verify_v2.sql`: **21/21 checks PASS** (run inside a rolled-back transaction).
+
+Fixes made while applying (already in the files above):
+- **0063**: the legacy `UPDATE public.user_habits … FROM … JOIN … ON … uh.user_id` referenced the update target inside a JOIN (Postgres error); moved that condition to `WHERE`.
+- **0064**: `find_challenge_crew` used a variable named `code` that clashed with the `code` column (ambiguous-reference error at runtime); renamed to `v_code`.
+- **0065**: `guard_habit_rule` read `NEW.rule`/`NEW.target`, which `habit_templates` doesn't have (it has `default_rule`/`default_target`), so every template edit would fail; now reads either. Added `fill_habit_rule_default` triggers so challenge and user habits inherit the template's time window (otherwise wake-up, make-bed and quit habits were rejected as `invalid_time_window` when creating challenges).
+- **0071 (new)**: `_freeze_season` used `r` both as a record variable and as a CTE alias, so no challenge could ever be frozen/completed (and `integrity_tick` would fail at the end of every challenge).
+- `src/integrations/supabase/types.ts` regenerated from the live database (hand-written version was missing two internal functions); type check and build pass.

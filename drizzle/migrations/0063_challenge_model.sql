@@ -171,8 +171,8 @@ AND (SELECT array_agg(coalesce(ht.key,uh.custom_name) ORDER BY uh.position) FROM
     (SELECT array_agg(ch.habit_key ORDER BY ch.position) FROM public.challenge_habits ch WHERE ch.season_id=e.season_id);
 UPDATE public.user_habits uh SET
   target=ch.target,kind=ch.kind,unit=ch.unit,what_counts=ch.what_counts,rule=ch.rule
-FROM public.challenge_habits ch JOIN public.season_entries e ON e.season_id=ch.season_id AND e.user_id=uh.user_id
-WHERE uh.season_id=ch.season_id AND uh.template_id=ch.template_id AND e.kind<>'personal'
+FROM public.challenge_habits ch JOIN public.season_entries e ON e.season_id=ch.season_id
+WHERE e.user_id=uh.user_id AND uh.season_id=ch.season_id AND uh.template_id=ch.template_id AND e.kind<>'personal'
   AND uh.created_at >= e.joined_at AND NOT EXISTS(SELECT 1 FROM public.checkins ci WHERE ci.user_habit_id=uh.id);
 
 -- Public boards use only active/completed official entries. Challenge boards use this RPC instead.

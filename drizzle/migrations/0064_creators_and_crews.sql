@@ -150,7 +150,7 @@ END $$;
 
 CREATE OR REPLACE FUNCTION public.find_challenge_crew() RETURNS jsonb
 LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$
-DECLARE uid uuid:=auth.uid(); sid uuid; c public.crews; cid uuid; code text; created boolean:=false; n integer;
+DECLARE uid uuid:=auth.uid(); sid uuid; c public.crews; cid uuid; v_code text; created boolean:=false; n integer;
 BEGIN
   PERFORM public._guest_guard();
   IF uid IS NULL THEN RAISE EXCEPTION 'not_authenticated'; END IF;
@@ -165,16 +165,16 @@ BEGIN
     LIMIT 1 FOR UPDATE SKIP LOCKED;
   IF FOUND THEN
     INSERT INTO public.crew_members(crew_id,user_id,role) VALUES(c.id,uid,'member');
-    cid:=c.id; code:=c.code;
+    cid:=c.id; v_code:=c.code;
   ELSE
-    LOOP code:=upper(substr(replace(gen_random_uuid()::text,'-',''),1,6)); EXIT WHEN NOT EXISTS(SELECT 1 FROM public.crews cr WHERE cr.code=code) AND NOT EXISTS(SELECT 1 FROM public.challenges ch WHERE ch.code=code); END LOOP;
+    LOOP v_code:=upper(substr(replace(gen_random_uuid()::text,'-',''),1,6)); EXIT WHEN NOT EXISTS(SELECT 1 FROM public.crews cr WHERE cr.code=v_code) AND NOT EXISTS(SELECT 1 FROM public.challenges ch WHERE ch.code=v_code); END LOOP;
     INSERT INTO public.crews(season_id,name,code,owner_id,kind,max_members,is_public,is_demo)
-      VALUES(sid,'Crew '||substr(code,1,3),code,uid,'squad',6,true,(SELECT is_demo FROM public.profiles WHERE id=uid)) RETURNING id INTO cid;
+      VALUES(sid,'Crew '||substr(v_code,1,3),v_code,uid,'squad',6,true,(SELECT is_demo FROM public.profiles WHERE id=uid)) RETURNING id INTO cid;
     INSERT INTO public.crew_members(crew_id,user_id,role) VALUES(cid,uid,'owner');
     created:=true;
   END IF;
   SELECT count(*) INTO n FROM public.crew_members WHERE crew_id=cid;
-  RETURN jsonb_build_object('crew_id',cid,'code',code,'name',(SELECT name FROM public.crews WHERE id=cid),'members',n,'created',created);
+  RETURN jsonb_build_object('crew_id',cid,'code',v_code,'name',(SELECT name FROM public.crews WHERE id=cid),'members',n,'created',created);
 END $$;
 
 REVOKE ALL ON FUNCTION public.request_creator(),public.review_creator_request(uuid,boolean,text),public.create_creator_challenge(text,integer,date,jsonb,text),public.create_crew(text,text,integer),public.join_crew(text),public.find_challenge_crew() FROM PUBLIC,anon;

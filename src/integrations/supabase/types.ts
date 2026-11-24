@@ -636,6 +636,153 @@ export type Database = {
           },
         ]
       }
+      challenge_event_reactions: {
+        Row: {
+          created_at: string
+          event_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenge_event_reactions_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "challenge_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "challenge_event_reactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      challenge_events: {
+        Row: {
+          created_at: string
+          day: string
+          event_key: string
+          event_type: string
+          id: string
+          is_demo: boolean
+          payload: Json
+          season_id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          day: string
+          event_key: string
+          event_type: string
+          id?: string
+          is_demo?: boolean
+          payload?: Json
+          season_id: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          day?: string
+          event_key?: string
+          event_type?: string
+          id?: string
+          is_demo?: boolean
+          payload?: Json
+          season_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenge_events_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "challenge_events_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      challenge_habits: {
+        Row: {
+          habit_key: string
+          id: string
+          is_demo: boolean
+          is_faith: boolean
+          kind: string
+          name: Json
+          position: number
+          rule: Json
+          season_id: string
+          target: number
+          template_id: string | null
+          unit: string | null
+          what_counts: Json
+        }
+        Insert: {
+          habit_key: string
+          id?: string
+          is_demo?: boolean
+          is_faith?: boolean
+          kind: string
+          name: Json
+          position: number
+          rule?: Json
+          season_id: string
+          target?: number
+          template_id?: string | null
+          unit?: string | null
+          what_counts?: Json
+        }
+        Update: {
+          habit_key?: string
+          id?: string
+          is_demo?: boolean
+          is_faith?: boolean
+          kind?: string
+          name?: Json
+          position?: number
+          rule?: Json
+          season_id?: string
+          target?: number
+          template_id?: string | null
+          unit?: string | null
+          what_counts?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenge_habits_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "challenge_habits_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "habit_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       challenge_squad_members: {
         Row: {
           is_demo: boolean
@@ -696,33 +843,6 @@ export type Database = {
             referencedRelation: "challenges"
             referencedColumns: ["id"]
           },
-        ]
-      }
-      challenge_habits: {
-        Row: { id: string; season_id: string; template_id: string | null; habit_key: string; name: Json; what_counts: Json; kind: string; target: number; unit: string | null; rule: Json; is_faith: boolean; position: number; is_demo: boolean }
-        Insert: { id?: string; season_id: string; template_id?: string | null; habit_key: string; name: Json; what_counts?: Json; kind: string; target?: number; unit?: string | null; rule?: Json; is_faith?: boolean; position: number; is_demo?: boolean }
-        Update: { id?: string; season_id?: string; template_id?: string | null; habit_key?: string; name?: Json; what_counts?: Json; kind?: string; target?: number; unit?: string | null; rule?: Json; is_faith?: boolean; position?: number; is_demo?: boolean }
-        Relationships: [
-          { foreignKeyName: "challenge_habits_season_id_fkey"; columns: ["season_id"]; isOneToOne: false; referencedRelation: "seasons"; referencedColumns: ["id"] },
-          { foreignKeyName: "challenge_habits_template_id_fkey"; columns: ["template_id"]; isOneToOne: false; referencedRelation: "habit_templates"; referencedColumns: ["id"] },
-        ]
-      }
-      challenge_events: {
-        Row: { id: string; season_id: string; user_id: string | null; event_type: string; event_key: string; day: string; payload: Json; is_demo: boolean; created_at: string }
-        Insert: { id?: string; season_id: string; user_id?: string | null; event_type: string; event_key: string; day: string; payload?: Json; is_demo?: boolean; created_at?: string }
-        Update: { id?: string; season_id?: string; user_id?: string | null; event_type?: string; event_key?: string; day?: string; payload?: Json; is_demo?: boolean; created_at?: string }
-        Relationships: [
-          { foreignKeyName: "challenge_events_season_id_fkey"; columns: ["season_id"]; isOneToOne: false; referencedRelation: "seasons"; referencedColumns: ["id"] },
-          { foreignKeyName: "challenge_events_user_id_fkey"; columns: ["user_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
-        ]
-      }
-      challenge_event_reactions: {
-        Row: { event_id: string; user_id: string; created_at: string }
-        Insert: { event_id: string; user_id: string; created_at?: string }
-        Update: { event_id?: string; user_id?: string; created_at?: string }
-        Relationships: [
-          { foreignKeyName: "challenge_event_reactions_event_id_fkey"; columns: ["event_id"]; isOneToOne: false; referencedRelation: "challenge_events"; referencedColumns: ["id"] },
-          { foreignKeyName: "challenge_event_reactions_user_id_fkey"; columns: ["user_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
         ]
       }
       challenges: {
@@ -926,6 +1046,57 @@ export type Database = {
         }
         Relationships: []
       }
+      creator_requests: {
+        Row: {
+          created_at: string
+          id: string
+          is_demo: boolean
+          note: string
+          review_note: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_demo?: boolean
+          note?: string
+          review_note?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_demo?: boolean
+          note?: string
+          review_note?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creator_requests_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       crew_members: {
         Row: {
           crew_id: string
@@ -956,15 +1127,6 @@ export type Database = {
             referencedRelation: "crews"
             referencedColumns: ["id"]
           },
-        ]
-      }
-      creator_requests: {
-        Row: { id: string; user_id: string; status: string; note: string; created_at: string; reviewed_at: string | null; reviewed_by: string | null; review_note: string; is_demo: boolean }
-        Insert: { id?: string; user_id: string; status?: string; note?: string; created_at?: string; reviewed_at?: string | null; reviewed_by?: string | null; review_note?: string; is_demo?: boolean }
-        Update: { id?: string; user_id?: string; status?: string; note?: string; created_at?: string; reviewed_at?: string | null; reviewed_by?: string | null; review_note?: string; is_demo?: boolean }
-        Relationships: [
-          { foreignKeyName: "creator_requests_reviewed_by_fkey"; columns: ["reviewed_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
-          { foreignKeyName: "creator_requests_user_id_fkey"; columns: ["user_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
         ]
       }
       crew_results: {
@@ -1349,9 +1511,9 @@ export type Database = {
           archived: boolean
           category: string
           color: string | null
+          default_rule: Json
           default_target: number
           description: Json
-          default_rule: Json
           icon: string
           id: string
           is_demo: boolean
@@ -1367,9 +1529,9 @@ export type Database = {
           archived?: boolean
           category: string
           color?: string | null
+          default_rule?: Json
           default_target?: number
           description: Json
-          default_rule?: Json
           icon: string
           id?: string
           is_demo?: boolean
@@ -1385,9 +1547,9 @@ export type Database = {
           archived?: boolean
           category?: string
           color?: string | null
+          default_rule?: Json
           default_target?: number
           description?: Json
-          default_rule?: Json
           icon?: string
           id?: string
           is_demo?: boolean
@@ -1400,6 +1562,73 @@ export type Database = {
           what_counts?: Json
         }
         Relationships: []
+      }
+      habit_timer_sessions: {
+        Row: {
+          day: string
+          ended_at: string | null
+          id: string
+          is_demo: boolean
+          last_heartbeat_at: string
+          season_id: string
+          started_at: string
+          status: string
+          target_minutes: number
+          tracked_seconds: number
+          user_habit_id: string
+          user_id: string
+        }
+        Insert: {
+          day: string
+          ended_at?: string | null
+          id?: string
+          is_demo?: boolean
+          last_heartbeat_at?: string
+          season_id: string
+          started_at?: string
+          status?: string
+          target_minutes: number
+          tracked_seconds?: number
+          user_habit_id: string
+          user_id: string
+        }
+        Update: {
+          day?: string
+          ended_at?: string | null
+          id?: string
+          is_demo?: boolean
+          last_heartbeat_at?: string
+          season_id?: string
+          started_at?: string
+          status?: string
+          target_minutes?: number
+          tracked_seconds?: number
+          user_habit_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "habit_timer_sessions_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "habit_timer_sessions_user_habit_id_fkey"
+            columns: ["user_habit_id"]
+            isOneToOne: false
+            referencedRelation: "user_habits"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "habit_timer_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       lift_exercises: {
         Row: {
@@ -2180,39 +2409,39 @@ export type Database = {
       season_entries: {
         Row: {
           comeback_used: boolean
+          end_reason: string | null
+          ended_at: string | null
           is_demo: boolean
           joined_at: string
+          kind: string
           mode: string
           season_id: string
-          user_id: string
-          kind: string
           status: string
-          ended_at: string | null
-          end_reason: string | null
+          user_id: string
         }
         Insert: {
           comeback_used?: boolean
+          end_reason?: string | null
+          ended_at?: string | null
           is_demo?: boolean
           joined_at?: string
+          kind?: string
           mode?: string
           season_id: string
-          user_id: string
-          kind?: string
           status?: string
-          ended_at?: string | null
-          end_reason?: string | null
+          user_id: string
         }
         Update: {
           comeback_used?: boolean
+          end_reason?: string | null
+          ended_at?: string | null
           is_demo?: boolean
           joined_at?: string
+          kind?: string
           mode?: string
           season_id?: string
-          user_id?: string
-          kind?: string
           status?: string
-          ended_at?: string | null
-          end_reason?: string | null
+          user_id?: string
         }
         Relationships: [
           {
@@ -2262,72 +2491,72 @@ export type Database = {
           active_days: number
           best_streak: number
           boss_points: number
+          completed_days: number
+          consistency_percent: number
           corrected_at: string | null
           crew_id: string | null
           daily_points: number
           frozen_at: string
           is_demo: boolean
+          participation_kind: string
+          participation_status: string
           perfect_days: number
+          rank_challenge: number | null
           rank_country: number | null
           rank_crew: number | null
           rank_world: number | null
-          rank_challenge: number | null
-          completed_days: number
-          consistency_percent: number
-          participation_kind: string
-          participation_status: string
-          trophy_private: boolean
           score: number
           season_id: string
           trophy: boolean
+          trophy_private: boolean
           user_id: string
         }
         Insert: {
           active_days: number
           best_streak: number
           boss_points: number
+          completed_days?: number
+          consistency_percent?: number
           corrected_at?: string | null
           crew_id?: string | null
           daily_points: number
           frozen_at?: string
           is_demo?: boolean
-          perfect_days: number
-          rank_country: number | null
-          rank_crew?: number | null
-          rank_world: number | null
-          rank_challenge?: number | null
-          completed_days?: number
-          consistency_percent?: number
           participation_kind?: string
           participation_status?: string
-          trophy_private?: boolean
+          perfect_days: number
+          rank_challenge?: number | null
+          rank_country?: number | null
+          rank_crew?: number | null
+          rank_world?: number | null
           score: number
           season_id: string
           trophy: boolean
+          trophy_private?: boolean
           user_id: string
         }
         Update: {
           active_days?: number
           best_streak?: number
           boss_points?: number
+          completed_days?: number
+          consistency_percent?: number
           corrected_at?: string | null
           crew_id?: string | null
           daily_points?: number
           frozen_at?: string
           is_demo?: boolean
+          participation_kind?: string
+          participation_status?: string
           perfect_days?: number
+          rank_challenge?: number | null
           rank_country?: number | null
           rank_crew?: number | null
           rank_world?: number | null
-          rank_challenge?: number | null
-          completed_days?: number
-          consistency_percent?: number
-          participation_kind?: string
-          participation_status?: string
-          trophy_private?: boolean
           score?: number
           season_id?: string
           trophy?: boolean
+          trophy_private?: boolean
           user_id?: string
         }
         Relationships: [
@@ -2467,16 +2696,6 @@ export type Database = {
           },
         ]
       }
-      habit_timer_sessions: {
-        Row: { id: string; user_id: string; user_habit_id: string; season_id: string; day: string; target_minutes: number; tracked_seconds: number; started_at: string; last_heartbeat_at: string; ended_at: string | null; status: string; is_demo: boolean }
-        Insert: { id?: string; user_id: string; user_habit_id: string; season_id: string; day: string; target_minutes: number; tracked_seconds?: number; started_at?: string; last_heartbeat_at?: string; ended_at?: string | null; status?: string; is_demo?: boolean }
-        Update: { id?: string; user_id?: string; user_habit_id?: string; season_id?: string; day?: string; target_minutes?: number; tracked_seconds?: number; started_at?: string; last_heartbeat_at?: string; ended_at?: string | null; status?: string; is_demo?: boolean }
-        Relationships: [
-          { foreignKeyName: "habit_timer_sessions_user_habit_id_fkey"; columns: ["user_habit_id"]; isOneToOne: false; referencedRelation: "user_habits"; referencedColumns: ["id"] },
-          { foreignKeyName: "habit_timer_sessions_season_id_fkey"; columns: ["season_id"]; isOneToOne: false; referencedRelation: "seasons"; referencedColumns: ["id"] },
-          { foreignKeyName: "habit_timer_sessions_user_id_fkey"; columns: ["user_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
-        ]
-      }
       user_habits: {
         Row: {
           active: boolean
@@ -2487,6 +2706,7 @@ export type Database = {
           is_demo: boolean
           kind: string
           position: number
+          rule: Json
           season_id: string
           starts_on: string | null
           swapped_from: string | null
@@ -2495,7 +2715,6 @@ export type Database = {
           unit: string | null
           user_id: string
           what_counts: Json
-          rule: Json
         }
         Insert: {
           active?: boolean
@@ -2506,6 +2725,7 @@ export type Database = {
           is_demo?: boolean
           kind: string
           position?: number
+          rule?: Json
           season_id: string
           starts_on?: string | null
           swapped_from?: string | null
@@ -2514,7 +2734,6 @@ export type Database = {
           unit?: string | null
           user_id?: string
           what_counts?: Json
-          rule?: Json
         }
         Update: {
           active?: boolean
@@ -2525,6 +2744,7 @@ export type Database = {
           is_demo?: boolean
           kind?: string
           position?: number
+          rule?: Json
           season_id?: string
           starts_on?: string | null
           swapped_from?: string | null
@@ -2533,7 +2753,6 @@ export type Database = {
           unit?: string | null
           user_id?: string
           what_counts?: Json
-          rule?: Json
         }
         Relationships: [
           {
@@ -2719,9 +2938,17 @@ export type Database = {
         Args: { _day: string; _season_id: string; _user_id: string }
         Returns: undefined
       }
+      _require_active_participation: {
+        Args: { _season: string; _user: string }
+        Returns: undefined
+      }
       _require_admin: { Args: never; Returns: string }
       _require_feature: { Args: { _key: string }; Returns: undefined }
       _sync_boss: { Args: { _bid: string; _uid: string }; Returns: undefined }
+      _time_window_allows: {
+        Args: { _local_time: string; _rule: Json }
+        Returns: boolean
+      }
       _viewer_demo: { Args: never; Returns: boolean }
       activate_challenge: { Args: { _id?: string }; Returns: undefined }
       active_season: { Args: never; Returns: Json }
@@ -2774,6 +3001,10 @@ export type Database = {
         Args: { _people: Json; _replace?: boolean }
         Returns: Json
       }
+      admin_set_challenge_habits: {
+        Args: { _habits: Json; _season_id: string }
+        Returns: undefined
+      }
       app_feature_flags: { Args: never; Returns: Json }
       apply_due_habit_swaps: { Args: never; Returns: number }
       assign_sub_squad: {
@@ -2810,32 +3041,22 @@ export type Database = {
         Returns: Json
       }
       can_read_post: { Args: { _id: string }; Returns: boolean }
+      cancel_habit_timer: { Args: { _session_id: string }; Returns: undefined }
       capsule_audio_access: {
         Args: { _path: string; _write?: boolean }
         Returns: boolean
       }
       capsule_read: { Args: { _season_id: string }; Returns: Json }
+      challenge_feed: {
+        Args: { _scope?: string; _season_id: string }
+        Returns: Json
+      }
       challenge_preview: { Args: { _code: string }; Returns: Json }
-      challenge_scoreboard: { Args: { _country?: string; _scope?: string; _season_id: string }; Returns: Json }
-      start_habit_timer: { Args: { _user_habit_id: string }; Returns: Json }
-      habit_timer_heartbeat: { Args: { _session_id: string; _visible?: boolean }; Returns: Json }
-      complete_habit_timer: { Args: { _session_id: string }; Returns: Json }
-      cancel_habit_timer: { Args: { _session_id: string }; Returns: undefined }
-      create_creator_challenge: { Args: { _cover_color?: string; _days: number; _habits: Json; _name: string; _starts_on: string }; Returns: Json }
-      creator_dashboard: { Args: never; Returns: Json }
-      creator_requests_admin: { Args: never; Returns: Json }
-      find_challenge_crew: { Args: never; Returns: Json }
-      request_creator: { Args: never; Returns: string }
-      review_creator_request: { Args: { _approve: boolean; _note?: string; _request_id: string }; Returns: undefined }
-      challenge_feed: { Args: { _scope?: string; _season_id: string }; Returns: Json }
       challenge_pulse: { Args: { _season_id: string }; Returns: Json }
-      public_challenge_catalog: { Args: never; Returns: Json }
-      set_challenge_pin: { Args: { _pin: boolean; _post_id: string }; Returns: undefined }
-      create_personal_challenge: { Args: { _days: number; _habits: Json; _name: string }; Returns: string }
-      my_challenge_history: { Args: never; Returns: Json }
-      surrender_challenge: { Args: { _season_id: string }; Returns: Json }
-      toggle_challenge_respect: { Args: { _event_id: string }; Returns: boolean }
-      admin_set_challenge_habits: { Args: { _habits: Json; _season_id: string }; Returns: undefined }
+      challenge_scoreboard: {
+        Args: { _country?: string; _scope?: string; _season_id: string }
+        Returns: Json
+      }
       checkin_upsert: {
         Args: {
           _day?: string
@@ -2875,6 +3096,7 @@ export type Database = {
         Args: { _mood: string; _tomorrow?: string }
         Returns: undefined
       }
+      complete_habit_timer: { Args: { _session_id: string }; Returns: Json }
       create_boss_lesson: {
         Args: { _body: string; _boss_id: string; _seconds: number }
         Returns: string
@@ -2894,8 +3116,22 @@ export type Database = {
         }
         Returns: Json
       }
+      create_creator_challenge: {
+        Args: {
+          _cover_color?: string
+          _days: number
+          _habits: Json
+          _name: string
+          _starts_on: string
+        }
+        Returns: Json
+      }
       create_crew: {
         Args: { _kind: string; _max_members: number; _name: string }
+        Returns: string
+      }
+      create_personal_challenge: {
+        Args: { _days: number; _habits: Json; _name: string }
         Returns: string
       }
       create_post: {
@@ -2914,6 +3150,8 @@ export type Database = {
         Args: { _challenge: string; _name: string }
         Returns: string
       }
+      creator_dashboard: { Args: never; Returns: Json }
+      creator_requests_admin: { Args: never; Returns: Json }
       crew_activity: { Args: { _crew_id: string }; Returns: Json }
       crew_details: { Args: { _crew_id: string }; Returns: Json }
       crew_today: { Args: { _crew_id: string }; Returns: Json }
@@ -2931,7 +3169,12 @@ export type Database = {
       enqueue_timed_notifications: { Args: never; Returns: number }
       featured_creator_challenges: { Args: never; Returns: Json }
       finalize_due_days: { Args: never; Returns: number }
+      find_challenge_crew: { Args: never; Returns: Json }
       freeze_due_seasons: { Args: never; Returns: number }
+      habit_timer_heartbeat: {
+        Args: { _session_id: string; _visible?: boolean }
+        Returns: Json
+      }
       handle_available: { Args: { _handle: string }; Returns: boolean }
       has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
       hit_boss: {
@@ -2939,7 +3182,10 @@ export type Database = {
         Returns: undefined
       }
       integrity_tick: { Args: never; Returns: Json }
-      join_challenge: { Args: { _code: string; _mode?: string }; Returns: string }
+      join_challenge: {
+        Args: { _code: string; _mode?: string }
+        Returns: string
+      }
       join_crew: { Args: { _code: string }; Returns: string }
       join_season: {
         Args: { _mode?: string; _season_id: string }
@@ -2974,6 +3220,7 @@ export type Database = {
         Args: { _day?: string; _prayer: string; _user_habit_id: string }
         Returns: Json
       }
+      my_challenge_history: { Args: never; Returns: Json }
       my_season_result: { Args: { _season_id: string }; Returns: Json }
       participating_countries: { Args: never; Returns: number }
       post_action: {
@@ -3006,6 +3253,7 @@ export type Database = {
         }
         Returns: Json
       }
+      public_challenge_catalog: { Args: never; Returns: Json }
       react_post: {
         Args: { _kind: string; _post_id: string }
         Returns: undefined
@@ -3034,7 +3282,12 @@ export type Database = {
         Args: { _reason: string; _target: string }
         Returns: undefined
       }
+      request_creator: { Args: never; Returns: string }
       reset_boss: { Args: { _boss_id: string }; Returns: undefined }
+      review_creator_request: {
+        Args: { _approve: boolean; _note?: string; _request_id: string }
+        Returns: undefined
+      }
       scoreboard: {
         Args: {
           _country_code?: string
@@ -3071,6 +3324,10 @@ export type Database = {
         Returns: undefined
       }
       send_nudge: { Args: { _to_user: string }; Returns: boolean }
+      set_challenge_pin: {
+        Args: { _pin: boolean; _post_id: string }
+        Returns: undefined
+      }
       set_chaos_done: {
         Args: { _day?: string; _done: boolean; _season_id: string }
         Returns: Json
@@ -3082,6 +3339,8 @@ export type Database = {
       signature_overview: { Args: { _season_id: string }; Returns: Json }
       solo_ghost: { Args: { _season_id: string }; Returns: Json }
       spin_daily_chaos: { Args: { _season_id: string }; Returns: Json }
+      start_habit_timer: { Args: { _user_habit_id: string }; Returns: Json }
+      surrender_challenge: { Args: { _season_id: string }; Returns: Json }
       swap_habit: {
         Args: {
           _custom_name?: string
@@ -3094,6 +3353,10 @@ export type Database = {
       today_habit_points: {
         Args: { _day: string; _season_id: string }
         Returns: Json
+      }
+      toggle_challenge_respect: {
+        Args: { _event_id: string }
+        Returns: boolean
       }
       toggle_respect: { Args: { _checkin_id: string }; Returns: boolean }
       wrapped_summary: { Args: { _season_id: string }; Returns: Json }

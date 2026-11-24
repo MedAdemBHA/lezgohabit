@@ -58,18 +58,36 @@ REVOKE ALL ON FUNCTION public._time_window_allows(jsonb,time) FROM PUBLIC,anon,a
 
 CREATE OR REPLACE FUNCTION public.guard_habit_rule() RETURNS trigger
 LANGUAGE plpgsql SET search_path=public AS $$
-DECLARE start_at time; end_at time;
+DECLARE start_at time; end_at time; j jsonb:=to_jsonb(NEW); r jsonb; tgt numeric;
 BEGIN
-  IF NEW.kind IN ('time_window','quit') OR NEW.rule ? 'window_start' OR NEW.rule ? 'window_end' THEN
-    IF NOT (NEW.rule ? 'window_start' AND NEW.rule ? 'window_end') THEN RAISE EXCEPTION 'invalid_time_window'; END IF;
-    BEGIN start_at:=(NEW.rule->>'window_start')::time; end_at:=(NEW.rule->>'window_end')::time;
+  -- habit_templates store default_rule/default_target; challenge_habits and user_habits store rule/target.
+  r:=coalesce(j->'rule',j->'default_rule','{}'::jsonb);
+  tgt:=coalesce((j->>'target')::numeric,(j->>'default_target')::numeric);
+  IF NEW.kind IN ('time_window','quit') OR r ? 'window_start' OR r ? 'window_end' THEN
+    IF NOT (r ? 'window_start' AND r ? 'window_end') THEN RAISE EXCEPTION 'invalid_time_window'; END IF;
+    BEGIN start_at:=(r->>'window_start')::time; end_at:=(r->>'window_end')::time;
     EXCEPTION WHEN OTHERS THEN RAISE EXCEPTION 'invalid_time_window'; END;
     IF start_at=end_at THEN RAISE EXCEPTION 'invalid_time_window'; END IF;
   END IF;
-  IF NEW.kind='timer' AND (NEW.target NOT BETWEEN 1 AND 180 OR NEW.target<>trunc(NEW.target)) THEN RAISE EXCEPTION 'invalid_timer_target'; END IF;
-  IF NEW.kind='quit' AND NEW.rule->>'window_start' IS NULL THEN RAISE EXCEPTION 'invalid_quit_window'; END IF;
+  IF NEW.kind='timer' AND (tgt NOT BETWEEN 1 AND 180 OR tgt<>trunc(tgt)) THEN RAISE EXCEPTION 'invalid_timer_target'; END IF;
+  IF NEW.kind='quit' AND r->>'window_start' IS NULL THEN RAISE EXCEPTION 'invalid_quit_window'; END IF;
   RETURN NEW;
 END $$;
+
+-- Fill an empty rule from the template's default (time windows, limits) before the rule guard runs.
+CREATE OR REPLACE FUNCTION public.fill_habit_rule_default() RETURNS trigger
+LANGUAGE plpgsql SET search_path=public AS $$
+BEGIN
+  IF coalesce(NEW.rule,'{}'::jsonb)='{}'::jsonb AND NEW.template_id IS NOT NULL THEN
+    NEW.rule:=coalesce((SELECT default_rule FROM public.habit_templates WHERE id=NEW.template_id),'{}'::jsonb);
+  END IF;
+  RETURN NEW;
+END $$;
+REVOKE ALL ON FUNCTION public.fill_habit_rule_default() FROM PUBLIC,anon,authenticated;
+DROP TRIGGER IF EXISTS a_challenge_habit_rule_default ON public.challenge_habits;
+CREATE TRIGGER a_challenge_habit_rule_default BEFORE INSERT ON public.challenge_habits FOR EACH ROW EXECUTE FUNCTION public.fill_habit_rule_default();
+DROP TRIGGER IF EXISTS a_user_habit_rule_default ON public.user_habits;
+CREATE TRIGGER a_user_habit_rule_default BEFORE INSERT ON public.user_habits FOR EACH ROW EXECUTE FUNCTION public.fill_habit_rule_default();
 REVOKE ALL ON FUNCTION public.guard_habit_rule() FROM PUBLIC,anon,authenticated;
 DROP TRIGGER IF EXISTS habit_template_rule_guard ON public.habit_templates;
 CREATE TRIGGER habit_template_rule_guard BEFORE INSERT OR UPDATE ON public.habit_templates FOR EACH ROW EXECUTE FUNCTION public.guard_habit_rule();
