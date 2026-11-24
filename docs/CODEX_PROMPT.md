@@ -151,6 +151,78 @@ risks. Stop and wait for my OK.
 - Creator dashboard on `/profile` for creators: participants, today's check-in %, surrenders, invite link.
 - Creators choose the length (7–90 days) and start date; a challenge can't change habits or length after it starts.
 
+## Phase 3a — Habit library (more habits, each with a clear rule)
+
+Today there are 21 templates (`habit_templates`) with kinds `check`, `count`, `detox`, `salat`. Challenges need a
+richer, well-defined library so creators can build any challenge. Every habit must answer 4 questions:
+**what counts as done, how it is measured, when it can be checked in, and how we keep it honest.**
+
+**New habit kinds** (add to `_habit_completion`, `src/lib/habits.ts` mirror, and the Today cards):
+- `check` — done / not done (exists).
+- `count` — reach a number (exists): steps, pages, litres, minutes, reps, km.
+- `time_window` — **NEW.** Valid only if checked in inside a time window in the user's local time, decided by
+  the **server** (like `mark_prayer` does): e.g. "Wake up before 07:00" = check-in allowed 04:00–07:00 only;
+  "Sleep before midnight" = check-in 21:00–00:00. Outside the window the button explains why.
+- `quit` — **NEW.** A "clean day" habit (no smoking, no vape, no energy drinks, no fast food…): the user
+  confirms the clean day in the evening window; a slip can be logged honestly and just makes that day 0
+  (no shame copy, streak resets kindly).
+- `timer` — **NEW (optional, propose design).** An in-app timer that must run for N minutes with the page
+  visible (reuse the detox heartbeat approach): meditation, plank, deep work.
+- `detox`, `salat` — keep as they are. Faith habits stay optional and private by default.
+
+**Library to seed** (EN/FR/AR/Darja names + description; icon in the same style as `src/components/icons`;
+category; kind; default target/unit; window if any). Starting list — refine it in PLAN.md:
+
+| Category | Habit | Kind | Default |
+|---|---|---|---|
+| Body | Cold shower | check (+ optional proof) | 1 |
+| Body | Wake up early | time_window | before 07:00 (creator can change) |
+| Body | Sleep before midnight | time_window | 21:00–00:00 |
+| Body | Sleep 7 h | count | 7 h (exists) |
+| Body | Train / workout | check | 1 (exists) |
+| Body | Steps | count | 8,000 (exists) — 10,000 variant |
+| Body | Run or walk | count | 3 km (exists) |
+| Body | Push-ups | count | 50 reps |
+| Body | Plank | timer or count | 3 min |
+| Body | Stretch / mobility | timer or check | 10 min |
+| Body | Sunlight outside | check | 10 min in the morning |
+| Fuel | Water | count | 2 L (exists) |
+| Fuel | No sugar / no-sugar coffee | check / quit | (exist) |
+| Fuel | No fast food | quit | (exists) |
+| Fuel | Fruits & veggies | count | 5 portions |
+| Fuel | Protein each meal | check | 1 |
+| Fuel | No energy drinks | quit | — |
+| Mind | Read | count | 10 pages (exists) |
+| Mind | Learn / study | count | 15–20 min (exist) |
+| Mind | Study focus blocks | count | 2 × 25 min |
+| Mind | Language practice | count | 15 min |
+| Mind | Journal | check | 1 (exists) |
+| Mind | Meditation / breathing | timer | 10 min |
+| Mind | Gratitude (3 things) | check | 1 |
+| Digital | Scroll detox | detox | under 1 h social (exists) |
+| Digital | No phone first hour | time_window | check-in after the first hour, before 10:00 |
+| Digital | No social media till noon | detox | (exists) |
+| Digital | Screen time limit | count (logged) | under 2 h |
+| Life | Make your bed | time_window | before 10:00 |
+| Life | Tidy 10 min | check | 1 |
+| Life | No spending day / budget | check | 1 |
+| Life | Call family or a friend | check | 1 |
+| Quit | No smoking / no vape | quit | — |
+| Faith (optional, private) | Salat on time, Quran page, dhikr, dua, tasbih | (exist) | — |
+| Custom | Creator-defined habit | any kind above | creator sets name, kind, target, unit, window |
+
+**Rules for every habit:**
+- Server decides validity (windows, timers, limits); the browser only shows it.
+- Same 10-minute undo lock and day-final rules as today; suspicious values go to `point_reviews` like now
+  (add sensible caps for new count habits, e.g. push-ups > 1,000/day).
+- Proof photo stays optional on every habit (bonus as today), never required — except when a creator marks a
+  challenge "proof required" (propose how).
+- Habits that need data we don't have (real step counts, screen time) stay honest self-report for now; note
+  in `roadmap.md`: Health Connect / Apple Health / Screen Time integration later.
+- Creators pick habits from the library or make a custom one; a challenge's habit list is locked once it starts.
+- Each habit has a one-line "what counts" text shown on its card and in the challenge preview
+  (e.g. "Cold shower: at least 30 seconds of cold water at the end").
+
 ## Phase 3b — History and surrender (UI)
 
 - **Me → "My challenges"**: a timeline of every challenge (active on top), each as a card with status badge
@@ -227,7 +299,7 @@ remove helper text that repeats a title; one obvious primary action per screen.
 
 - `bun run build` and `npx tsc --noEmit -p .` pass; `bunx vitest run` has no new failures
   (`src/test/app-routing.test.tsx` already fails on main: `virtual:pwa-register`).
-- Add tests for: auto feed moments (created once, privacy respected), challenge habit list → user habits, one-active-challenge rule, surrender, history, 7-day completion, personal challenges not on boards, find-me-a-crew grouping,
+- Add tests for: time_window validity (inside/outside, time zones), quit-day slips, timer minimum, auto feed moments (created once, privacy respected), challenge habit list → user habits, one-active-challenge rule, surrender, history, 7-day completion, personal challenges not on boards, find-me-a-crew grouping,
   onboarding auto-finish (unit level where possible).
 - New user: landing → challenge → how to play → Google → Today in ≤ 4 screens, no typing.
 - Invite link `/c/CODE` works signed-out → sign-in → joined.
