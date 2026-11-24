@@ -68,3 +68,6 @@ Remaining limitations: shared demo email immutability remains unverified; future
 
 - [x] Score integrity pass: final days + 03:00 lock job, append-only check-in history, timezone rule, boss single bonus/limits, lift best-of-3, proof bonus tied to post, 65 stack cap note, season snapshot, demo isolation, confirm steps, SQL tests (supabase/tests/score_integrity.sql).
 - [x] Guest mode: "Explore as guest" on Join/Login, read-only sample world enforced in the database, guest banner + sign-up sheet in 4 languages, admin guest count, 7-day cleanup, tests (supabase/tests/guest_mode.sql).
+
+## Future
+- Teen mode (12–17) later: parent-approved accounts, no photos, no public feed, invite-only crews — only after legal advice (INPDP / lawyer).

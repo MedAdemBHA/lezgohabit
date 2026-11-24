@@ -87,10 +87,10 @@
 - Add the requested tests for windows/time zones, quit slips, timer minimum, deduplicated/privacy-safe moments, challenge habit copying, the one-active rule, surrender/history, 7-day completion, personal-board exclusion, crew grouping, and onboarding auto-finish.
 - Run `bun run build`, `npx tsc --noEmit -p .`, and `bunx vitest run`; note the existing `virtual:pwa-register` routing failure separately. Finish `CHANGES.md` with migration order and manual steps. Do not apply or push migrations.
 
-## Risks and decisions to confirm before implementation
+## Decisions confirmed
 
-1. **Legacy users in multiple live seasons:** the new unique-active index cannot be added until existing overlapping entries have a policy. Proposed rule: keep the season selected by `active_challenge_id`; when that pointer is empty, keep the live official season currently selected by `active_season()`; otherwise keep the most recently joined eligible season. Freeze other still-open entries as surrendered with `end_reason='legacy_switch'`, preserving their scores. I will add a read-only preflight count before migration authoring and pause for your choice if this affects users.
-2. **Consistency definition:** proposed completed day is a day whose saved `daily_scores.completion` is `1` (all selected habits complete); denominator is local elapsed participation days from `max(start date, joined date)` through today/end. Confirm if partial days should count instead.
-3. **Trophy on short challenges:** existing trophy rule is 30 active days, which fails for 7–29-day challenges. Proposed replacement is at least 75% of challenge days (ceil), keeping the old 30/40 ratio. Confirm whether to use this rule or reserve trophies for official seasons.
-4. **Creator proof requirement:** the brief mentions a possible creator “proof required” option but asks for a proposal. Phase 3a will keep proof optional for every habit until a clear moderation/storage rule is approved.
-5. **Supabase migration inventory:** the connected project reports migrations through `0061_mark_prayer` while local `DEPLOY.md` reports `0062_own_hosting_cron` applied. Confirm the state before `0063`; no remote schema was changed during Phase 0.
+- `0062_own_hosting_cron` is now recorded in Supabase; the next migration is `0063`. Migrations remain unapplied by Codex for the user to apply.
+- The current project has no user accounts or `season_entries`. Keep the proposed legacy-overlap fallback in the migration (selected `active_challenge_id`, else the official season selected by `active_season()`, else the most recently joined eligible season); no preflight pause is needed.
+- A completed consistency day is `daily_scores.completion >= 0.6`. The denominator is local elapsed participation days from `max(challenge start, joined date)` through today or the challenge end. Return `completion = 1` perfect days separately.
+- Award trophies at `ceil(75% of challenge length)` days with completion >= 0.6 for every challenge kind. Personal-challenge trophies remain private.
+- Proof remains optional for every habit. Seed Winter Arc with `train`, `read`, and `sleep7`.
