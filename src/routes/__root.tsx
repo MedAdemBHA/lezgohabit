@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
-  Outlet, Link, createRootRouteWithContext, useRouter, HeadContent, Scripts, type ErrorComponentProps,
+  Outlet, Link, createRootRouteWithContext, useRouter, useRouterState, HeadContent, Scripts, type ErrorComponentProps,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 import { I18nextProvider } from "react-i18next";
@@ -9,7 +9,7 @@ import { Toaster } from "sonner";
 import { StickerButton } from "@/components/lezgo/ui";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import i18n, { applyLang, LANG_KEY } from "@/lib/i18n";
+import i18n, { applyLang, isRtl, LANG_KEY } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 
 function NotFoundComponent() {
@@ -76,8 +76,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 function RootShell({ children }: { children: ReactNode }) {
+  const search = useRouterState({ select: (state) => state.location.searchStr });
+  const requestedLang = new URLSearchParams(search).get("lang");
+  const lang = requestedLang === "fr" || requestedLang === "ar" ? requestedLang : "en";
   return (
-    <html lang="en" dir="ltr">
+    <html lang={lang} dir={isRtl(lang) ? "rtl" : "ltr"}>
       <head><HeadContent /></head>
       <body>{children}<Scripts /></body>
     </html>
@@ -88,7 +91,12 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
   useEffect(() => {
-    try { const l = localStorage.getItem(LANG_KEY); if (l) applyLang(l); } catch { /* ignore */ }
+    try {
+      const requested = new URLSearchParams(window.location.search).get("lang");
+      const stored = localStorage.getItem(LANG_KEY);
+      const lang = requested && ["en", "fr", "ar"].includes(requested) ? requested : stored;
+      if (lang) applyLang(lang);
+    } catch { /* ignore */ }
     const { data } = supabase.auth.onAuthStateChange((event) => {
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
       void router.invalidate();

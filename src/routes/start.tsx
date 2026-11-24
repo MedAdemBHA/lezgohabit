@@ -22,8 +22,16 @@ type PlayMode = "solo" | "find" | "create" | "code";
 
 export const Route = createFileRoute("/start")({
   ssr: false,
-  validateSearch: (s: Record<string, unknown>) => typeof s["code"] === "string" ? { code: s["code"].toUpperCase() } : {},
-  head: () => pageHead("Start a challenge — lezgo", "Choose a challenge and make your first check-in."),
+  validateSearch: (s: Record<string, unknown>) => ({
+    ...(typeof s["code"] === "string" ? { code: s["code"].toUpperCase() } : {}),
+    ...(s["lang"] === "fr" || s["lang"] === "ar" ? { lang: s["lang"] } : {}),
+  }),
+  head: () => pageHead("Start a challenge — lezgo", "Choose a challenge and make your first check-in.", {
+      privatePage: false,
+      canonicalPath: "/start",
+      imagePath: "/og-home.png",
+      imageAlt: "Choose a challenge on lezgo",
+    }),
   component: StartPage,
 });
 

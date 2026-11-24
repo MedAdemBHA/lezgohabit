@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#fff6e5"/>
+  <circle cx="1100" cy="86" r="194" fill="#ffb13b"/>
+  <circle cx="1110" cy="570" r="125" fill="#b9e64a"/>
+  <rect x="45" y="42" width="1110" height="546" rx="38" fill="#fffdf7" stroke="#191919" stroke-width="7"/>
+  <rect x="82" y="77" width="208" height="62" rx="17" fill="#b9e64a" stroke="#191919" stroke-width="4"/>
+  <text x="186" y="119" text-anchor="middle" fill="#191919" font-family="Arial, Helvetica, sans-serif" font-size="36" font-weight="900">lezgo</text>
+  <text x="330" y="118" fill="#191919" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="800" letter-spacing="2">SMALL HABITS. REAL PEOPLE.</text>
+  <text x="88" y="286" fill="#191919" font-family="Arial, Helvetica, sans-serif" font-size="104" font-weight="900">Show up.</text>
+  <text x="88" y="400" fill="#191919" font-family="Arial, Helvetica, sans-serif" font-size="104" font-weight="900">Lezgo.</text>
+  <rect x="91" y="451" width="765" height="68" rx="20" fill="#ffe176" stroke="#191919" stroke-width="4"/>
+  <text x="122" y="495" fill="#191919" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700">Choose a challenge. Check in under a minute a day.</text>
+  <path d="M972 344l35 35 73-83" fill="none" stroke="#191919" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="1090" y="548" text-anchor="end" fill="#191919" font-family="Arial, Helvetica, sans-serif" font-size="19" font-weight="900" letter-spacing="3">BUILD YOUR STREAK</text>
+</svg>

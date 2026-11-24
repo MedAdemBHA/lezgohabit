@@ -1,5 +1,6 @@
 import { queryOptions } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { publicUrl } from '@/lib/public-url';
 import type { Database } from '@/integrations/supabase/types';
 export type Boss = Database['public']['Tables']['bosses']['Row'];
 export type Challenge = Database['public']['Tables']['challenges']['Row'];
@@ -15,4 +16,4 @@ export const TEMPLATE_DAYS={winter_arc:40,ramadan:30,summer_body:45,reading:21,s
 export type TemplateKey=keyof typeof TEMPLATE_DAYS;
 export type Audience='solo'|'duo'|'squad'|'club'|'company'|'creator';
 export const AUDIENCE_SIZE={solo:'1',duo:'2',squad:'3–10',club:'11–100',company:'100+',creator:'2–50'};
-export const challengeLink=(code:string)=>`https://joinlezgo.com/c/${encodeURIComponent(code)}`;
+export const challengeLink=(code:string)=>publicUrl(`/c/${encodeURIComponent(code)}`);

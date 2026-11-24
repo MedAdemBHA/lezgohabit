@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as StartRouteImport } from './routes/start'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedBossRouteImport } from './routes/_authenticated/boss'
@@ -38,6 +39,7 @@ import { Route as AuthenticatedTrailRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedWrappedRouteImport } from './routes/_authenticated/wrapped'
 import { Route as CCodeRouteImport } from './routes/c.$code'
 import { Route as ApiPublicNotificationsRouteImport } from './routes/api/public/notifications'
+import { Route as OgChallengeCodeRouteImport } from './routes/og.challenge.$code'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -51,6 +53,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StartRoute = StartRouteImport.update({
@@ -185,10 +192,16 @@ const ApiPublicNotificationsRoute = ApiPublicNotificationsRouteImport.update({
   path: '/api/public/notifications',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OgChallengeCodeRoute = OgChallengeCodeRouteImport.update({
+  id: '/og/challenge/$code',
+  path: '/og/challenge/$code',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/start': typeof StartRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/boss': typeof AuthenticatedBossRoute
@@ -215,10 +228,12 @@ export interface FileRoutesByFullPath {
   '/wrapped': typeof AuthenticatedWrappedRoute
   '/c/$code': typeof CCodeRoute
   '/api/public/notifications': typeof ApiPublicNotificationsRoute
+  '/og/challenge/$code': typeof OgChallengeCodeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/start': typeof StartRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/boss': typeof AuthenticatedBossRoute
@@ -245,12 +260,14 @@ export interface FileRoutesByTo {
   '/wrapped': typeof AuthenticatedWrappedRoute
   '/c/$code': typeof CCodeRoute
   '/api/public/notifications': typeof ApiPublicNotificationsRoute
+  '/og/challenge/$code': typeof OgChallengeCodeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/start': typeof StartRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/boss': typeof AuthenticatedBossRoute
@@ -277,12 +294,14 @@ export interface FileRoutesById {
   '/_authenticated/wrapped': typeof AuthenticatedWrappedRoute
   '/c/$code': typeof CCodeRoute
   '/api/public/notifications': typeof ApiPublicNotificationsRoute
+  '/og/challenge/$code': typeof OgChallengeCodeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/auth'
+    | '/sitemap.xml'
     | '/start'
     | '/admin'
     | '/boss'
@@ -309,10 +328,12 @@ export interface FileRouteTypes {
     | '/wrapped'
     | '/c/$code'
     | '/api/public/notifications'
+    | '/og/challenge/$code'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
+    | '/sitemap.xml'
     | '/start'
     | '/admin'
     | '/boss'
@@ -339,11 +360,13 @@ export interface FileRouteTypes {
     | '/wrapped'
     | '/c/$code'
     | '/api/public/notifications'
+    | '/og/challenge/$code'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/sitemap.xml'
     | '/start'
     | '/_authenticated/admin'
     | '/_authenticated/boss'
@@ -370,15 +393,18 @@ export interface FileRouteTypes {
     | '/_authenticated/wrapped'
     | '/c/$code'
     | '/api/public/notifications'
+    | '/og/challenge/$code'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StartRoute: typeof StartRoute
   CCodeRoute: typeof CCodeRoute
   ApiPublicNotificationsRoute: typeof ApiPublicNotificationsRoute
+  OgChallengeCodeRoute: typeof OgChallengeCodeRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -402,6 +428,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/start': {
@@ -586,6 +619,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicNotificationsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/og/challenge/$code': {
+      id: '/og/challenge/$code'
+      path: '/og/challenge/$code'
+      fullPath: '/og/challenge/$code'
+      preLoaderRoute: typeof OgChallengeCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -648,9 +688,11 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   StartRoute: StartRoute,
   CCodeRoute: CCodeRoute,
   ApiPublicNotificationsRoute: ApiPublicNotificationsRoute,
+  OgChallengeCodeRoute: OgChallengeCodeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

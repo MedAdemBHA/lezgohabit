@@ -15,6 +15,7 @@ migrations (0000–0062), season content, the 15-minute day-lock job and the not
 
 | Name | Type | Value |
 |---|---|---|
+| `APP_URL` | Text | Your public app origin, e.g. `https://lezgo.<you>.workers.dev` (no trailing slash) |
 | `SUPABASE_URL` | Text | `https://yjkniwjneqmtatwozcpv.supabase.co` |
 | `SUPABASE_PUBLISHABLE_KEY` | Text | `sb_publishable_6RNKjzRWhGs6un9RGDXXZg_dgIqZpJV` |
 | `SUPABASE_SERVICE_ROLE_KEY` | Secret | Supabase → Project Settings → API Keys → `service_role` / secret key |
@@ -24,6 +25,7 @@ migrations (0000–0062), season content, the 15-minute day-lock job and the not
 | `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` | Secret | only when you turn push on: `npx web-push generate-vapid-keys`; subject `mailto:you@…` |
 
 The browser build reads `VITE_SUPABASE_*` from the committed `.env` (public values only).
+For local SEO checks, run `APP_URL=http://localhost:5173 bun run dev` (adjust the port if Vite selects another one). Production canonical, hreflang and sitemap URLs use the Worker runtime variable above; browser invite links use the active app origin.
 
 ## 2. Supabase login settings
 

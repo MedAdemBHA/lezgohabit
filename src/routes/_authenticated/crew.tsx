@@ -21,6 +21,7 @@ import {
   inputCls,
 } from "@/components/lezgo/ui";
 import { errKey, myCrewQuery, useBase } from "@/lib/data";
+import { challengeLink } from "@/lib/batch6-data";
 import { loc } from "@/lib/i18n";
 import { msToMidnight, pad, splitMs, useNow } from "@/lib/time";
 import { cn } from "@/lib/utils";
@@ -58,7 +59,7 @@ type Activity = {
   respected: boolean;
 };
 
-const link = (code: string) => `https://joinlezgo.com/c/${code}`;
+const link = challengeLink;
 
 function CrewPage() {
   const { uid, season } = useBase();
