@@ -121,6 +121,6 @@ export function useInvalidateAll() {
 export function errKey(e: unknown): string {
   const m = (e as { message?: string })?.message ?? "";
   if (m.includes("guest_read_only")) return "guest_read_only";
-  for (const k of ["crew_not_found", "crew_full", "already_in_crew", "day_final", "day_closed", "max_habits", "forbidden"]) if (m.includes(k)) return k;
+  for (const k of ["crew_not_found", "crew_full", "already_in_crew", "day_final", "day_closed", "max_habits", "forbidden", "habit_locked", "prayer_not_yet"]) if (m.includes(k)) return k;
   return "";
 }

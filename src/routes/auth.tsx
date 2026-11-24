@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 import { FitHeading } from "@/components/lezgo/fit-heading";
 import { isRtl } from "@/lib/i18n";
 import { Brand } from "@/components/lezgo/brand";
@@ -49,11 +48,9 @@ function AuthPage() {
   async function google() {
     if (!adult) return;
     setBusy(true);
-    const r = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin + "/auth" });
-    if (r.error) { toast(t("common.error")); setBusy(false); return; }
-    if (r.redirected) return;
-    const code=sessionStorage.getItem("lezgo_challenge_invite");
-    if(code&&/^[A-Z0-9]{6}$/.test(code)) {void nav({to:"/c/$code",params:{code}});} else void nav({ to: "/today", replace: true });
+    // Supabase redirects to Google and back to /auth; the auth listener above then routes to Today or the invite.
+    const { error } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: window.location.origin + "/auth" } });
+    if (error) { toast(t("common.error")); setBusy(false); }
   }
   async function magic(e: React.FormEvent) {
     e.preventDefault();

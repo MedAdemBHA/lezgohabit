@@ -2856,6 +2856,10 @@ export type Database = {
         Args: { _minutes: number; _path: string }
         Returns: undefined
       }
+      mark_prayer: {
+        Args: { _day?: string; _prayer: string; _user_habit_id: string }
+        Returns: Json
+      }
       my_season_result: { Args: { _season_id: string }; Returns: Json }
       participating_countries: { Args: never; Returns: number }
       post_action: {

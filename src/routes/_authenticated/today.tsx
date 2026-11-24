@@ -146,6 +146,7 @@ function Today() {
           is_demo: profile?.is_demo ?? false,
           day: today,
           created_at: new Date().toISOString(),
+          done_at: null,
         }),
         value,
         detail,
@@ -189,7 +190,7 @@ function Today() {
           void qc.invalidateQueries({queryKey:["profileSummary"]});
         } catch (e) {
           if (!navigator.onLine) { queueGo({uid,habit:h.id,day:today,value,detail}); toast(t("batch9.queued")); return; }
-          toast(errKey(e) === "day_final" ? t("integrity.dayFinal") : errKey(e) === "day_closed" ? t("today.closed") : t("common.error"));
+          toast(errKey(e) === "habit_locked" ? t("todayDesign.habitLocked") : errKey(e) === "day_final" ? t("integrity.dayFinal") : errKey(e) === "day_closed" ? t("today.closed") : t("common.error"));
           await qc.invalidateQueries({ queryKey: dq.queryKey });
         } finally {
           setPending((n) => n - 1);
@@ -199,6 +200,42 @@ function Today() {
       void qc.invalidateQueries({ queryKey: ["scores"] });
       void qc.invalidateQueries({ queryKey: ["leaderboard"] });
     });
+  }
+  // Salat goes through mark_prayer: the server checks the city's prayer times and decides on time vs late.
+  function markPrayer(h: UserHabit, prayer: string) {
+    if (disabled) return;
+    if (!navigator.onLine) { toast(t("common.error")); return; }
+    setPending((n) => n + 1);
+    queue.current = queue.current
+      .catch(() => {})
+      .then(async () => {
+        try {
+          const { data: res, error } = await supabase.rpc("mark_prayer", { _user_habit_id: h.id, _prayer: prayer, _day: today });
+          if (error) throw error;
+          const r = res as unknown as { prayers: Record<string, PrayerState>; marked_at: Record<string, string>; value: number };
+          patch((d) => {
+            const prev = d.checkins.find((c) => c.user_habit_id === h.id);
+            const row: Checkin = {
+              ...(prev ?? { id: `tmp-${h.id}`, user_id: uid, user_habit_id: h.id, is_demo: profile?.is_demo ?? false, day: today, created_at: new Date().toISOString(), done_at: null }),
+              value: r.value,
+              detail: { prayers: r.prayers, marked_at: r.marked_at },
+            };
+            return { ...d, score: res as unknown as DailyScore, checkins: [...d.checkins.filter((c) => c.user_habit_id !== h.id), row] };
+          });
+          if (completion(h, { value: r.value, detail: { prayers: r.prayers } }) >= 1) { setPopId(h.id); setTimeout(() => setPopId(null), 350); }
+          const allocation = await supabase.rpc("today_habit_points", { _season_id: sid, _day: today });
+          if (!allocation.error) patch((d) => ({ ...d, points: allocation.data as unknown as HabitPoints[] }));
+          await reconcile();
+          if (r.prayers[prayer]) setTinyWin(true);
+          void qc.invalidateQueries({ queryKey: ["profileSummary"] });
+        } catch (e) {
+          const k = errKey(e);
+          toast(k === "prayer_not_yet" ? t("todayDesign.prayerNotYet") : k === "habit_locked" ? t("todayDesign.habitLocked") : k === "day_final" ? t("integrity.dayFinal") : k === "day_closed" ? t("today.closed") : t("common.error"));
+          await qc.invalidateQueries({ queryKey: dq.queryKey });
+        } finally {
+          setPending((n) => n - 1);
+        }
+      });
   }
   function tap(h: UserHabit) {
     if (h.template?.key === 'detox') {
@@ -464,16 +501,11 @@ function Today() {
               setCityOpen(true);
             }}
             disabled={disabled}
-            onChange={(prayers) =>
-              log(
-                salat,
-                Object.values(prayers).reduce(
-                  (n, v) => n + (v === "on_time" ? 1 : v === "late" ? 0.5 : 0),
-                  0,
-                ),
-                { prayers },
-              )
+            markedAt={
+              (byHabit.get(salat.id)?.detail as { marked_at?: Record<string, string> } | null)
+                ?.marked_at ?? {}
             }
+            onMark={(prayer) => markPrayer(salat, prayer)}
           />
         </div>
       )}

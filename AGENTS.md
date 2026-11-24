@@ -1,3 +1,9 @@
+> [!NOTE]
+> **Branch `own-hosting`** runs on the owner's own Supabase project (`yjkniwjneqmtatwozcpv`) and Cloudflare
+> Workers, not Lovable Cloud. On this branch, schema changes are new numbered files in `drizzle/migrations/`
+> applied to that project, secrets live in Cloudflare, and Google sign-in uses Supabase Auth. See DEPLOY.md.
+> The Lovable rules below still apply to `main` while the live app runs on Lovable.
+
 <!-- LOVABLE:BEGIN -->
 > [!IMPORTANT]
 > This project is connected to [Lovable](https://lovable.dev). Avoid rewriting
@@ -71,4 +77,5 @@ use the editor.
 - Guest = read-only sample account via `_guest_guard()` in write RPCs + table triggers; keep it when redefining RPCs.
 - Demo sign-in and proof hashing run in guarded server functions; secrets never reach the browser.
 - Signature RPCs own capsule locks and once-only Moments.
+- Salat check-ins go through `mark_prayer` (never `checkin_upsert`): the server decides on time vs late from `prayer_cache`; a mark can be undone for 10 minutes, then it locks.
 - Final days (03:00 local/Close my day, 15-min integrity_tick), frozen season_results and demo isolation are enforced in Postgres; only audited admin RPCs may change final data.

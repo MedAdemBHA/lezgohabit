@@ -5,7 +5,7 @@ const WRITE_RPCS = new Set([
   "activate_challenge","assign_sub_squad","boss_action","hit_boss","reset_boss","buddy_action","checkin_upsert",
   "close_my_day","create_boss_lesson","create_challenge","create_crew","create_post","create_sub_squad",
   "delete_my_account","demo_reset_day","detox_action","detox_duel_action","join_challenge","join_crew","join_season",
-  "leave_crew","log_lift","log_lift_session","log_screen_time","post_action","post_daily_proof","post_small_wins",
+  "leave_crew","mark_prayer","log_lift","log_lift_session","log_screen_time","post_action","post_daily_proof","post_small_wins",
   "react_post","recompute_day","register_proof_fingerprint","register_push","report_buddy","seal_capsule",
   "send_nudge","set_chaos_done","set_season_reminder","spin_daily_chaos","toggle_respect",
 ]);
