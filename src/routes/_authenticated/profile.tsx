@@ -76,10 +76,28 @@ function ProfilePage() {
   const buddy = useQuery({ ...buddyQuery(uid, season?.id ?? ""), enabled: !!uid && !!season });
   const statLabel = useHabitStatLabel(q.data?.stat);
   const shareStat = useHabitStatLabel(shareQ.data?.stat);
-  if (!profile || !season)
+  if (!profile)
     return (
       <AppShell todayLayout>
         <p>{t("common.loading")}</p>
+      </AppShell>
+    );
+  if (!season)
+    return (
+      <AppShell todayLayout>
+        <div className="flex items-center justify-between">
+          <Link to="/today"><StickerButton variant="secondary" className="habit-back" aria-label={t("common.back")}><ArrowLeft size={22} className="rtl:-scale-x-100" /></StickerButton></Link>
+          <Link to="/settings"><StickerButton variant="secondary" className="habit-back" aria-label={t("common.settings")}><Settings size={22} /></StickerButton></Link>
+        </div>
+        <div className="profile-header mt-3">
+          <Avatar id={profile.id} name={profile.display_name} url={profile.avatar_url} size={84} className="border-[3px] bg-yellow text-[40px]" />
+          <div className="min-w-0 flex-1"><h1 className="profile-name">{profile.display_name}</h1><p className="text-[16px] font-semibold text-design-muted"><bdi dir="ltr">@{profile.handle}</bdi></p></div>
+        </div>
+        <h2 className="mt-4 text-[22px] font-extrabold">{t("challengeHistory.title")}</h2>
+        <p className="text-[15px] font-semibold">{t("challengeHistory.noActive")}</p>
+        <Link to="/challenges" search={{ season: "" }} className="mt-3 block"><StickerButton block variant="lime">{t("challengeHistory.openHistory")}</StickerButton></Link>
+        <Link to="/seasons" className="mt-3 block"><StickerButton block variant="secondary">{t("challengeHistory.pickNext")}</StickerButton></Link>
+        <Link to="/create-challenge" className="mt-3 block"><StickerButton block variant="secondary">{t("batch6.create")}</StickerButton></Link>
       </AppShell>
     );
   const data = q.data;
@@ -187,7 +205,7 @@ function ProfilePage() {
           ))}
         </div>
       )}
-      <Link to="/trail" className="mt-2 block" aria-label={t('batch8.viewTrail')}>
+      <Link to="/trail" search={{ season: season.id }} className="mt-2 block" aria-label={t('batch8.viewTrail')}>
         <h2 className="mb-2 text-[13px] font-extrabold">{t("profile.trail")}</h2>
         <div className="season-trail">
           {Array.from({ length }, (_, i) => {
@@ -218,6 +236,9 @@ function ProfilePage() {
             );
           })}
         </div>
+      </Link>
+      <Link to="/challenges" search={{ season: "" }} className="mt-3 block">
+        <StickerButton block variant="secondary">{t("challengeHistory.title")}</StickerButton>
       </Link>
       <Link to="/lights-out"><StickerButton block variant="secondary">{t('batch8.lights')}</StickerButton></Link>
       <div className="mt-3 flex items-center justify-between">

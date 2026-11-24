@@ -10,7 +10,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
-import { AlertTriangle, ArrowRight, Minus, Plus, Share2, RotateCcw, Lock } from "lucide-react";
+import { AlertTriangle, ArrowRight, Minus, Plus, Share2, RotateCcw, Lock, MoreHorizontal } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/lezgo/app-shell";
 import { CountUp } from "@/components/lezgo/count-up";
@@ -46,6 +46,8 @@ import {
 import { daysBetween, localHour, pad, useNow } from "@/lib/time";
 import { FitHeading } from "@/components/lezgo/fit-heading";
 import { TodayMoments } from "@/components/lezgo/signature/moments";
+import { ChallengeSurrenderSheet } from "@/components/lezgo/challenge-surrender-sheet";
+import { loc } from "@/lib/i18n";
 export const Route = createFileRoute("/_authenticated/today")({
   head: () => pageHead("Today — lezgo", "Log today's gos and keep your go streak alive."),
   component: Today,
@@ -73,6 +75,8 @@ function Today() {
   const [popId, setPopId] = useState<string | null>(null);
   const [perfectOpen, setPerfectOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [challengeMenuOpen, setChallengeMenuOpen] = useState(false);
+  const [surrenderOpen, setSurrenderOpen] = useState(false);
   const [cityOpen, setCityOpen] = useState(false);
   const [city, setCity] = useState("");
   const [stepper, setStepper] = useState<UserHabit | null>(null);
@@ -377,16 +381,25 @@ function Today() {
         ]
       : []),
   ];
-  if (!season || !profile)
+  if (!profile)
     return (
       <AppShell todayLayout>
         <StickerLoading />
       </AppShell>
     );
+  if (!season)
+    return (
+      <AppShell todayLayout>
+        <FitHeading requestedSize={40} className="page-title" text={t("challengeHistory.noActive")} />
+        <p className="font-semibold">{t("challengeHistory.noActiveBody")}</p>
+        <Link to="/challenges" search={{ season: "" }}><StickerButton block variant="lime">{t("challengeHistory.openHistory")}</StickerButton></Link>
+        <Link to="/seasons"><StickerButton block variant="secondary">{t("challengeHistory.pickNext")}</StickerButton></Link>
+      </AppShell>
+    );
   return (
     <AppShell todayLayout>
       <header className="today-top">
-        <Link to="/trail" className="day-sticker" aria-label={t('batch8.viewTrail')}>
+        <Link to="/trail" search={{ season: "" }} className="day-sticker" aria-label={t('batch8.viewTrail')}>
           <span>{t("todayDesign.day")}</span>{" "}
           <Num>
             {pad(Math.min(Math.max(dayIndex, 1), seasonLength))}/{seasonLength}
@@ -394,6 +407,12 @@ function Today() {
         </Link>
         <div className="today-top-end">
           <AppStatus profile={profile} compact />
+          <StickerButton
+            variant="secondary"
+            className="today-settings"
+            aria-label={t("challengeHistory.menu")}
+            onClick={() => setChallengeMenuOpen(true)}
+          ><MoreHorizontal /></StickerButton>
           <StickerButton
             variant="secondary"
             className="today-settings"
@@ -608,6 +627,28 @@ function Today() {
           <ArrowRight size={18} className="rtl:-scale-x-100" />
         </Link>
       )}
+      <BottomSheet
+        open={challengeMenuOpen}
+        onClose={() => setChallengeMenuOpen(false)}
+        title={loc(season.name, i18n.language)}
+      >
+        <div className="space-y-3">
+          <Link to="/challenges" search={{ season: season.id }} onClick={() => setChallengeMenuOpen(false)} className="block">
+            <StickerButton block variant="secondary">{t("challengeHistory.details")}</StickerButton>
+          </Link>
+          <Link to="/challenges" search={{ season: "" }} onClick={() => setChallengeMenuOpen(false)} className="block">
+            <StickerButton block variant="secondary">{t("challengeHistory.title")}</StickerButton>
+          </Link>
+          <StickerButton block variant="secondary" className="text-destructive" onClick={() => { setChallengeMenuOpen(false); setSurrenderOpen(true); }}>
+            {t("challengeHistory.surrender")}
+          </StickerButton>
+        </div>
+      </BottomSheet>
+      <ChallengeSurrenderSheet
+        seasonId={season.id}
+        open={surrenderOpen}
+        onClose={() => setSurrenderOpen(false)}
+      />
       <BottomSheet
         open={settingsOpen}
         onClose={() => setSettingsOpen(false)}

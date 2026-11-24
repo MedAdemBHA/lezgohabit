@@ -245,6 +245,15 @@ export const fr: Dict = {
     seasonScore: "Score saison", rank: "Rang", bestStreak: "Meilleur streak", trail: "Parcours de la saison",
     badges: "Badges", badgesSoon: "Les badges arrivent bientôt.", next: "Retour à aujourd'hui",
   },
+  challengeHistory: {
+    title: "Mes challenges", details: "Détails du challenge", menu: "Menu du challenge", empty: "Ton historique apparaîtra ici.",
+    openHistory: "Voir mon historique", pickNext: "Choisir le prochain challenge", noActive: "Ton challenge est terminé", noActiveBody: "Tes points et ton historique sont conservés. Choisis la suite.",
+    kind_official: "Challenge officiel", kind_creator: "Challenge créateur", kind_personal: "Challenge personnel", by: "par {{name}}",
+    status_active: "En cours", status_completed: "Terminé", status_surrendered: "Abandonné", days: "{{done}} / {{total}} jours", dayUnit: "jours",
+    consistency: "Régularité", points: "Points", pointsShort: "pts", rank: "Rang final", perfectDays: "Jours parfaits", crew: "Crew · {{name}}", habits: "Habitudes du challenge", openTrail: "Voir le parcours jour par jour",
+    surrender: "Abandonner le challenge", surrenderTitle: "Terminer ce challenge ?", surrenderIntro: "Tu peux arrêter maintenant. Ta progression reste enregistrée.",
+    keepTitle: "Ce que tu gardes", keepBody: "Ton historique, tes points déjà gagnés et tes badges restent enregistrés.", endsTitle: "Ce qui s’arrête", endsBody: "Les validations, le classement et le crew s’arrêtent pour ce challenge. Tu ne pourras pas le rejoindre à nouveau.", surrenderedToast: "Ton challenge est enregistré dans ton historique.",
+  },
   settings: {
     title: "Réglages", units: "Unités", publicBoards: "M'afficher dans les classements publics", faithPublic: "Afficher mes habitudes de foi",
     faithHint: "Désactivé par défaut. Toi seul les vois.", notifications: "Notifications", notifDaily: "Rappel quotidien",

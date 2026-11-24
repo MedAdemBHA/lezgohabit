@@ -245,6 +245,15 @@ export const aeb: Dict = {
     seasonScore: "نقاط الموسم", rank: "الترتيب", bestStreak: "أحسن سلسلة", trail: "مشوار الموسم",
     badges: "البادجات", badgesSoon: "البادجات جايين قريب.", next: "ارجع لليوم",
   },
+  challengeHistory: {
+    title: "تحدّياتي", details: "تفاصيل التحدّي", menu: "قائمة التحدّي", empty: "سجلّ التحديات متاعك يظهر لهنا.",
+    openHistory: "حلّ سجلي", pickNext: "اختار التحدّي الجاي", noActive: "التحدّي متاعك وفى", noActiveBody: "النقاط والسجل متاعك محفوظين. اختار شنوة تعمل توا.",
+    kind_official: "تحدّي رسمي", kind_creator: "تحدّي صانع محتوى", kind_personal: "تحدّي شخصي", by: "مع {{name}}",
+    status_active: "ماشي", status_completed: "كمّل", status_surrendered: "انسحبت", days: "{{done}} / {{total}} أيّام", dayUnit: "أيّام",
+    consistency: "المواظبة", points: "النقاط", pointsShort: "نقطة", rank: "الترتيب الأخير", perfectDays: "نهارات كاملة", crew: "الكرو · {{name}}", habits: "عادات التحدّي", openTrail: "حلّ نهار بنهار",
+    surrender: "انسحب من التحدّي", surrenderTitle: "توفّي التحدّي هذا؟", surrenderIntro: "تنجم توقف توا. تقدّمك يبقى محفوظ.",
+    keepTitle: "شنوة يبقى ليك", keepBody: "السجل متاعك والنقاط اللي ربحتها والشارات يبقاو محفوظين.", endsTitle: "شنوة يوفى", endsBody: "التسجيل والترتيب وعضوية الكرو يوفاو للتحدّي هذا. ما تنجمش ترجع تدخل فيه.", surrenderedToast: "تحدّيك تخزّن في السجل.",
+  },
   settings: {
     title: "الإعدادات", units: "الوحدات", publicBoards: "بيّني في الترتيب العام", faithPublic: "بيّن عادات الدين للناس",
     faithHint: "مسكّرة بالأساس. إنتِ برك تشوفهم.", notifications: "النوتيفيكاسيون", notifDaily: "تذكير كل نهار",

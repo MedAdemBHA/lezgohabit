@@ -244,6 +244,15 @@ export const en = {
     seasonScore: "Season score", rank: "Rank", bestStreak: "Best streak", trail: "Season trail",
     badges: "Badges", badgesSoon: "Badges drop soon.", next: "Back to today",
   },
+  challengeHistory: {
+    title: "My challenges", details: "Challenge details", menu: "Challenge menu", empty: "Your challenge history will appear here.",
+    openHistory: "Open my history", pickNext: "Pick your next challenge", noActive: "Your challenge has ended", noActiveBody: "Your points and history are saved. Choose what you want to do next.",
+    kind_official: "Official challenge", kind_creator: "Creator challenge", kind_personal: "Personal challenge", by: "by {{name}}",
+    status_active: "Active", status_completed: "Completed", status_surrendered: "Surrendered", days: "{{done}} / {{total}} days", dayUnit: "days",
+    consistency: "Consistency", points: "Points", pointsShort: "pts", rank: "Final rank", perfectDays: "Perfect days", crew: "Crew · {{name}}", habits: "Challenge habits", openTrail: "Open day-by-day trail",
+    surrender: "Surrender challenge", surrenderTitle: "End this challenge?", surrenderIntro: "You can leave now. Your progress so far stays yours.",
+    keepTitle: "What you keep", keepBody: "Your history, points already earned, and badges stay saved.", endsTitle: "What ends", endsBody: "Check-ins, board rank, and crew membership end for this challenge. You cannot rejoin it.", surrenderedToast: "Your challenge is saved in history.",
+  },
   settings: {
     title: "Settings", units: "Units", publicBoards: "Show me on public boards", faithPublic: "Show faith habits publicly",
     faithHint: "Off by default. Only you see them.", notifications: "Notifications", notifDaily: "Daily reminder",

@@ -245,6 +245,15 @@ export const ar: Dict = {
     seasonScore: "نقاط الموسم", rank: "الترتيب", bestStreak: "أفضل سلسلة", trail: "مسار الموسم",
     badges: "الشارات", badgesSoon: "الشارات قادمة قريباً.", next: "العودة إلى اليوم",
   },
+  challengeHistory: {
+    title: "تحدياتي", details: "تفاصيل التحدي", menu: "قائمة التحدي", empty: "سيظهر سجل تحدياتك هنا.",
+    openHistory: "افتح سجلي", pickNext: "اختر تحديك القادم", noActive: "انتهى تحديك", noActiveBody: "نقاطك وسجلك محفوظان. اختر ما تريد فعله بعد ذلك.",
+    kind_official: "تحدٍ رسمي", kind_creator: "تحدي صانع محتوى", kind_personal: "تحدٍ شخصي", by: "بواسطة {{name}}",
+    status_active: "نشط", status_completed: "مكتمل", status_surrendered: "منسحب", days: "{{done}} / {{total}} يومًا", dayUnit: "أيام",
+    consistency: "الاستمرارية", points: "النقاط", pointsShort: "نقطة", rank: "الترتيب النهائي", perfectDays: "أيام مثالية", crew: "الفريق · {{name}}", habits: "عادات التحدي", openTrail: "افتح سجل الأيام",
+    surrender: "انسحب من التحدي", surrenderTitle: "إنهاء هذا التحدي؟", surrenderIntro: "يمكنك التوقف الآن. سيبقى تقدمك محفوظًا.",
+    keepTitle: "ما سيبقى لك", keepBody: "سيبقى سجلك ونقاطك التي حصلت عليها وشاراتك محفوظة.", endsTitle: "ما الذي سيتوقف", endsBody: "ستنتهي التسجيلات والترتيب وعضوية الفريق لهذا التحدي. لن تتمكن من الانضمام إليه مرة أخرى.", surrenderedToast: "تم حفظ التحدي في سجلك.",
+  },
   settings: {
     title: "الإعدادات", units: "الوحدات", publicBoards: "أظهرني في الترتيب العام", faithPublic: "أظهر عادات الإيمان للعموم",
     faithHint: "مغلق افتراضياً. أنت فقط تراها.", notifications: "الإشعارات", notifDaily: "تذكير يومي",

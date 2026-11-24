@@ -11,28 +11,46 @@ import { snakeDays, tileState } from "@/lib/signature-rules";
 import { addDays } from "@/lib/time";
 import { loc, formatDayMonth } from "@/lib/i18n";
 import { pageHead } from "@/lib/page-head";
+import { challengeHistoryQuery } from "@/lib/challenge-history";
+import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/_authenticated/trail")({
+  validateSearch: (s: Record<string, unknown>) => ({
+    season: typeof s["season"] === "string" ? s["season"] : "",
+  }),
   head: () =>
     pageHead("Your Trail — lezgo", "Every go, shield and milestone on your personal season trail."),
   component: Trail,
 });
 function Trail() {
   const { t, i18n } = useTranslation();
-  const { uid, season, today } = useBase();
-  const sid = season?.id ?? "";
+  const { uid, season: activeSeason, today } = useBase();
+  const search = Route.useSearch();
+  const sid = search.season || activeSeason?.id || "";
+  const seasonQuery = useQuery({
+    queryKey: ["trailSeason", sid],
+    enabled: !!sid,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("seasons").select("*").eq("id", sid).single();
+      if (error) throw error;
+      return data;
+    },
+  });
+  const season = seasonQuery.data;
+  const history = useQuery({ ...challengeHistoryQuery(uid), enabled: !!uid && !!sid });
+  const historyEntry = history.data?.find((entry) => entry.season_id === sid);
   const q = useQuery({ ...signatureQuery(uid, sid), enabled: !!uid && !!sid });
   const scores = useQuery({ ...scoresQuery(uid, sid), enabled: !!uid && !!sid });
   const data = q.data;
   const byDay = new Map(scores.data?.map((s) => [s.day, s]));
   return (
     <SignatureFrame>
-      <FitHeading className="signature-heading" requestedSize={48} text={t("batch8.trail")} />
+          <FitHeading className="signature-heading" requestedSize={48} text={t("batch8.trail")} />
       <p className="signature-sub">{t("batch8.trailSub")}</p>
       {season && data ? (
         <>
           <section className="trail-board">
             <header>
-              <h2>{t("batch8.season", { name: loc(season.name, i18n.language), n: 1 })}</h2>
+              <h2>{loc(season.name, i18n.language)}</h2>
               <Num>
                 {Math.min(data.day, data.length)} / {data.length}
               </Num>
@@ -49,7 +67,7 @@ function Trail() {
                       <div
                         className="trail-tile"
                         data-state={state}
-                        data-milestone={n === 20 || n === 40}
+                        data-milestone={n === Math.ceil(data.length / 2)}
                         key={n}
                         data-final={final}
                         title={`${d} · ${t(`batch8.${state === "missed" ? "partial" : state === "future" ? "day" : state}`, { n })}${final ? ` · ${t("integrity.final")}` : ""}`}
@@ -90,21 +108,21 @@ function Trail() {
               ))}
             </div>
           </section>
-          <div className="trail-milestone bg-yellow">
+            <div className="trail-milestone bg-yellow">
             <Star />
             <div>
               <strong>{t("batch8.halfway")}</strong>
-              <p>{t("batch8.away", { n: Math.max(0, 20 - data.day) })}</p>
+                <p>{t("batch8.away", { n: Math.max(0, Math.ceil(data.length / 2) - data.day) })}</p>
             </div>
           </div>
-          <Link to="/capsule" className="trail-milestone bg-ink text-lime">
+          {(!historyEntry || historyEntry.status === "active") && <Link to="/capsule" className="trail-milestone bg-ink text-lime">
             <Lock />
             <div>
               <strong>{t("batch8.dayNote")}</strong>
               <p>{t("batch8.opens", { date: formatDayMonth(season.ends_on, i18n.language) })}</p>
             </div>
             <ArrowRight className="ms-auto rtl:-scale-x-100" />
-          </Link>
+          </Link>}
           <footer className="trail-footer">
             <div className="flex -space-x-2 rtl:space-x-reverse">
               {data.crew.slice(0, 4).map((c) => (
@@ -125,9 +143,12 @@ function Trail() {
               <p>{t("batch8.alone")}</p>
             )}
           </footer>
-          <Link to="/today">
-            <StickerButton block>{t("batch8.keepGoing")}</StickerButton>
-          </Link>
+          <div className="flex gap-3">
+            <Link to="/challenges" search={{ season: "" }} className="flex-1">
+              <StickerButton block variant="secondary">{t("challengeHistory.title")}</StickerButton>
+            </Link>
+            {historyEntry?.status === "active" && <Link to="/today" className="flex-1"><StickerButton block>{t("batch8.keepGoing")}</StickerButton></Link>}
+          </div>
         </>
       ) : (
         <p>{t(q.isError ? "common.error" : "common.loading")}</p>

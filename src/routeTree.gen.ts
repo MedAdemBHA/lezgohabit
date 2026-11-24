@@ -16,6 +16,7 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedBossRouteImport } from './routes/_authenticated/boss'
 import { Route as AuthenticatedBuddiesRouteImport } from './routes/_authenticated/buddies'
 import { Route as AuthenticatedCapsuleRouteImport } from './routes/_authenticated/capsule'
+import { Route as AuthenticatedChallengesRouteImport } from './routes/_authenticated/challenges'
 import { Route as AuthenticatedCommunityRouteImport } from './routes/_authenticated/community'
 import { Route as AuthenticatedCreateChallengeRouteImport } from './routes/_authenticated/create-challenge'
 import { Route as AuthenticatedCrewRouteImport } from './routes/_authenticated/crew'
@@ -69,6 +70,11 @@ const AuthenticatedBuddiesRoute = AuthenticatedBuddiesRouteImport.update({
 const AuthenticatedCapsuleRoute = AuthenticatedCapsuleRouteImport.update({
   id: '/capsule',
   path: '/capsule',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedChallengesRoute = AuthenticatedChallengesRouteImport.update({
+  id: '/challenges',
+  path: '/challenges',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedCommunityRoute = AuthenticatedCommunityRouteImport.update({
@@ -181,6 +187,7 @@ export interface FileRoutesByFullPath {
   '/boss': typeof AuthenticatedBossRoute
   '/buddies': typeof AuthenticatedBuddiesRoute
   '/capsule': typeof AuthenticatedCapsuleRoute
+  '/challenges': typeof AuthenticatedChallengesRoute
   '/community': typeof AuthenticatedCommunityRoute
   '/create-challenge': typeof AuthenticatedCreateChallengeRoute
   '/crew': typeof AuthenticatedCrewRoute
@@ -209,6 +216,7 @@ export interface FileRoutesByTo {
   '/boss': typeof AuthenticatedBossRoute
   '/buddies': typeof AuthenticatedBuddiesRoute
   '/capsule': typeof AuthenticatedCapsuleRoute
+  '/challenges': typeof AuthenticatedChallengesRoute
   '/community': typeof AuthenticatedCommunityRoute
   '/create-challenge': typeof AuthenticatedCreateChallengeRoute
   '/crew': typeof AuthenticatedCrewRoute
@@ -239,6 +247,7 @@ export interface FileRoutesById {
   '/_authenticated/boss': typeof AuthenticatedBossRoute
   '/_authenticated/buddies': typeof AuthenticatedBuddiesRoute
   '/_authenticated/capsule': typeof AuthenticatedCapsuleRoute
+  '/_authenticated/challenges': typeof AuthenticatedChallengesRoute
   '/_authenticated/community': typeof AuthenticatedCommunityRoute
   '/_authenticated/create-challenge': typeof AuthenticatedCreateChallengeRoute
   '/_authenticated/crew': typeof AuthenticatedCrewRoute
@@ -269,6 +278,7 @@ export interface FileRouteTypes {
     | '/boss'
     | '/buddies'
     | '/capsule'
+    | '/challenges'
     | '/community'
     | '/create-challenge'
     | '/crew'
@@ -297,6 +307,7 @@ export interface FileRouteTypes {
     | '/boss'
     | '/buddies'
     | '/capsule'
+    | '/challenges'
     | '/community'
     | '/create-challenge'
     | '/crew'
@@ -326,6 +337,7 @@ export interface FileRouteTypes {
     | '/_authenticated/boss'
     | '/_authenticated/buddies'
     | '/_authenticated/capsule'
+    | '/_authenticated/challenges'
     | '/_authenticated/community'
     | '/_authenticated/create-challenge'
     | '/_authenticated/crew'
@@ -405,6 +417,13 @@ declare module '@tanstack/react-router' {
       path: '/capsule'
       fullPath: '/capsule'
       preLoaderRoute: typeof AuthenticatedCapsuleRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/challenges': {
+      id: '/_authenticated/challenges'
+      path: '/challenges'
+      fullPath: '/challenges'
+      preLoaderRoute: typeof AuthenticatedChallengesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/community': {
@@ -555,6 +574,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBossRoute: typeof AuthenticatedBossRoute
   AuthenticatedBuddiesRoute: typeof AuthenticatedBuddiesRoute
   AuthenticatedCapsuleRoute: typeof AuthenticatedCapsuleRoute
+  AuthenticatedChallengesRoute: typeof AuthenticatedChallengesRoute
   AuthenticatedCommunityRoute: typeof AuthenticatedCommunityRoute
   AuthenticatedCreateChallengeRoute: typeof AuthenticatedCreateChallengeRoute
   AuthenticatedCrewRoute: typeof AuthenticatedCrewRoute
@@ -580,6 +600,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBossRoute: AuthenticatedBossRoute,
   AuthenticatedBuddiesRoute: AuthenticatedBuddiesRoute,
   AuthenticatedCapsuleRoute: AuthenticatedCapsuleRoute,
+  AuthenticatedChallengesRoute: AuthenticatedChallengesRoute,
   AuthenticatedCommunityRoute: AuthenticatedCommunityRoute,
   AuthenticatedCreateChallengeRoute: AuthenticatedCreateChallengeRoute,
   AuthenticatedCrewRoute: AuthenticatedCrewRoute,
