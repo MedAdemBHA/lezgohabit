@@ -28,9 +28,9 @@ export function HabitPicker({ templates, picks, onChange }: { templates: Templat
   const lang = i18n.language;
 
   function toggle(tpl: Template) {
-    if (tpl.key === "custom") { if (picks.length >= 3) { toast(t("onb.max")); return; } setCustomOpen(true); return; }
+    if (tpl.key === "custom") { if (picks.length >= 6) { toast(t("onb.max")); return; } setCustomOpen(true); return; }
     if (picks.some((p) => p.id === tpl.key)) { onChange(picks.filter((p) => p.id !== tpl.key)); return; }
-    if (picks.length >= 3) { toast(t("onb.max")); return; }
+    if (picks.length >= 6) { toast(t("onb.max")); return; }
     onChange([...picks, { id: tpl.key, template: tpl, target: Number(tpl.default_target) }]);
   }
   const regular = templates.filter((x) => !x.is_faith);

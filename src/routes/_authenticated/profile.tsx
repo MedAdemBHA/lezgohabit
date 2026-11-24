@@ -96,7 +96,7 @@ function ProfilePage() {
         <h2 className="mt-4 text-[22px] font-extrabold">{t("challengeHistory.title")}</h2>
         <p className="text-[15px] font-semibold">{t("challengeHistory.noActive")}</p>
         <Link to="/challenges" search={{ season: "" }} className="mt-3 block"><StickerButton block variant="lime">{t("challengeHistory.openHistory")}</StickerButton></Link>
-        <Link to="/seasons" className="mt-3 block"><StickerButton block variant="secondary">{t("challengeHistory.pickNext")}</StickerButton></Link>
+        <Link to="/start" className="mt-3 block"><StickerButton block variant="secondary">{t("challengeHistory.pickNext")}</StickerButton></Link>
         <Link to="/create-challenge" className="mt-3 block"><StickerButton block variant="secondary">{t("batch6.create")}</StickerButton></Link>
       </AppShell>
     );

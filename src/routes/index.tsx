@@ -9,6 +9,7 @@ import { Brand } from "@/components/lezgo/brand";
 import { DesignLanguage } from "@/components/lezgo/design-language";
 import { BottomSheet, StickerButton, inputCls } from "@/components/lezgo/ui";
 import { pad, splitMs, useNow, winterArcEndLocal } from "@/lib/time";
+import { saveStartFlow } from "@/lib/start-flow";
 
 export const PENDING_CODE_KEY = "lezgo_pending_code";
 
@@ -19,7 +20,7 @@ export const Route = createFileRoute("/")({
       { title: "lezgo — Show up. Lezgo. | Winter Arc season" },
       { name: "description", content: "Join Winter Arc: a 40-day habit season with friends, your crew or all of Tunisia. Check in under a minute a day." },
       { property: "og:title", content: "lezgo — Winter Arc · Season 1" },
-      { property: "og:description", content: "Pick 1 to 3 habits, check in daily, climb the Tunisia board." },
+      { property: "og:description", content: "Pick 1 to 6 habits, check in daily, climb your challenge board." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -52,7 +53,7 @@ function Landing() {
       <ol className="flex flex-col gap-3">{steps.map((step,i) => <li key={step} className="flex items-center gap-3"><span className={`num flex size-[34px] shrink-0 items-center justify-center rounded-[10px] text-[15px] font-bold sticker-border ${["bg-lime","bg-yellow","bg-blue"][i] ?? "bg-lime"}`}>{i+1}</span><span className="text-[17px] font-bold leading-[1.35]">{step}</span></li>)}</ol>
       {featured.data?.map(c=><StickerButton key={c.code} variant="secondary" onClick={()=>void nav({to:"/c/$code",params:{code:c.code}})}>{c.name}<ArrowRight className="size-4 rtl:rotate-180"/></StickerButton>)}
       <div className="join-actions">
-        <StickerButton block className="join-primary" onClick={() => nav({ to: "/auth" })}>{t("common.cta")}</StickerButton>
+        <StickerButton block className="join-primary" onClick={() => nav({ to: "/start" })}>{t("common.cta")}</StickerButton>
         <StickerButton block variant="secondary" className="join-code" onClick={() => setCodeOpen(true)}>{t("landing.haveCode")}</StickerButton>
         <ExploreAsGuest />
         <p className="text-center text-[13px] font-semibold text-design-muted">{t("landing.footer")} · <bdi>EN · FR · عربي · تونسي</bdi></p>
@@ -63,7 +64,7 @@ function Landing() {
           onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))}
           className={`${inputCls} num text-center text-[26px] tracking-[0.3em]`} />
         <StickerButton block className="mt-4" disabled={code.length !== 6}
-          onClick={() => { sessionStorage.setItem(PENDING_CODE_KEY, code); void nav({ to: "/auth" }); }}>
+          onClick={() => { saveStartFlow({ challenge: { kind: "crew_invite", code } }); void nav({ to: "/auth" }); }}>
           {t("common.cta")}
         </StickerButton>
       </BottomSheet>

@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as StartRouteImport } from './routes/start'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedBossRouteImport } from './routes/_authenticated/boss'
 import { Route as AuthenticatedBuddiesRouteImport } from './routes/_authenticated/buddies'
@@ -50,6 +51,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StartRoute = StartRouteImport.update({
+  id: '/start',
+  path: '/start',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
@@ -183,6 +189,7 @@ const ApiPublicNotificationsRoute = ApiPublicNotificationsRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/start': typeof StartRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/boss': typeof AuthenticatedBossRoute
   '/buddies': typeof AuthenticatedBuddiesRoute
@@ -212,6 +219,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/start': typeof StartRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/boss': typeof AuthenticatedBossRoute
   '/buddies': typeof AuthenticatedBuddiesRoute
@@ -243,6 +251,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/start': typeof StartRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/boss': typeof AuthenticatedBossRoute
   '/_authenticated/buddies': typeof AuthenticatedBuddiesRoute
@@ -274,6 +283,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/start'
     | '/admin'
     | '/boss'
     | '/buddies'
@@ -303,6 +313,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/start'
     | '/admin'
     | '/boss'
     | '/buddies'
@@ -333,6 +344,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/start'
     | '/_authenticated/admin'
     | '/_authenticated/boss'
     | '/_authenticated/buddies'
@@ -364,6 +376,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  StartRoute: typeof StartRoute
   CCodeRoute: typeof CCodeRoute
   ApiPublicNotificationsRoute: typeof ApiPublicNotificationsRoute
 }
@@ -389,6 +402,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/start': {
+      id: '/start'
+      path: '/start'
+      fullPath: '/start'
+      preLoaderRoute: typeof StartRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin': {
@@ -628,6 +648,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  StartRoute: StartRoute,
   CCodeRoute: CCodeRoute,
   ApiPublicNotificationsRoute: ApiPublicNotificationsRoute,
 }

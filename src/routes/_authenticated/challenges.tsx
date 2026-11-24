@@ -114,7 +114,7 @@ function ChallengesPage() {
       ) : (
         <div className="rounded-[22px] bg-card p-5 text-center sticker-border">
           <p className="font-bold">{t("challengeHistory.empty")}</p>
-          <Link to="/seasons" className="mt-3 block"><StickerButton block variant="lime">{t("challengeHistory.pickNext")}</StickerButton></Link>
+          <Link to="/start" className="mt-3 block"><StickerButton block variant="lime">{t("challengeHistory.pickNext")}</StickerButton></Link>
         </div>
       )}
     </AppShell>

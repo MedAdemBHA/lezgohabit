@@ -94,3 +94,5 @@
 - A completed consistency day is `daily_scores.completion >= 0.6`. The denominator is local elapsed participation days from `max(challenge start, joined date)` through today or the challenge end. Return `completion = 1` perfect days separately.
 - Award trophies at `ceil(75% of challenge length)` days with completion >= 0.6 for every challenge kind. Personal-challenge trophies remain private.
 - Proof remains optional for every habit. Seed Winter Arc with `train`, `read`, and `sleep7`.
+- Start-flow implementation keeps private personal challenges solo for now. `create_personal_challenge` creates an `audience='solo'` challenge and `join_challenge` intentionally rejects solo-audience rows; adding personal crews would require a deliberate database rule change.
+- The first personal flow uses the existing habit library. Custom-named habits are not exposed there because the personal RPC accepts template keys and there is no shared custom-habit snapshot contract yet.

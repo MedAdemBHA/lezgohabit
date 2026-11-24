@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ExploreAsGuest } from "@/components/lezgo/guest";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,6 +11,8 @@ import { DesignLanguage } from "@/components/lezgo/design-language";
 import { useQuery } from "@tanstack/react-query";
 import { Mail } from "lucide-react";
 import { BottomSheet, Field, StickerButton, inputCls } from "@/components/lezgo/ui";
+import { finishStartFlow, readStartFlow } from "@/lib/start-flow";
+import { errKey } from "@/lib/data";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -34,16 +36,42 @@ function AuthPage() {
   const [busy, setBusy] = useState(false);
   const [emailOpen, setEmailOpen] = useState(false);
   const [legal, setLegal] = useState<"terms" | "privacy" | null>(null);
+  const [flowError, setFlowError] = useState("");
+  const completing = useRef(false);
   const countries = useQuery({ queryKey: ["participating-countries"], queryFn: async () => { const { data, error } = await supabase.rpc("participating_countries"); if (error) throw error; return data; }, staleTime: 60_000 });
+
+  async function continueAfterAuth() {
+    if (completing.current) return;
+    completing.current = true;
+    setBusy(true);
+    setFlowError("");
+    try {
+      await finishStartFlow();
+      await nav({ to: "/today", replace: true });
+    } catch (error) {
+      const key = errKey(error);
+      const message = key === "active_challenge_exists" ? t("batch6.activeChallengeExists") : t("common.error");
+      setFlowError(message);
+      toast(message);
+      completing.current = false;
+    } finally {
+      setBusy(false);
+    }
+  }
 
   useEffect(() => {
     const fromLink=new URLSearchParams(window.location.search).get("code");
     if(fromLink&&/^[A-Z0-9]{6}$/.test(fromLink))sessionStorage.setItem("lezgo_challenge_invite",fromLink);
-    const go=()=>{const code=sessionStorage.getItem('lezgo_challenge_invite');if(code&&/^[A-Z0-9]{6}$/.test(code)){void nav({to:'/c/$code',params:{code},replace:true});}else void nav({to:'/today',replace:true});};
+    const go=()=>{
+      if (readStartFlow()) { void continueAfterAuth(); return; }
+      const code=sessionStorage.getItem('lezgo_challenge_invite');
+      if(code&&/^[A-Z0-9]{6}$/.test(code)){void nav({to:'/c/$code',params:{code},replace:true});}
+      else void nav({to:'/today',replace:true});
+    };
     void supabase.auth.getUser().then(({ data }) => { if (data.user) go(); });
     const { data } = supabase.auth.onAuthStateChange((_e, s) => { if (s) go(); });
     return () => data.subscription.unsubscribe();
-  }, [nav]);
+  }, [nav, t]);
 
   async function google() {
     if (!adult) return;
@@ -68,6 +96,7 @@ function AuthPage() {
       <span className="login-season">{t("design.loginSeason")}</span>
       <FitHeading className="login-hero" text={t("design.hero")} requestedSize={isRtl(i18n.language) ? 60 : 64} />
       <p className="text-[16px] font-semibold leading-[1.5] text-design-body">{t("design.sub")}</p>
+      {flowError && <div role="alert" className="space-y-2 rounded-[14px] bg-card p-3 text-[14px] font-bold text-destructive sticker-border"><p>{flowError}</p><StickerButton block variant="secondary" onClick={() => void continueAfterAuth()}>{t("common.retry")}</StickerButton></div>}
       <div className="flex items-center gap-3"><div className="flex shrink-0" aria-hidden="true">{([ ["bg-lime", "NR"], ["bg-pink", "SK"], ["bg-yellow", "YB"], ["bg-teal", "AK"] ] as const).map(([color, initials],i) => <span key={color} className={`grid size-[34px] place-items-center rounded-full text-[11px] font-extrabold sticker-border ${color} ${i ? "-ms-2.5" : ""}`}>{initials}</span>)}</div><p className="text-[13px] font-bold">{countries.data !== undefined ? t("design.proof", { n: countries.data }) : t("common.loading")}</p></div>
       <div className="login-actions">
         <label className="flex min-h-11 items-center gap-3 text-[14px] font-bold"><input type="checkbox" checked={adult} onChange={e=>setAdult(e.target.checked)} className="size-5 accent-ink"/>{t("batch9.adult")}</label>

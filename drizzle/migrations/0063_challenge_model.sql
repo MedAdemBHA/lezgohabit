@@ -266,12 +266,14 @@ BEGIN
   PERFORM public.activate_challenge(NULL);
 END $$;
 
-CREATE OR REPLACE FUNCTION public.join_challenge(_code text) RETURNS uuid
+DROP FUNCTION IF EXISTS public.join_challenge(text);
+CREATE OR REPLACE FUNCTION public.join_challenge(_code text,_mode text DEFAULT 'crew') RETURNS uuid
 LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$
 DECLARE uid uuid:=auth.uid(); c public.challenges; s public.seasons; cap integer;
 BEGIN
   PERFORM public._guest_guard();
   IF uid IS NULL THEN RAISE EXCEPTION 'not_authenticated'; END IF;
+  IF _mode NOT IN ('solo','crew') THEN RAISE EXCEPTION 'invalid_mode'; END IF;
   SELECT * INTO c FROM public.challenges WHERE code=upper(trim(_code)) AND NOT archived AND is_demo=(SELECT is_demo FROM public.profiles WHERE id=uid) FOR UPDATE;
   IF NOT FOUND OR c.audience='solo' OR NOT c.approved AND c.audience='creator' THEN RAISE EXCEPTION 'challenge_not_found'; END IF;
   SELECT * INTO s FROM public.seasons WHERE id=c.season_id;
@@ -279,12 +281,16 @@ BEGIN
   IF (SELECT count(*) FROM public.challenge_habits WHERE season_id=c.season_id) NOT BETWEEN 1 AND 6 THEN RAISE EXCEPTION 'challenge_not_ready'; END IF;
   IF EXISTS(SELECT 1 FROM public.season_entries WHERE user_id=uid AND season_id=c.season_id AND status='surrendered') THEN RAISE EXCEPTION 'challenge_surrendered'; END IF;
   IF EXISTS(SELECT 1 FROM public.season_entries WHERE user_id=uid AND status='active' AND season_id<>c.season_id) THEN RAISE EXCEPTION 'active_challenge_exists'; END IF;
-  IF EXISTS(SELECT 1 FROM public.season_entries WHERE user_id=uid AND season_id=c.season_id AND status='active') THEN RETURN c.id; END IF;
+  IF EXISTS(SELECT 1 FROM public.season_entries WHERE user_id=uid AND season_id=c.season_id AND status='active') THEN
+    UPDATE public.season_entries SET mode=_mode WHERE user_id=uid AND season_id=c.season_id;
+    IF _mode='solo' THEN DELETE FROM public.crew_members cm USING public.crews cr WHERE cm.crew_id=cr.id AND cm.user_id=uid AND cr.season_id=c.season_id; END IF;
+    RETURN c.id;
+  END IF;
   IF EXISTS(SELECT 1 FROM public.season_entries WHERE user_id=uid AND season_id=c.season_id AND status='completed') THEN RAISE EXCEPTION 'challenge_complete'; END IF;
   SELECT coalesce(max_members,500) INTO cap FROM public.crews WHERE id=c.crew_id;
   IF (SELECT count(*) FROM public.season_entries WHERE season_id=c.season_id AND status IN ('active','completed'))>=coalesce(cap,500) THEN RAISE EXCEPTION 'challenge_full'; END IF;
-  INSERT INTO public.season_entries(user_id,season_id,mode,kind,status) VALUES(uid,c.season_id,'crew',CASE WHEN c.audience='creator' THEN 'creator' ELSE 'personal' END,'active');
-  IF c.crew_id IS NOT NULL THEN INSERT INTO public.crew_members(crew_id,user_id) VALUES(c.crew_id,uid) ON CONFLICT DO NOTHING; END IF;
+  INSERT INTO public.season_entries(user_id,season_id,mode,kind,status) VALUES(uid,c.season_id,_mode,CASE WHEN c.audience='creator' THEN 'creator' ELSE 'personal' END,'active');
+  IF c.crew_id IS NOT NULL AND _mode='crew' THEN INSERT INTO public.crew_members(crew_id,user_id) VALUES(c.crew_id,uid) ON CONFLICT DO NOTHING; END IF;
   INSERT INTO public.user_habits(user_id,season_id,template_id,custom_name,kind,target,unit,position,what_counts,rule)
   SELECT uid,c.season_id,ch.template_id,CASE WHEN ch.template_id IS NULL THEN ch.name->>'en' END,ch.kind,ch.target,ch.unit,ch.position,ch.what_counts,ch.rule
   FROM public.challenge_habits ch WHERE ch.season_id=c.season_id;
@@ -560,8 +566,8 @@ BEGIN
   PERFORM public._admin_audit('save_challenge_habits',_season_id::text,jsonb_build_object('count',pos));
 END $$;
 
-REVOKE ALL ON FUNCTION public.join_season(uuid,text),public.join_challenge(text),public.surrender_challenge(uuid),public.create_personal_challenge(text,integer,jsonb),public.toggle_challenge_respect(uuid) FROM PUBLIC,anon;
-GRANT EXECUTE ON FUNCTION public.join_season(uuid,text),public.join_challenge(text),public.surrender_challenge(uuid),public.create_personal_challenge(text,integer,jsonb),public.toggle_challenge_respect(uuid) TO authenticated;
+REVOKE ALL ON FUNCTION public.join_season(uuid,text),public.join_challenge(text,text),public.surrender_challenge(uuid),public.create_personal_challenge(text,integer,jsonb),public.toggle_challenge_respect(uuid) FROM PUBLIC,anon;
+GRANT EXECUTE ON FUNCTION public.join_season(uuid,text),public.join_challenge(text,text),public.surrender_challenge(uuid),public.create_personal_challenge(text,integer,jsonb),public.toggle_challenge_respect(uuid) TO authenticated;
 REVOKE ALL ON FUNCTION public.challenge_preview(text) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.challenge_preview(text) TO anon,authenticated;
 REVOKE ALL ON FUNCTION public.my_challenge_history(),public.challenge_scoreboard(uuid,text,text),public.challenge_feed(uuid,text),public.active_season(),public.activate_challenge(uuid),public.my_season_result(uuid) FROM PUBLIC,anon;

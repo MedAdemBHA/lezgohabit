@@ -2829,6 +2829,7 @@ export type Database = {
       review_creator_request: { Args: { _approve: boolean; _note?: string; _request_id: string }; Returns: undefined }
       challenge_feed: { Args: { _scope?: string; _season_id: string }; Returns: Json }
       challenge_pulse: { Args: { _season_id: string }; Returns: Json }
+      public_challenge_catalog: { Args: never; Returns: Json }
       set_challenge_pin: { Args: { _pin: boolean; _post_id: string }; Returns: undefined }
       create_personal_challenge: { Args: { _days: number; _habits: Json; _name: string }; Returns: string }
       my_challenge_history: { Args: never; Returns: Json }
@@ -2938,7 +2939,7 @@ export type Database = {
         Returns: undefined
       }
       integrity_tick: { Args: never; Returns: Json }
-      join_challenge: { Args: { _code: string }; Returns: string }
+      join_challenge: { Args: { _code: string; _mode?: string }; Returns: string }
       join_crew: { Args: { _code: string }; Returns: string }
       join_season: {
         Args: { _mode?: string; _season_id: string }

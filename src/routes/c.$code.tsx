@@ -1,7 +1,7 @@
 import { ClientOnly, createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { queryOptions, useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
+import { queryOptions, useSuspenseQuery, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { LezgoMark } from "@/components/lezgo/brand";
 import { StickerButton, Num } from "@/components/lezgo/ui";
@@ -32,14 +32,22 @@ function Invite() {
 function InviteContent({ code }: { code: string }) {
   const q = useSuspenseQuery(preview(code));
   const user = useUser();
+  const userProfile = useQuery({
+    queryKey: ["startProfile", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("profiles").select("onboarded").eq("id", user!.id).single();
+      if (error) throw error;
+      return data;
+    },
+  });
   const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const nav = useNavigate();
   const [busy, setBusy] = useState(false);
   async function join() {
-    if (!user) {
-      sessionStorage.setItem("lezgo_challenge_invite", code);
-      void nav({ to: "/auth" });
+    if (!user || userProfile.data?.onboarded === false) {
+      void nav({ to: "/start", search: { code } });
       return;
     }
     setBusy(true);
@@ -76,14 +84,14 @@ function InviteContent({ code }: { code: string }) {
               <p className="text-[13px] font-semibold">{loc(habit.what_counts, i18n.language)} · {habit.target}{habit.unit ? ` ${habit.unit}` : ""}</p>
             </article>)}
           </div>
-          {challenge.full || challenge.ended ? <p>{t("batch6.full")}</p> : <StickerButton block disabled={busy || user === undefined} onClick={() => void join()}>{user ? t("batch6.join") : t("batch6.signIn")}</StickerButton>}
+          {challenge.full || challenge.ended ? <p>{t("batch6.full")}</p> : <StickerButton block disabled={busy || user === undefined || (!!user && userProfile.isLoading)} onClick={() => void join()}>{user ? t("batch6.join") : t("batch6.signIn")}</StickerButton>}
         </>
       ) : (
         <>
           <h1>{t("crew.shareTitle")}</h1>
           <Num>{code}</Num>
           <p>{t("batch6.crewInviteNote")}</p>
-          <StickerButton block disabled={busy || user === undefined} onClick={() => void join()}>{user ? t("crew.joinBtn") : t("batch6.signIn")}</StickerButton>
+          <StickerButton block disabled={busy || user === undefined || (!!user && userProfile.isLoading)} onClick={() => void join()}>{user ? t("crew.joinBtn") : t("batch6.signIn")}</StickerButton>
         </>
       )}
       {!user && <Link to="/auth" className="sr-only">{t("batch6.signIn")}</Link>}

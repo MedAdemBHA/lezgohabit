@@ -28,7 +28,7 @@ function Onboarding() {
   const { t, i18n } = useTranslation();
   const nav = useNavigate();
   const qc = useQueryClient();
-  const { uid, profile, season } = useBase();
+  const { uid, profile, season, loading } = useBase();
   const templates = useQuery(templatesQuery);
   const existing = useQuery({ ...habitsQuery(uid, season?.id ?? ""), enabled: !!uid && !!season });
   const [step, setStep] = useState(1);
@@ -42,6 +42,13 @@ function Onboarding() {
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [modeOpen, setModeOpen] = useState(false);
+  const fallbackProfileOnly = !!profile && !profile.onboarded && !!season;
+
+  useEffect(() => {
+    if (loading || !profile) return;
+    if (!season) void nav({ to: "/start", replace: true });
+    else if (profile.onboarded) void nav({ to: "/today", replace: true });
+  }, [loading, profile, season, nav]);
 
   useEffect(() => {
     if (!profile) return;
@@ -62,24 +69,25 @@ function Onboarding() {
   }, [handle, profile]);
 
   async function finish() {
-    if (!season || !profile || !canStartSeason(picks.length)) return;
+    if (!season || !profile) return;
     setBusy(true);
     try {
       const { error } = await supabase.from("profiles").update({ display_name: name.trim() || profile.display_name, handle, country_code: country, language: i18n.language, onboarded: true }).eq("id", uid);
       if (error) throw error;
-      await saveHabits(uid, season.id, picks, existing.data ?? []);
+      // Phase 2 now locks the habit list at the challenge. The fallback only
+      // finishes the profile; challenge habits were already copied by Postgres.
       if (mode === "crew" && code.length === 6) { await supabase.rpc("join_crew", { _code: code }).throwOnError(); }
-      else if (mode === "crew" && crewName.trim()) { await supabase.rpc("create_crew", { _name: crewName.trim(), _kind: "squad", _max_members: 8 }).throwOnError(); }
-      else await supabase.rpc("join_season", { _season_id: season.id, _mode: "solo" }).throwOnError();
+      else if (mode === "crew" && crewName.trim()) { await supabase.rpc("create_crew", { _name: crewName.trim(), _kind: "squad", _max_members: 6 }).throwOnError(); }
       sessionStorage.removeItem("lezgo_pending_code");
       await qc.invalidateQueries();
-      const invite=sessionStorage.getItem("lezgo_challenge_invite");
-      if(invite&&/^[A-Z0-9]{6}$/.test(invite)){sessionStorage.removeItem("lezgo_challenge_invite");void nav({to:"/c/$code",params:{code:invite}});}else void nav({ to: "/capsule" });
+      void nav({ to: "/today" });
     } catch (e) {
       const k = errKey(e);
       toast(k ? t(`crew.err_${k}`, { defaultValue: t("common.error") }) : t("common.error"));
     } finally { setBusy(false); }
   }
+
+  if (loading || !season || !profile) return <div className="design-screen mx-auto w-full max-w-[440px] p-6">{t("common.loading")}</div>;
 
   return (
     <div className={step === 2 ? "design-screen habits-screen" : "mx-auto flex min-h-screen w-full max-w-[440px] flex-col px-5 pb-8 pt-4"}>
@@ -103,8 +111,8 @@ function Onboarding() {
             </select>
           </Field>
           <div><span className="mb-1.5 block text-[14px] font-extrabold">{t("common.language")}</span><LangGrid /></div>
-          <StickerButton block size="lg" disabled={handleState !== "ok"} onClick={() => setStep(2)}>
-            {t("common.next")} <ArrowRight strokeWidth={3} className="size-5 rtl:-scale-x-100" />
+          <StickerButton block size="lg" disabled={handleState !== "ok" || busy} onClick={() => fallbackProfileOnly ? void finish() : setStep(2)}>
+            {t(fallbackProfileOnly ? "startFlow.finishSetup" : "common.next")} <ArrowRight strokeWidth={3} className="size-5 rtl:-scale-x-100" />
           </StickerButton>
         </div>
       ) : (

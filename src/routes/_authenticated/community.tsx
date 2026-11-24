@@ -87,7 +87,7 @@ function Community() {
           {(completedEvents.data ?? []).map((event) => <ChallengeEventCard key={event.id} event={event} challengeName={lastCompleted.name} />)}
           <Link to="/challenges" search={{ season: lastCompleted.season_id }}><StickerButton block variant="secondary">{t("challengeHistory.details")}</StickerButton></Link>
         </> : <p className="font-semibold">{t("challengePulse.noChallenge")}</p>}
-        <Link to="/seasons"><StickerButton block variant="lime">{t("challengeHistory.pickNext")}</StickerButton></Link>
+        <Link to="/start"><StickerButton block variant="lime">{t("challengeHistory.pickNext")}</StickerButton></Link>
       </AppShell>
     );
   }

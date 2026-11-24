@@ -1,4 +1,4 @@
-export const ONBOARDING_HABIT_LIMIT = 3;
+export const ONBOARDING_HABIT_LIMIT = 6;
 export function canAddHabit(count: number) { return count < ONBOARDING_HABIT_LIMIT; }
 export function canStartSeason(count: number) { return count >= 1 && count <= ONBOARDING_HABIT_LIMIT; }
 export const DESIGN_HABIT_GROUPS = [
