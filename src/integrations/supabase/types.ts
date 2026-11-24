@@ -698,6 +698,33 @@ export type Database = {
           },
         ]
       }
+      challenge_habits: {
+        Row: { id: string; season_id: string; template_id: string | null; habit_key: string; name: Json; what_counts: Json; kind: string; target: number; unit: string | null; rule: Json; is_faith: boolean; position: number; is_demo: boolean }
+        Insert: { id?: string; season_id: string; template_id?: string | null; habit_key: string; name: Json; what_counts?: Json; kind: string; target?: number; unit?: string | null; rule?: Json; is_faith?: boolean; position: number; is_demo?: boolean }
+        Update: { id?: string; season_id?: string; template_id?: string | null; habit_key?: string; name?: Json; what_counts?: Json; kind?: string; target?: number; unit?: string | null; rule?: Json; is_faith?: boolean; position?: number; is_demo?: boolean }
+        Relationships: [
+          { foreignKeyName: "challenge_habits_season_id_fkey"; columns: ["season_id"]; isOneToOne: false; referencedRelation: "seasons"; referencedColumns: ["id"] },
+          { foreignKeyName: "challenge_habits_template_id_fkey"; columns: ["template_id"]; isOneToOne: false; referencedRelation: "habit_templates"; referencedColumns: ["id"] },
+        ]
+      }
+      challenge_events: {
+        Row: { id: string; season_id: string; user_id: string | null; event_type: string; event_key: string; day: string; payload: Json; is_demo: boolean; created_at: string }
+        Insert: { id?: string; season_id: string; user_id?: string | null; event_type: string; event_key: string; day: string; payload?: Json; is_demo?: boolean; created_at?: string }
+        Update: { id?: string; season_id?: string; user_id?: string | null; event_type?: string; event_key?: string; day?: string; payload?: Json; is_demo?: boolean; created_at?: string }
+        Relationships: [
+          { foreignKeyName: "challenge_events_season_id_fkey"; columns: ["season_id"]; isOneToOne: false; referencedRelation: "seasons"; referencedColumns: ["id"] },
+          { foreignKeyName: "challenge_events_user_id_fkey"; columns: ["user_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+        ]
+      }
+      challenge_event_reactions: {
+        Row: { event_id: string; user_id: string; created_at: string }
+        Insert: { event_id: string; user_id: string; created_at?: string }
+        Update: { event_id?: string; user_id?: string; created_at?: string }
+        Relationships: [
+          { foreignKeyName: "challenge_event_reactions_event_id_fkey"; columns: ["event_id"]; isOneToOne: false; referencedRelation: "challenge_events"; referencedColumns: ["id"] },
+          { foreignKeyName: "challenge_event_reactions_user_id_fkey"; columns: ["user_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+        ]
+      }
       challenges: {
         Row: {
           approved: boolean
@@ -1324,6 +1351,7 @@ export type Database = {
           name: Json
           sort: number
           unit: string | null
+          what_counts: Json
         }
         Insert: {
           archived?: boolean
@@ -1340,6 +1368,7 @@ export type Database = {
           name: Json
           sort?: number
           unit?: string | null
+          what_counts?: Json
         }
         Update: {
           archived?: boolean
@@ -1356,6 +1385,7 @@ export type Database = {
           name?: Json
           sort?: number
           unit?: string | null
+          what_counts?: Json
         }
         Relationships: []
       }
@@ -2140,6 +2170,10 @@ export type Database = {
           mode: string
           season_id: string
           user_id: string
+          kind: string
+          status: string
+          ended_at: string | null
+          end_reason: string | null
         }
         Insert: {
           comeback_used?: boolean
@@ -2148,6 +2182,10 @@ export type Database = {
           mode?: string
           season_id: string
           user_id: string
+          kind?: string
+          status?: string
+          ended_at?: string | null
+          end_reason?: string | null
         }
         Update: {
           comeback_used?: boolean
@@ -2156,6 +2194,10 @@ export type Database = {
           mode?: string
           season_id?: string
           user_id?: string
+          kind?: string
+          status?: string
+          ended_at?: string | null
+          end_reason?: string | null
         }
         Relationships: [
           {
@@ -2211,9 +2253,15 @@ export type Database = {
           frozen_at: string
           is_demo: boolean
           perfect_days: number
-          rank_country: number
+          rank_country: number | null
           rank_crew: number | null
-          rank_world: number
+          rank_world: number | null
+          rank_challenge: number | null
+          completed_days: number
+          consistency_percent: number
+          participation_kind: string
+          participation_status: string
+          trophy_private: boolean
           score: number
           season_id: string
           trophy: boolean
@@ -2229,9 +2277,15 @@ export type Database = {
           frozen_at?: string
           is_demo?: boolean
           perfect_days: number
-          rank_country: number
+          rank_country: number | null
           rank_crew?: number | null
-          rank_world: number
+          rank_world: number | null
+          rank_challenge?: number | null
+          completed_days?: number
+          consistency_percent?: number
+          participation_kind?: string
+          participation_status?: string
+          trophy_private?: boolean
           score: number
           season_id: string
           trophy: boolean
@@ -2247,9 +2301,15 @@ export type Database = {
           frozen_at?: string
           is_demo?: boolean
           perfect_days?: number
-          rank_country?: number
+          rank_country?: number | null
           rank_crew?: number | null
-          rank_world?: number
+          rank_world?: number | null
+          rank_challenge?: number | null
+          completed_days?: number
+          consistency_percent?: number
+          participation_kind?: string
+          participation_status?: string
+          trophy_private?: boolean
           score?: number
           season_id?: string
           trophy?: boolean
@@ -2276,18 +2336,21 @@ export type Database = {
         Row: {
           awarded_at: string
           is_demo: boolean
+          is_private: boolean
           season_id: string
           user_id: string
         }
         Insert: {
           awarded_at?: string
           is_demo?: boolean
+          is_private?: boolean
           season_id: string
           user_id: string
         }
         Update: {
           awarded_at?: string
           is_demo?: boolean
+          is_private?: boolean
           season_id?: string
           user_id?: string
         }
@@ -2406,6 +2469,8 @@ export type Database = {
           template_id: string | null
           unit: string | null
           user_id: string
+          what_counts: Json
+          rule: Json
         }
         Insert: {
           active?: boolean
@@ -2423,6 +2488,8 @@ export type Database = {
           template_id?: string | null
           unit?: string | null
           user_id?: string
+          what_counts?: Json
+          rule?: Json
         }
         Update: {
           active?: boolean
@@ -2440,6 +2507,8 @@ export type Database = {
           template_id?: string | null
           unit?: string | null
           user_id?: string
+          what_counts?: Json
+          rule?: Json
         }
         Relationships: [
           {
@@ -2722,6 +2791,13 @@ export type Database = {
       }
       capsule_read: { Args: { _season_id: string }; Returns: Json }
       challenge_preview: { Args: { _code: string }; Returns: Json }
+      challenge_scoreboard: { Args: { _country?: string; _scope?: string; _season_id: string }; Returns: Json }
+      challenge_feed: { Args: { _scope?: string; _season_id: string }; Returns: Json }
+      create_personal_challenge: { Args: { _days: number; _habits: Json; _name: string }; Returns: string }
+      my_challenge_history: { Args: never; Returns: Json }
+      surrender_challenge: { Args: { _season_id: string }; Returns: Json }
+      toggle_challenge_respect: { Args: { _event_id: string }; Returns: boolean }
+      admin_set_challenge_habits: { Args: { _habits: Json; _season_id: string }; Returns: undefined }
       checkin_upsert: {
         Args: {
           _day?: string

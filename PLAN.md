@@ -3,7 +3,7 @@
 ## Phase 0 findings
 
 - The checkout started clean on `own-hosting`; this work is on the new local branch `lezgo-v2`.
-- `DEPLOY.md` describes the self-hosted Supabase/Cloudflare setup. Local migrations run through `0062_own_hosting_cron.sql`; the Supabase project inventory lists grouped migrations through `0061_mark_prayer`. Confirm that `0062` is represented/applied before preparing `0063`.
+- `DEPLOY.md` describes the self-hosted Supabase/Cloudflare setup. The owner confirmed `0062_own_hosting_cron.sql` was applied and is now recorded; new local schema work starts at `0063`.
 - The current database already has `seasons`, `season_entries`, `user_habits`, `habit_templates`, `challenges`, `crews`, `crew_members`, `challenge_squads`, frozen `season_results`/`crew_results`, and audited admin RPCs. Creator roles, creator challenge approval/featuring, invite codes, and `/create-challenge` and `/c/$code` already exist.
 - The model is still season-centric. `season_entries` has one row per user/season but no status or kind; `user_preferences.active_challenge_id` can be switched, so one-active-challenge is not enforced. `create_challenge` accepts 1–3 template keys, copies default targets, and creates a season and (for non-solo audiences) one crew.
 - Habit allocation and scoring are server-owned: `today_habit_points` allocates 100 points across active habits, `recompute_day` computes scores, and `mark_prayer` validates salat. The current habit kinds are `check`, `count`, `salat`, `lift`, and `detox`; the client mirror is in `src/lib/habits.ts`. Habit selection and its trigger limit are 1–3 (demo trigger limit 8).
@@ -32,7 +32,7 @@
 
 ### Phase 2 — challenge database model
 
-- Add `drizzle/migrations/0063_challenge_participation.sql` after confirming migration history. Extend participation, challenge-habit, result, and crew-ranking data; update `active_season`, `activate_challenge`, `join_season`, `create_challenge`, `join_challenge`, `challenge_preview`, `featured_creator_challenges`, `validate_user_habit`, `today_habit_points`, `_rank_rows`/`scoreboard_v4`, `_freeze_season`, `freeze_due_seasons`, and `integrity_tick` as required.
+- Add `drizzle/migrations/0063_challenge_model.sql`. Extend participation, challenge-habit, result, and crew-ranking data; update `active_season`, `activate_challenge`, `join_season`, `join_challenge`, `challenge_preview`, `validate_user_habit`, `_rank_rows`, and `_freeze_season`.
 - Add `surrender_challenge`, `my_challenge_history`, and the personal-challenge creation RPC. Keep SQL SECURITY DEFINER access checks, fixed `search_path`, explicit grants, RLS, demo isolation, point review handling, frozen-result guards, and 03:00/15-minute finalization behavior.
 - Update `src/integrations/supabase/types.ts` by hand after the migration is authored; do not apply the migration. Migrate habit mismatches into private legacy personal entries. Preserve check-in rows and scores.
 - Files: migration `0063`, `src/integrations/supabase/types.ts`, `src/lib/guest.ts`, and later the related query contracts in `src/lib/data.ts` / `src/lib/batch6-data.ts`.
