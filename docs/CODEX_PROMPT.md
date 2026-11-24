@@ -9,6 +9,24 @@ Work phase by phase. **Stop after each phase** and show me a short summary + wha
 
 ---
 
+## North star — read this before every decision
+
+The goal is **not more features**. The goal is an app that is **easier, cleaner and fair for everyone**:
+a student, a mom who wants to pray on time, a gym guy, a 55-year-old who just wants to walk 8k steps.
+
+Before you ship any screen, check it against these 6 rules. If it fails one, simplify it:
+1. **Understood in 5 seconds.** A new user knows what to do on every screen without reading help text.
+2. **One main action per screen.** Everything else is secondary or hidden until needed.
+3. **No typing to start.** Taps only from landing to first check-in.
+4. **Fair by design.** You are only ranked against people doing the same habits.
+5. **Nobody alone.** Solo players are always one tap away from a crew.
+6. **Show less, reveal later.** New features appear when they become useful (day 2, 3…), not on day 1.
+
+If something can be explained in one sentence to a non-technical Tunisian user, it is right.
+If it needs a paragraph, it is too complicated — cut it or hide it.
+
+---
+
 ## Why we are doing this
 
 Lezgo has many good features, but the logic is hard to understand and new users see everything at once.
