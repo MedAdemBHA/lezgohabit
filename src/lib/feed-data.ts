@@ -21,6 +21,25 @@ export type Post = {
   stats: Record<string, string | number>;
   reactions: number;
   my_reaction: string | null;
+  is_pinned: boolean;
+};
+export type ChallengePulse = {
+  participants: number;
+  checked_in: number;
+  crew_id: string | null;
+  crew: { id: string; name: string; handle: string; avatar_url: string | null; checked_in: boolean }[];
+};
+export type ChallengeEvent = {
+  id: string;
+  type: "surrender" | "perfect_day" | "streak" | "boss" | "crew_all_in" | "challenge_complete";
+  user_id: string | null;
+  handle: string | null;
+  display_name: string | null;
+  avatar_url: string | null;
+  day: string;
+  payload: Record<string, string | number | boolean | null>;
+  respects: number;
+  mine: boolean;
 };
 export type Preferences = Database["public"]["Tables"]["user_preferences"]["Row"];
 export const defaultPreferences = (uid: string): Preferences => ({
@@ -51,7 +70,7 @@ export const preferencesQuery = (uid: string) =>
   });
 export async function fetchFeed(
   sid: string,
-  scope = "everyone",
+  scope = "challenge",
   filter = "all",
   before: string | null = null,
 ) {
@@ -76,7 +95,7 @@ export async function fetchFeed(
 export const feedQuery = (
   uid: string,
   sid: string,
-  scope = "everyone",
+  scope = "challenge",
   filter = "all",
   before: string | null = null,
 ) =>
@@ -84,6 +103,27 @@ export const feedQuery = (
     queryKey: ["feed", uid, sid, scope, filter, before],
     queryFn: () => fetchFeed(sid, scope, filter, before),
     staleTime: 15_000,
+  });
+export const challengePulseQuery = (uid: string, sid: string) =>
+  queryOptions({
+    queryKey: ["challengePulse", uid, sid],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("challenge_pulse", { _season_id: sid });
+      if (error) throw error;
+      return data as unknown as ChallengePulse;
+    },
+    refetchInterval: 30_000,
+    enabled: !!uid && !!sid,
+  });
+export const challengeEventsQuery = (uid: string, sid: string, scope: string) =>
+  queryOptions({
+    queryKey: ["challengeEvents", uid, sid, scope],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("challenge_feed", { _season_id: sid, _scope: scope });
+      if (error) throw error;
+      return (data ?? []) as unknown as ChallengeEvent[];
+    },
+    enabled: !!uid && !!sid,
   });
 export const REACTIONS = ["respect", "beast", "lol", "legend"] as const;
 export const MAX_NOTE = 280;

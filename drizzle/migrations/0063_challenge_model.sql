@@ -443,7 +443,7 @@ BEGIN
   DELETE FROM public.challenge_squad_members m USING public.challenge_squads q JOIN public.challenges c ON c.id=q.challenge_id WHERE m.squad_id=q.id AND m.user_id=uid AND c.season_id=_season_id;
   UPDATE public.user_preferences SET active_challenge_id=NULL WHERE user_id=uid;
   INSERT INTO public.challenge_events(season_id,user_id,event_type,event_key,day,is_demo,payload)
-  VALUES(_season_id,uid,'surrender','surrender:'||uid::text,public._local_today(uid),e.is_demo,jsonb_build_object('handle',p.handle)) ON CONFLICT(season_id,event_key) DO NOTHING;
+  VALUES(_season_id,uid,'surrender','surrender:'||uid::text,public._local_today(uid),e.is_demo,jsonb_build_object('handle',p.handle,'crew_id',crew)) ON CONFLICT(season_id,event_key) DO NOTHING;
   RETURN jsonb_build_object('status','surrendered','points',points,'crew_id',crew,'completed_days',done,'perfect_days',perfect,'consistency',round(100.0*done/days,1),'trophy',won);
 END $$;
 

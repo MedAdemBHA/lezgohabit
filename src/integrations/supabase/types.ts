@@ -1828,6 +1828,7 @@ export type Database = {
           id: string
           image_url: string | null
           is_demo: boolean
+          is_pinned: boolean
           lesson_seconds: number | null
           season_id: string
           stats: Json
@@ -1845,6 +1846,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_demo?: boolean
+          is_pinned?: boolean
           lesson_seconds?: number | null
           season_id: string
           stats?: Json
@@ -1862,6 +1864,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_demo?: boolean
+          is_pinned?: boolean
           lesson_seconds?: number | null
           season_id?: string
           stats?: Json
@@ -2825,6 +2828,8 @@ export type Database = {
       request_creator: { Args: never; Returns: string }
       review_creator_request: { Args: { _approve: boolean; _note?: string; _request_id: string }; Returns: undefined }
       challenge_feed: { Args: { _scope?: string; _season_id: string }; Returns: Json }
+      challenge_pulse: { Args: { _season_id: string }; Returns: Json }
+      set_challenge_pin: { Args: { _pin: boolean; _post_id: string }; Returns: undefined }
       create_personal_challenge: { Args: { _days: number; _habits: Json; _name: string }; Returns: string }
       my_challenge_history: { Args: never; Returns: Json }
       surrender_challenge: { Args: { _season_id: string }; Returns: Json }

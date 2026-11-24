@@ -253,6 +253,15 @@ export const en = {
     surrender: "Surrender challenge", surrenderTitle: "End this challenge?", surrenderIntro: "You can leave now. Your progress so far stays yours.",
     keepTitle: "What you keep", keepBody: "Your history, points already earned, and badges stay saved.", endsTitle: "What ends", endsBody: "Check-ins, board rank, and crew membership end for this challenge. You cannot rejoin it.", surrenderedToast: "Your challenge is saved in history.",
   },
+  challengePulse: {
+    title: "CHALLENGE PULSE", today: "Today", checkedIn: "{{done}} of {{total}} checked in", crewTab: "Crew", challengeTab: "Challenge",
+    moments: "Moments", shareProof: "Add proof", emptyMoments: "No moments yet. Your next check-in starts the story.",
+    crewPosts: "Crew posts", challengePosts: "Challenge posts", emptyPosts: "No posts yet. Keep it simple and show up.", noChallenge: "Join a challenge to see its pulse.", lastComplete: "Your last challenge, {{name}}, is complete.", findCrew: "Find me a crew",
+    perfect: "{{name}} had a perfect day.", streak: "{{name}} reached a {{n}}-day streak.", boss: "{{name}} beat the {{level}} Boss.",
+    allIn: "Everyone in {{crew}} checked in.", complete: "{{name}} is complete.", surrender: "{{name}} stepped away. Their progress stays in history.",
+    aPlayer: "A player", aCrew: "a crew", respect: "Respect", respectCrew: "Respect from {{n}} in your crew", respectChallenge: "Respect from {{n}} in your challenge", pin: "Pin this post", unpin: "Unpin this post", pinned: "Pinned by the challenge",
+    nudge: "Nudge {{name}}",
+  },
   settings: {
     title: "Settings", units: "Units", publicBoards: "Show me on public boards", faithPublic: "Show faith habits publicly",
     faithHint: "Off by default. Only you see them.", notifications: "Notifications", notifDaily: "Daily reminder",

@@ -254,6 +254,15 @@ export const aeb: Dict = {
     surrender: "انسحب من التحدّي", surrenderTitle: "توفّي التحدّي هذا؟", surrenderIntro: "تنجم توقف توا. تقدّمك يبقى محفوظ.",
     keepTitle: "شنوة يبقى ليك", keepBody: "السجل متاعك والنقاط اللي ربحتها والشارات يبقاو محفوظين.", endsTitle: "شنوة يوفى", endsBody: "التسجيل والترتيب وعضوية الكرو يوفاو للتحدّي هذا. ما تنجمش ترجع تدخل فيه.", surrenderedToast: "تحدّيك تخزّن في السجل.",
   },
+  challengePulse: {
+    title: "نبض التحدّي", today: "اليوم", checkedIn: "سجّلوا {{done}} من {{total}}", crewTab: "الكرو", challengeTab: "التحدّي",
+    moments: "لحظات", shareProof: "زيد دليل", emptyMoments: "ما فماش لحظات توّا. التسجيل الجاي يبدا الحكاية.",
+    crewPosts: "منشورات الكرو", challengePosts: "منشورات التحدّي", emptyPosts: "ما فماش منشورات توّا. كمل على راحتك.", noChallenge: "ادخل لتحدّي باش تشوف النشاط متاعو.", lastComplete: "آخر تحدّي {{name}} متاعك وفى.", findCrew: "لوّج على كرو",
+    perfect: "{{name}} كمّل نهار كامل.", streak: "{{name}} وصل لسلسلة {{n}} أيام.", boss: "{{name}} غلب البوس {{level}}.",
+    allIn: "الكرو {{crew}} الكل سجّلوا.", complete: "{{name}} كمّل.", surrender: "{{name}} خرج من التحدّي. تقدّمو محفوظ في السجل.",
+    aPlayer: "لاعب", aCrew: "كرو", respect: "احترام", respectCrew: "احترام {{n}} من الكرو متاعك", respectChallenge: "احترام {{n}} في التحدّي متاعك", pin: "ثبّت المنشور", unpin: "نحّي التثبيت", pinned: "مثبّت للتحدّي",
+    nudge: "فكّر {{name}}",
+  },
   settings: {
     title: "الإعدادات", units: "الوحدات", publicBoards: "بيّني في الترتيب العام", faithPublic: "بيّن عادات الدين للناس",
     faithHint: "مسكّرة بالأساس. إنتِ برك تشوفهم.", notifications: "النوتيفيكاسيون", notifDaily: "تذكير كل نهار",

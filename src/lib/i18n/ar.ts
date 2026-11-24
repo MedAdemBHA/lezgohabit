@@ -254,6 +254,15 @@ export const ar: Dict = {
     surrender: "انسحب من التحدي", surrenderTitle: "إنهاء هذا التحدي؟", surrenderIntro: "يمكنك التوقف الآن. سيبقى تقدمك محفوظًا.",
     keepTitle: "ما سيبقى لك", keepBody: "سيبقى سجلك ونقاطك التي حصلت عليها وشاراتك محفوظة.", endsTitle: "ما الذي سيتوقف", endsBody: "ستنتهي التسجيلات والترتيب وعضوية الفريق لهذا التحدي. لن تتمكن من الانضمام إليه مرة أخرى.", surrenderedToast: "تم حفظ التحدي في سجلك.",
   },
+  challengePulse: {
+    title: "نبض التحدي", today: "اليوم", checkedIn: "سجّل {{done}} من أصل {{total}}", crewTab: "الفريق", challengeTab: "التحدي",
+    moments: "لحظات", shareProof: "أضف إثباتًا", emptyMoments: "لا توجد لحظات بعد. ابدأ القصة بتسجيلك القادم.",
+    crewPosts: "منشورات الفريق", challengePosts: "منشورات التحدي", emptyPosts: "لا توجد منشورات بعد. واصل بهدوء.", noChallenge: "انضم إلى تحدٍ لمشاهدة نشاطه.", lastComplete: "اكتمل تحديك الأخير {{name}}.", findCrew: "ابحث عن فريق",
+    perfect: "حقق {{name}} يومًا مثاليًا.", streak: "وصل {{name}} إلى سلسلة {{n}} يومًا.", boss: "هزم {{name}} الزعيم {{level}}.",
+    allIn: "سجّل جميع أفراد {{crew}}.", complete: "اكتمل {{name}}.", surrender: "غادر {{name}} التحدي. تقدمه محفوظ في السجل.",
+    aPlayer: "لاعب", aCrew: "فريق", respect: "احترام", respectCrew: "احترام {{n}} من أعضاء فريقك", respectChallenge: "احترام {{n}} في تحديك", pin: "ثبّت المنشور", unpin: "أزل تثبيت المنشور", pinned: "مثبّت للتحدي",
+    nudge: "ذكّر {{name}}",
+  },
   settings: {
     title: "الإعدادات", units: "الوحدات", publicBoards: "أظهرني في الترتيب العام", faithPublic: "أظهر عادات الإيمان للعموم",
     faithHint: "مغلق افتراضياً. أنت فقط تراها.", notifications: "الإشعارات", notifDaily: "تذكير يومي",

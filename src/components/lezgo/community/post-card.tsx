@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
-import { MoreHorizontal, Flame, Hand, Zap, Smile, Star, Flag, EyeOff, Trash2 } from "lucide-react";
+import { MoreHorizontal, Hand, Zap, Smile, Star, Flag, EyeOff, Trash2, Pin, PinOff } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { REACTIONS, type Post } from "@/lib/feed-data";
@@ -11,7 +11,7 @@ import { daysBetween, useNow } from "@/lib/time";
 import { cn } from "@/lib/utils";
 import { Avatar, BottomSheet, StickerButton, Num, inputCls } from "../ui";
 const reactionIcons = { respect: Hand, beast: Zap, lol: Smile, legend: Star };
-export function PostCard({ post, uid, start }: { post: Post; uid: string; start: string }) {
+export function PostCard({ post, uid, start, canPin = false }: { post: Post; uid: string; start: string; canPin?: boolean }) {
   const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const now = useNow(60_000);
@@ -21,6 +21,7 @@ export function PostCard({ post, uid, start }: { post: Post; uid: string; start:
   const [reason, setReason] = useState("");
   const [busy, setBusy] = useState(false);
   const hold = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const suppressClick = useRef(false);
   const clearHold = () => {
     if (hold.current) clearTimeout(hold.current);
     hold.current = null;
@@ -68,6 +69,17 @@ export function PostCard({ post, uid, start }: { post: Post; uid: string; start:
     await qc.invalidateQueries({ queryKey: ["feed"] });
     toast(t(a === "report" ? "batch4.reported" : "settings.saved"));
   }
+  async function pin() {
+    setBusy(true);
+    const { error } = await supabase.rpc("set_challenge_pin", { _post_id: post.id, _pin: !post.is_pinned });
+    setBusy(false);
+    if (error) {
+      toast(t("common.error"));
+      return;
+    }
+    setMenu(false);
+    await qc.invalidateQueries({ queryKey: ["feed"] });
+  }
   const stat = post.stats;
   const unit = typeof stat["unit"] === "string" ? stat["unit"] : null;
   return (
@@ -98,6 +110,7 @@ export function PostCard({ post, uid, start }: { post: Post; uid: string; start:
         </StickerButton>
       </div>
       {post.hidden && <p className="font-bold text-warning">{t("batch4.pending")}</p>}
+      {post.is_pinned && <span className="inline-flex items-center gap-1 rounded-full bg-yellow px-3 py-1 text-[12px] font-extrabold sticker-border"><Pin size={14} />{t("challengePulse.pinned")}</span>}
       {post.body && <p className="post-body">{post.body}</p>}
       {post.image_path &&
         (post.image ? (
@@ -125,28 +138,42 @@ export function PostCard({ post, uid, start }: { post: Post; uid: string; start:
           )}
           {post.visibility === "crew" && <span className="stat-chip">{t("batch4.crew")}</span>}
         </div>
+        <span className="sr-only">
+          {t(post.visibility === "crew" ? "challengePulse.respectCrew" : "challengePulse.respectChallenge", { n: post.reactions })}
+        </span>
         <StickerButton
           variant="secondary"
           className={cn("reaction-pill", post.my_reaction && "bg-yellow")}
           disabled={busy || post.hidden}
-          aria-label={t("batch4.react")}
-          onClick={() => setPicker(true)}
+          aria-label={t("challengePulse.respect")}
+          onClick={() => {
+            if (suppressClick.current) { suppressClick.current = false; return; }
+            void react("respect");
+          }}
           onPointerDown={() => {
             clearHold();
-            hold.current = setTimeout(() => setPicker(true), 450);
+            suppressClick.current = false;
+            hold.current = setTimeout(() => {
+              suppressClick.current = true;
+              setPicker(true);
+              window.setTimeout(() => { suppressClick.current = false; }, 1500);
+            }, 450);
           }}
           onPointerUp={clearHold}
-          onPointerCancel={clearHold}
+          onPointerCancel={() => { clearHold(); suppressClick.current = false; }}
           onPointerLeave={clearHold}
           onContextMenu={(e) => {
             e.preventDefault();
             setPicker(true);
           }}
         >
-          <Flame size={22} />
-          <Num>{post.reactions}</Num>
+          <Hand size={20} />
+          <span aria-hidden="true">{post.reactions}</span>
         </StickerButton>
       </div>
+      <p className="mt-1 text-[11px] font-semibold text-muted-foreground">
+        {t(post.visibility === "crew" ? "challengePulse.respectCrew" : "challengePulse.respectChallenge", { n: post.reactions })}
+      </p>
       <BottomSheet open={picker} onClose={() => setPicker(false)} title={t("batch4.react")}>
         <div className="grid grid-cols-2 gap-3">
           {REACTIONS.map((kind) => {
@@ -167,6 +194,10 @@ export function PostCard({ post, uid, start }: { post: Post; uid: string; start:
       </BottomSheet>
       <BottomSheet open={menu} onClose={() => setMenu(false)} title={t("batch4.postOptions")}>
         <div className="space-y-3">
+          {canPin && <StickerButton variant="secondary" block disabled={busy} onClick={() => void pin()}>
+            {post.is_pinned ? <PinOff size={20} /> : <Pin size={20} />}
+            {t(post.is_pinned ? "challengePulse.unpin" : "challengePulse.pin")}
+          </StickerButton>}
           {post.user_id === uid ? (
             <StickerButton
               variant="danger"

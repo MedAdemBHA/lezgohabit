@@ -1,125 +1,156 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { infiniteQueryOptions, useSuspenseInfiniteQuery, useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { infiniteQueryOptions, useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Plus, Smartphone } from "lucide-react";
-import { ThoughtIcon } from "@/components/icons";
+import { Plus, Users } from "lucide-react";
+import { toast } from "sonner";
 import { AppShell } from "@/components/lezgo/app-shell";
-import { StickerButton } from "@/components/lezgo/ui";
-import { FitHeading } from "@/components/lezgo/fit-heading";
-import { CommunitySwitch } from "@/components/lezgo/community/community-switch";
+import { ChallengeEventCard } from "@/components/lezgo/community/challenge-event-card";
 import { Compose } from "@/components/lezgo/community/compose";
 import { PostCard } from "@/components/lezgo/community/post-card";
-import { fetchFeed } from "@/lib/feed-data";
-import { useBase, activeSeasonQuery, habitsQuery } from "@/lib/data";
+import { FitHeading } from "@/components/lezgo/fit-heading";
+import { Avatar, Segmented, StickerButton } from "@/components/lezgo/ui";
+import { useBase } from "@/lib/data";
+import { rolesQuery } from "@/lib/batch6-data";
+import { challengeEventsQuery, challengePulseQuery, fetchFeed } from "@/lib/feed-data";
+import { challengeHistoryQuery } from "@/lib/challenge-history";
 import { loc } from "@/lib/i18n";
 import { pageHead } from "@/lib/page-head";
-function postsOptions(uid: string, sid: string, scope = "everyone", filter = "all") {
+import { supabase } from "@/integrations/supabase/client";
+
+type Scope = "crew" | "challenge";
+function postsOptions(uid: string, sid: string, scope: Scope) {
   return infiniteQueryOptions({
-    queryKey: ["feed", uid, sid, scope, filter, "pages"],
+    queryKey: ["feed", uid, sid, scope, "all", "pages"],
     initialPageParam: null as string | null,
-    queryFn: ({ pageParam }) => fetchFeed(sid, scope, filter, pageParam),
+    queryFn: ({ pageParam }) => fetchFeed(sid, scope, "all", pageParam),
     getNextPageParam: (last) => (last.length === 20 ? last.at(-1)?.created_at : undefined),
     staleTime: 15_000,
   });
 }
+
 export const Route = createFileRoute("/_authenticated/community")({
-  head: () =>
-    pageHead("Proof feed — lezgo", "Daily proof, thoughts and wins from your crew and community."),
-  loader: async ({ context }) => {
-    const season = await context.queryClient.ensureQueryData(activeSeasonQuery(context.user.id));
-    if (season)
-      await context.queryClient.ensureInfiniteQueryData(postsOptions(context.user.id, season.id));
-  },
+  head: () => pageHead("Challenge pulse — lezgo", "A quiet pulse of check-ins and wins from your challenge."),
   component: Community,
 });
+
 function Community() {
   const { t, i18n } = useTranslation();
-  const uid=Route.useRouteContext().user.id;
-  const {data:season}=useSuspenseQuery(activeSeasonQuery(uid));
-  const [scope, setScope] = useState("everyone");
-  const [filter, setFilter] = useState("all");
+  const { uid, season, profile } = useBase();
+  const sid = season?.id ?? "";
+  const qc = useQueryClient();
+  const [scope, setScope] = useState<Scope>("challenge");
   const [compose, setCompose] = useState(false);
-  const posts = useSuspenseInfiniteQuery(postsOptions(uid, season?.id ?? "", scope, filter));
-  const habits = useQuery({ ...habitsQuery(uid, season?.id ?? ""), enabled: !!uid && !!season });
-  const rows = posts.data.pages.flat();
-  const filters = new Map<string, string>();
-  for (const h of habits.data ?? [])
-    if (h.template && !h.template.is_faith)
-      filters.set(h.template.key, loc(h.template.name, i18n.language));
-  for (const p of rows) if (p.habit_key) filters.set(p.habit_key, loc(p.habit_name, i18n.language));
+  const [nudging, setNudging] = useState("");
+  const history = useQuery({ ...challengeHistoryQuery(uid), enabled: !!uid && !season });
+  const lastCompleted = !season ? history.data?.find((entry) => entry.status === "completed") : undefined;
+  const completedEvents = useQuery({
+    ...challengeEventsQuery(uid, lastCompleted?.season_id ?? "", "challenge"),
+    enabled: !!uid && !!lastCompleted,
+  });
+  const posts = useInfiniteQuery({ ...postsOptions(uid, sid, scope), enabled: !!uid && !!sid });
+  const pulse = useQuery({ ...challengePulseQuery(uid, sid), enabled: !!uid && !!sid });
+  const events = useQuery({ ...challengeEventsQuery(uid, sid, scope), enabled: !!uid && !!sid });
+  const roles = useQuery({ ...rolesQuery(uid), enabled: !!uid });
+  const challenge = useQuery({
+    queryKey: ["challengeOwner", sid],
+    enabled: !!sid,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("challenges").select("owner_id,audience").eq("season_id", sid).maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+  const rows = posts.data?.pages.flat() ?? [];
+  const momentRows = events.data ?? [];
+  const challengeName = loc(season?.name, i18n.language) || t("challengePulse.challenge");
+  const canPin = !!profile?.is_admin || (roles.data?.includes("creator") === true && challenge.data?.audience === "creator" && challenge.data.owner_id === uid);
+
+  async function nudge(userId: string, name: string) {
+    if (nudging) return;
+    setNudging(userId);
+    const { error } = await supabase.rpc("send_nudge", { _to_user: userId });
+    setNudging("");
+    if (error) toast(t("common.error"));
+    else {
+      toast(t("crew.nudgeToast", { name }));
+      await qc.invalidateQueries({ queryKey: ["challengePulse", uid, sid] });
+    }
+  }
+
+  if (!season) {
+    return (
+      <AppShell todayLayout>
+        <FitHeading className="feed-title" requestedSize={42} text={t("challengePulse.title")} />
+        {lastCompleted ? <>
+          <p className="font-semibold">{t("challengePulse.lastComplete", { name: lastCompleted.name })}</p>
+          {(completedEvents.data ?? []).map((event) => <ChallengeEventCard key={event.id} event={event} challengeName={lastCompleted.name} />)}
+          <Link to="/challenges" search={{ season: lastCompleted.season_id }}><StickerButton block variant="secondary">{t("challengeHistory.details")}</StickerButton></Link>
+        </> : <p className="font-semibold">{t("challengePulse.noChallenge")}</p>}
+        <Link to="/seasons"><StickerButton block variant="lime">{t("challengeHistory.pickNext")}</StickerButton></Link>
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell todayLayout>
-      <CommunitySwitch active="feed" /><div className="community-actions"><Link to="/create-challenge"><StickerButton variant="secondary" size="sm"><Plus size={18}/>{t("batch6.create")}</StickerButton></Link><Link to="/small-wins"><StickerButton variant="lime" size="sm">{t("batch6.winTitle")}</StickerButton></Link></div>
-      <Link to="/detox" className="self-end">
-        <StickerButton variant="secondary" size="sm"><Smartphone size={18}/>{t('batch5.detox')}</StickerButton>
-      </Link>
-      <div className="feed-header">
-        <FitHeading className="feed-title" requestedSize={56} text={t("batch4.feedTitle")} />
-        <StickerButton
-          variant="lime"
-          className="feed-add"
-          aria-label={t("batch4.newPost")}
-          onClick={() => setCompose(true)}
-        >
-          <Plus size={32} strokeWidth={3} />
-        </StickerButton>
-      </div>
-      <div className="feed-filters">
-        {[["all", t("batch4.all")], ...Array.from(filters), ["thought", t("batch4.thoughts")]].map(
-          ([key, name]) =>
-            key && (
-              <StickerButton
-                key={key}
-                size="sm"
-                variant="secondary"
-                className={`feed-chip ${key === filter ? "bg-ink text-lime shadow-none" : ""}`}
-                aria-pressed={key === filter}
-                onClick={() => setFilter(key)}
-              >
-                {name}
-              </StickerButton>
-            ),
-        )}
-      </div>
-      <div className="feed-scopes">
-        {(["everyone", "crew", "country"] as const).map((s) => (
-          <StickerButton
-            size="sm"
-            variant="ghost"
-            key={s}
-            aria-pressed={scope === s}
-            className={scope === s ? "bg-ink text-lime" : "text-ink"}
-            onClick={() => setScope(s)}
-          >
-            {s === "country"
-              ? t("ranks.tunisia")
-              : t(s === "crew" ? "batch4.myCrew" : "batch4.everyone")}
-          </StickerButton>
-        ))}
-      </div>
-      {rows.map((p) => (
-        <PostCard key={p.id} post={p} uid={uid} start={season?.starts_on ?? p.day} />
-      ))}
-      {!rows.length && (
-        <div className="flex flex-col items-center gap-4 py-12">
-          <ThoughtIcon size={64} />
-          <p className="font-bold">{t("batch4.feedEmpty")}</p>
-          <StickerButton variant="lime" onClick={() => setCompose(true)}>
-            <Plus size={22} />
-            {t("batch4.newPost")}
-          </StickerButton>
+      <header className="space-y-3">
+        <FitHeading className="feed-title" requestedSize={42} text={challengeName} />
+        <Segmented<Scope>
+          value={scope}
+          onChange={setScope}
+          options={[
+            { value: "crew", label: t("challengePulse.crewTab") },
+            { value: "challenge", label: t("challengePulse.challengeTab") },
+          ]}
+        />
+      </header>
+
+      <section className="rounded-[20px] bg-yellow p-4 sticker-border shadow-hard-lg" aria-label={t("challengePulse.title")}>
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-[13px] font-extrabold uppercase tracking-wide">{t("challengePulse.today")}</p>
+            <p className="text-[18px] font-extrabold">{t("challengePulse.checkedIn", { done: pulse.data?.checked_in ?? 0, total: pulse.data?.participants ?? 0 })}</p>
+          </div>
+          <Users size={26} aria-hidden />
         </div>
-      )}
-      {posts.hasNextPage && (
-        <StickerButton
-          variant="secondary"
-          disabled={posts.isFetchingNextPage}
-          onClick={() => void posts.fetchNextPage()}
-        >
-          {t(posts.isFetchingNextPage ? "common.loading" : "batch4.loadMore")}
-        </StickerButton>
-      )}
+        <progress className="mt-3 block h-3 w-full accent-ink" value={pulse.data?.checked_in ?? 0} max={Math.max(1, pulse.data?.participants ?? 0)} />
+        <div className="mt-3 flex flex-wrap gap-2">
+          {(pulse.data?.crew ?? []).map((member) => (
+            member.checked_in || member.id === uid ? (
+              <span key={member.id} className="flex min-h-11 items-center gap-2 rounded-full bg-card px-2 py-1 sticker-border" title={member.name}>
+                <Avatar id={member.id} name={member.name} url={member.avatar_url} size={32} />
+                <span className="max-w-24 truncate text-[12px] font-bold">{member.name}</span>
+              </span>
+            ) : (
+              <button
+                key={member.id}
+                type="button"
+                className="flex min-h-11 items-center gap-2 rounded-full bg-card px-2 py-1 text-start sticker-border press"
+                disabled={!!nudging}
+                aria-label={t("challengePulse.nudge", { name: member.name })}
+                onClick={() => void nudge(member.id, member.name)}
+              >
+                <Avatar id={member.id} name={member.name} url={member.avatar_url} size={32} />
+                <span className="max-w-24 truncate text-[12px] font-bold">{member.name}</span>
+              </button>
+            )
+          ))}
+          {pulse.data && !pulse.data.crew.length && <Link to="/crew"><StickerButton size="sm" variant="secondary">{t("challengePulse.findCrew")}</StickerButton></Link>}
+        </div>
+      </section>
+
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-[18px] font-extrabold">{t("challengePulse.moments")}</h2>
+        <StickerButton variant="lime" size="sm" aria-label={t("batch4.newPost")} onClick={() => setCompose(true)}><Plus size={20} />{t("challengePulse.shareProof")}</StickerButton>
+      </div>
+      {momentRows.map((event) => <ChallengeEventCard key={event.id} event={event} challengeName={challengeName} />)}
+      {!momentRows.length && <p className="rounded-[18px] bg-card p-3 text-[14px] font-semibold sticker-border">{t("challengePulse.emptyMoments")}</p>}
+
+      <h2 className="text-[18px] font-extrabold">{t(scope === "crew" ? "challengePulse.crewPosts" : "challengePulse.challengePosts")}</h2>
+      {rows.map((post) => <PostCard key={post.id} post={post} uid={uid} start={season.starts_on} canPin={canPin} />)}
+      {!rows.length && <div className="rounded-[18px] bg-card p-4 text-center text-[14px] font-semibold sticker-border">{t("challengePulse.emptyPosts")}</div>}
+      {posts.hasNextPage && <StickerButton block variant="secondary" disabled={posts.isFetchingNextPage} onClick={() => void posts.fetchNextPage()}>{t(posts.isFetchingNextPage ? "common.loading" : "batch4.loadMore")}</StickerButton>}
       <Compose open={compose} onClose={() => setCompose(false)} />
     </AppShell>
   );

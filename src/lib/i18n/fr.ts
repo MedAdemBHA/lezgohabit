@@ -254,6 +254,15 @@ export const fr: Dict = {
     surrender: "Abandonner le challenge", surrenderTitle: "Terminer ce challenge ?", surrenderIntro: "Tu peux arrêter maintenant. Ta progression reste enregistrée.",
     keepTitle: "Ce que tu gardes", keepBody: "Ton historique, tes points déjà gagnés et tes badges restent enregistrés.", endsTitle: "Ce qui s’arrête", endsBody: "Les validations, le classement et le crew s’arrêtent pour ce challenge. Tu ne pourras pas le rejoindre à nouveau.", surrenderedToast: "Ton challenge est enregistré dans ton historique.",
   },
+  challengePulse: {
+    title: "ACTU DU CHALLENGE", today: "Aujourd’hui", checkedIn: "{{done}} sur {{total}} ont validé", crewTab: "Crew", challengeTab: "Challenge",
+    moments: "Moments", shareProof: "Ajouter une preuve", emptyMoments: "Pas encore de moment. Ton prochain check-in lancera l’histoire.",
+    crewPosts: "Posts du crew", challengePosts: "Posts du challenge", emptyPosts: "Pas encore de post. Avance tranquillement.", noChallenge: "Rejoins un challenge pour voir son activité.", lastComplete: "Ton dernier challenge, {{name}}, est terminé.", findCrew: "Trouver un crew",
+    perfect: "{{name}} a fait une journée parfaite.", streak: "{{name}} a atteint {{n}} jours de série.", boss: "{{name}} a battu le Boss {{level}}.",
+    allIn: "Tout le crew {{crew}} a validé.", complete: "{{name}} est terminé.", surrender: "{{name}} a quitté le challenge. Sa progression reste dans l’historique.",
+    aPlayer: "Un joueur", aCrew: "un crew", respect: "Respect", respectCrew: "{{n}} respects dans ton crew", respectChallenge: "{{n}} respects dans ton challenge", pin: "Épingler ce post", unpin: "Désépingler ce post", pinned: "Épinglé par le challenge",
+    nudge: "Relancer {{name}}",
+  },
   settings: {
     title: "Réglages", units: "Unités", publicBoards: "M'afficher dans les classements publics", faithPublic: "Afficher mes habitudes de foi",
     faithHint: "Désactivé par défaut. Toi seul les vois.", notifications: "Notifications", notifDaily: "Rappel quotidien",
