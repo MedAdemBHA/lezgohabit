@@ -147,12 +147,14 @@ DROP POLICY IF EXISTS trophy_owner_read ON public.season_trophies;
 CREATE POLICY season_trophies_read ON public.season_trophies FOR SELECT TO authenticated
   USING (user_id=auth.uid() OR (NOT is_private AND is_demo=public._viewer_demo()));
 
--- Populate the new challenge contract for the live official challenge and legacy creator challenges.
+-- Populate challenge lists for all official seasons; Winter Arc keeps the chosen train/read/sleep7 list.
 INSERT INTO public.challenge_habits(season_id,template_id,habit_key,name,what_counts,kind,target,unit,is_faith,position,is_demo)
 SELECT s.id,h.id,h.key,h.name,h.description,h.kind,h.default_target,h.unit,h.is_faith,k.ord::int-1,s.is_demo
-FROM (SELECT id,starts_on,is_demo FROM public.seasons WHERE status='live' AND NOT challenge_owned AND NOT archived ORDER BY starts_on DESC LIMIT 1) s
-CROSS JOIN unnest(ARRAY['train','read','sleep7']::text[]) WITH ORDINALITY k(key,ord)
+FROM public.seasons s
+CROSS JOIN LATERAL unnest(CASE WHEN s.slug='winter-arc-2026' THEN ARRAY['train','read','sleep7']::text[]
+  WHEN cardinality(s.featured_habits)>0 THEN s.featured_habits ELSE ARRAY['train','read','sleep7']::text[] END) WITH ORDINALITY k(key,ord)
 JOIN public.habit_templates h ON h.key=k.key
+WHERE NOT s.challenge_owned AND NOT s.archived AND NOT s.is_demo AND k.ord<=6
 ON CONFLICT (season_id,position) DO NOTHING;
 INSERT INTO public.challenge_habits(season_id,template_id,habit_key,name,what_counts,kind,target,unit,is_faith,position,is_demo)
 SELECT c.season_id,h.id,h.key,h.name,h.description,h.kind,h.default_target,h.unit,h.is_faith,k.ord::int-1,c.is_demo

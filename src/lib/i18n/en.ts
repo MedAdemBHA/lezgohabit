@@ -254,5 +254,10 @@ export const en = {
     title: "Admin", users: "Users", activeToday: "Active today", checkinsToday: "Gos today", crews: "Crews",
     seasons: "Seasons", forbidden: "This area is for admins only.", status: "Status", entries: "Players", dates: "Dates",
   },
+  habitRules: {
+    outsideWindow: "Available {{start}}–{{end}} local time.", outsideWindowError: "This habit can only be checked in during its time window.",
+    cleanDay: "Clean day", logSlip: "I had a slip", slipSaved: "Logged. Start fresh tomorrow.", quitRule: "Confirm your clean day in the evening. A slip only resets today.",
+    timerTitle: "Timer", timerVisible: "Keep this page open and visible while you do it.", timerStart: "Start timer", timerComplete: "Finish timer", timerCancel: "Stop timer", timerTooShort: "Keep going; the timer has not reached the required time.", timerProgress: "{{done}} / {{total}} min", screenLimitCount: "{{value}} min logged · limit {{target}} min",
+  },
 };
 export type Dict = typeof en;

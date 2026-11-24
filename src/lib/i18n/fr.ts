@@ -255,4 +255,9 @@ export const fr: Dict = {
     title: "Admin", users: "Utilisateurs", activeToday: "Actifs aujourd'hui", checkinsToday: "Gos aujourd'hui", crews: "Crews",
     seasons: "Saisons", forbidden: "Espace réservé aux admins.", status: "Statut", entries: "Joueurs", dates: "Dates",
   },
+  habitRules: {
+    outsideWindow: "Disponible de {{start}} à {{end}}, heure locale.", outsideWindowError: "Cette habitude ne peut être validée que pendant son créneau.",
+    cleanDay: "Journée sans écart", logSlip: "J’ai eu un écart", slipSaved: "C’est noté. Tu repars demain.", quitRule: "Confirme ta journée le soir. Un écart remet seulement aujourd’hui à zéro.",
+    timerTitle: "Minuteur", timerVisible: "Garde cette page ouverte et visible pendant l’activité.", timerStart: "Démarrer", timerComplete: "Terminer", timerCancel: "Arrêter", timerTooShort: "Continue : le temps minimum n’est pas atteint.", timerProgress: "{{done}} / {{total}} min", screenLimitCount: "{{value}} min notées · limite {{target}} min",
+  },
 };

@@ -6,6 +6,8 @@ export type PrayerState = "on_time" | "late" | "missed";
 /** Mirrors the server's _habit_completion for instant UI feedback; the server stays the source of truth. */
 export function completion(h: Pick<UserHabit, "kind" | "target">, c?: Pick<Checkin, "value" | "detail"> | null): number {
   if (!c) return 0;
+  const detail = c.detail as { limit_met?: boolean } | null;
+  if (detail?.limit_met !== undefined) return detail.limit_met ? 1 : 0;
   if (h.kind === "salat") {
     const pr = ((c.detail as { prayers?: Record<string, PrayerState> } | null)?.prayers) ?? {};
     const sum = Object.values(pr).reduce((s, v) => s + (v === "on_time" ? 1 : v === "late" ? 0.5 : 0), 0);

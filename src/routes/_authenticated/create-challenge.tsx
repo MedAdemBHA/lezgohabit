@@ -23,7 +23,7 @@ export const Route = createFileRoute("/_authenticated/create-challenge")({
 
 const DURATIONS = [7, 14, 21, 30, 40, 66, 90];
 const COLORS = ["blue", "pink", "purple", "orange", "lime", "teal", "yellow"] as const;
-type Picked = { key: string; target: number };
+type Picked = { key: string; target: number; rule: Record<string, string | boolean> };
 type Created = { id: string; season_id: string; code: string; days: number; starts_on: string; ends_on: string };
 
 function CreateChallenge() {
@@ -60,13 +60,17 @@ function CreateChallenge() {
       return;
     }
     if (picks.length >= 6) return;
-    setPicks((old) => [...old, { key: template.key, target: Number(template.default_target) || 1 }]);
+    const defaults = template.default_rule as Record<string, string | boolean>;
+    setPicks((old) => [...old, { key: template.key, target: Number(template.default_target) || 1, rule: { ...defaults } }]);
   }
   function adjust(key: string, delta: number) {
     const template = list.find((h) => h.key === key);
     if (!template) return;
-    const step = stepFor(template.unit, Number(selected.get(key) ?? template.default_target));
+    const step = template.kind === "timer" ? 1 : stepFor(template.unit, Number(selected.get(key) ?? template.default_target));
     setPicks((old) => old.map((p) => p.key === key ? { ...p, target: Math.max(step, p.target + delta * step) } : p));
+  }
+  function setRule(key: string, field: string, value: string) {
+    setPicks((old) => old.map((p) => p.key === key ? { ...p, rule: { ...p.rule, [field]: value } } : p));
   }
   async function apply() {
     setBusy(true);
@@ -79,7 +83,7 @@ function CreateChallenge() {
   async function create() {
     if (!name.trim() || !picks.length || startsOn < today) return;
     setBusy(true);
-    const habits = picks.map((p) => ({ key: p.key, target: p.target }));
+    const habits = picks.map((p) => ({ key: p.key, target: p.target, rule: p.rule }));
     const { data, error } = await supabase.rpc("create_creator_challenge", {
       _name: name.trim(), _days: days, _starts_on: startsOn, _habits: habits as unknown as Json, _cover_color: color,
     });
@@ -139,7 +143,8 @@ function CreateChallenge() {
                     <span className="min-w-0 text-start"><span className="block truncate">{loc(h.name, i18n.language)}</span>{target !== undefined && h.kind === "count" && <Num className="text-[12px]">{target} {h.unit ?? ""}</Num>}</span>
                     {target !== undefined && <Check className="ms-auto size-4 shrink-0" />}
                   </StickerButton>
-                  {target !== undefined && h.kind === "count" && <div className="mt-1 flex items-center justify-center gap-2"><StickerButton size="sm" variant="ghost" aria-label={t("batch6.lowerTarget")} onClick={() => adjust(h.key, -1)}>−</StickerButton><StickerButton size="sm" variant="ghost" aria-label={t("batch6.raiseTarget")} onClick={() => adjust(h.key, 1)}>+</StickerButton></div>}
+                  {target !== undefined && (h.kind === "count" || h.kind === "timer") && <div className="mt-1 flex items-center justify-center gap-2"><Num>{target} {h.unit ?? ""}</Num><StickerButton size="sm" variant="ghost" aria-label={t("batch6.lowerTarget")} onClick={() => adjust(h.key, -1)}>−</StickerButton><StickerButton size="sm" variant="ghost" aria-label={t("batch6.raiseTarget")} onClick={() => adjust(h.key, 1)}>+</StickerButton></div>}
+                  {target !== undefined && (h.kind === "time_window" || h.kind === "quit") && <div className="mt-1 grid grid-cols-2 gap-1"><input aria-label={t("batch6.windowStart")} className={`${inputCls} min-h-11 px-1 text-center num`} type="time" value={String(picks.find((p) => p.key === h.key)?.rule["window_start"] ?? "18:00")} onChange={(e) => setRule(h.key,"window_start",e.target.value)} /><input aria-label={t("batch6.windowEnd")} className={`${inputCls} min-h-11 px-1 text-center num`} type="time" value={String(picks.find((p) => p.key === h.key)?.rule["window_end"] ?? "03:00")} onChange={(e) => setRule(h.key,"window_end",e.target.value)} /></div>}
                 </div>
               );
             })}

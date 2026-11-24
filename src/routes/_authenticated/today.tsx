@@ -56,6 +56,7 @@ type DayData = {
   extras: DayExtras | null;
   points: HabitPoints[];
 };
+type TimerSession = { id: string; tracked_seconds: number; target_minutes: number; started_at: string; habit: UserHabit };
 
 function Today() {
   const { t, i18n } = useTranslation();
@@ -75,6 +76,8 @@ function Today() {
   const [cityOpen, setCityOpen] = useState(false);
   const [city, setCity] = useState("");
   const [stepper, setStepper] = useState<UserHabit | null>(null);
+  const [quitHabit, setQuitHabit] = useState<UserHabit | null>(null);
+  const [timerSession, setTimerSession] = useState<TimerSession | null>(null);
   const [proofOpen, setProofOpen] = useState(false);
   const [winOpen, setWinOpen] = useState(false);
   const [bonusBusy, setBonusBusy] = useState(false);
@@ -121,6 +124,21 @@ function Today() {
     }
     setPerfectOpen(true);
   }, [score?.perfect, uid, sid, today]);
+  useEffect(() => {
+    const sessionId = timerSession?.id;
+    if (!sessionId) return;
+    let sending = false;
+    const heartbeat = async () => {
+      if (sending) return;
+      sending = true;
+      try {
+        const { data, error } = await supabase.rpc("habit_timer_heartbeat", { _session_id: sessionId, _visible: document.visibilityState === "visible" });
+        if (!error) setTimerSession((current) => current?.id === sessionId ? { ...current, ...(data as unknown as Pick<TimerSession, "tracked_seconds" | "target_minutes">) } : current);
+      } finally { sending = false; }
+    };
+    const interval = window.setInterval(() => void heartbeat(), 15_000);
+    return () => window.clearInterval(interval);
+  }, [timerSession?.id]);
   function patch(fn: (d: DayData) => DayData) {
     qc.setQueryData(dq.queryKey, (old: DayData | undefined) =>
       fn(old ?? { checkins: [], score: null, extras: null, points: [] }),
@@ -190,7 +208,7 @@ function Today() {
           void qc.invalidateQueries({queryKey:["profileSummary"]});
         } catch (e) {
           if (!navigator.onLine) { queueGo({uid,habit:h.id,day:today,value,detail}); toast(t("batch9.queued")); return; }
-          toast(errKey(e) === "habit_locked" ? t("todayDesign.habitLocked") : errKey(e) === "day_final" ? t("integrity.dayFinal") : errKey(e) === "day_closed" ? t("today.closed") : t("common.error"));
+          toast(errKey(e) === "outside_time_window" ? t("habitRules.outsideWindowError") : errKey(e) === "habit_locked" ? t("todayDesign.habitLocked") : errKey(e) === "day_final" ? t("integrity.dayFinal") : errKey(e) === "day_closed" ? t("today.closed") : t("common.error"));
           await qc.invalidateQueries({ queryKey: dq.queryKey });
         } finally {
           setPending((n) => n - 1);
@@ -238,6 +256,8 @@ function Today() {
       });
   }
   function tap(h: UserHabit) {
+    if (h.kind === "timer") { void startTimer(h); return; }
+    if (h.kind === "quit") { setQuitHabit(h); return; }
     if (h.template?.key === 'detox') {
       void navigate({ to: '/detox' });
       return;
@@ -299,6 +319,38 @@ function Today() {
     }
     await qc.invalidateQueries({ queryKey: profileQuery(uid).queryKey });
     setCityOpen(false);
+  }
+  async function startTimer(h: UserHabit) {
+    if (disabled) return;
+    const { data, error } = await supabase.rpc("start_habit_timer", { _user_habit_id: h.id });
+    if (error) { toast(t("common.error")); return; }
+    setTimerSession({ ...(data as unknown as Omit<TimerSession, "habit">), habit: h });
+  }
+  async function finishTimer() {
+    if (!timerSession || timerSession.tracked_seconds < timerSession.target_minutes * 60) return;
+    await queue.current;
+    const { error } = await supabase.rpc("complete_habit_timer", { _session_id: timerSession.id });
+    if (error) { toast(errKey(error) === "timer_too_short" ? t("habitRules.timerTooShort") : errKey(error) === "habit_locked" ? t("todayDesign.habitLocked") : t("common.error")); return; }
+    setTimerSession(null);
+    await reconcile();
+    void qc.invalidateQueries({ queryKey: ["profileSummary"] });
+  }
+  async function cancelTimer() {
+    if (!timerSession) return;
+    const { error } = await supabase.rpc("cancel_habit_timer", { _session_id: timerSession.id });
+    if (error) toast(t("common.error"));
+    setTimerSession(null);
+  }
+  function logSlip() {
+    if (!quitHabit) return;
+    log(quitHabit, 0, { slip: true });
+    setQuitHabit(null);
+    toast(t("habitRules.slipSaved"));
+  }
+  function logCleanDay() {
+    if (!quitHabit) return;
+    log(quitHabit, 1);
+    setQuitHabit(null);
   }
   const stacks = [
     { key: "perfect", points: 20, on: !!score?.perfect, color: "lime", action: null },
@@ -432,7 +484,7 @@ function Today() {
         </div>
       </section>
       {closed && <p className="today-banner bg-card">{t("todayDesign.dayClosed")}</p>}
-      <TodayMoments missing={missing} pending={pending} onDone={h=>h.kind==='salat'||h.template?.key==='detox'?tap(h):log(h,Number(h.target))} />
+      <TodayMoments missing={missing} pending={pending} onDone={h=>h.kind==='salat'||h.kind==='timer'||h.kind==='quit'||h.template?.key==='detox'?tap(h):log(h,Number(h.target))} />
       {score?.comeback && (
         <section className="today-banner bg-blue">
           <h2 className="font-extrabold">{t("todayDesign.comeBack")}</h2>
@@ -600,6 +652,12 @@ function Today() {
             {t("common.save")}
           </StickerButton>
         </form>
+      </BottomSheet>
+      <BottomSheet open={quitHabit !== null} onClose={() => setQuitHabit(null)} title={t("habitRules.cleanDay")}>
+        {quitHabit && <div className="space-y-3"><p>{t("habitRules.quitRule")}</p><StickerButton block variant="lime" onClick={logCleanDay}>{t("habitRules.cleanDay")}</StickerButton><StickerButton block variant="secondary" onClick={logSlip}>{t("habitRules.logSlip")}</StickerButton></div>}
+      </BottomSheet>
+      <BottomSheet open={timerSession !== null} onClose={() => void cancelTimer()} title={timerSession ? habitName(timerSession.habit,t,i18n.language) : t("habitRules.timerTitle")}>
+        {timerSession && <div className="space-y-4"><p className="text-center text-[14px] font-semibold">{t("habitRules.timerVisible")}</p><Num className="block text-center text-[32px]">{t("habitRules.timerProgress",{done:Math.floor(timerSession.tracked_seconds/60),total:timerSession.target_minutes})}</Num><progress className="block h-4 w-full accent-ink" value={Math.min(timerSession.tracked_seconds,timerSession.target_minutes*60)} max={timerSession.target_minutes*60}/><div className="flex gap-3"><StickerButton variant="secondary" onClick={() => void cancelTimer()}>{t("habitRules.timerCancel")}</StickerButton><StickerButton block variant="lime" disabled={timerSession.tracked_seconds<timerSession.target_minutes*60} onClick={() => void finishTimer()}>{t("habitRules.timerComplete")}</StickerButton></div></div>}
       </BottomSheet>
       <BottomSheet
         open={stepper !== null}

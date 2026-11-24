@@ -71,3 +71,4 @@ Remaining limitations: shared demo email immutability remains unverified; future
 
 ## Future
 - Teen mode (12–17) later: parent-approved accounts, no photos, no public feed, invite-only crews — only after legal advice (INPDP / lawyer).
+- Health Connect / Apple Health / Screen Time integration later; steps and screen-time stay self-reported for now.

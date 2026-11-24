@@ -19,7 +19,14 @@ export function HabitTile({ habit, value, completion, points, pop, onTap, onStep
  const { t, i18n } = useTranslation(); const timer = useRef<ReturnType<typeof setTimeout> | null>(null); const held = useRef(false);
  const done = completion >= 1; const color = habit.template?.color ?? habitColor(habit.template?.key ?? '', habit.template?.category ?? '');
  const key = habit.template?.key;
- const rule = key === 'train' ? t('todayDesign.trainRule') : key === 'learn15' ? t('todayDesign.learnRule') : key === 'sleep7' ? t('todayDesign.sleepRule') : key === 'no_sugar' ? t('todayDesign.sugarRule') : habit.kind === 'count' ? t('todayDesign.count', { value: fmtVal(value), target: fmtVal(Number(habit.target)), unit: habit.unit ?? '' }) : loc(habit.template?.description,i18n.language);
+ const ruleData = habit.rule as { window_start?: string; window_end?: string } | null;
+ const rule = key === 'train' ? t('todayDesign.trainRule') : key === 'learn15' ? t('todayDesign.learnRule') : key === 'sleep7' ? t('todayDesign.sleepRule') : key === 'no_sugar' ? t('todayDesign.sugarRule')
+  : habit.kind === 'time_window' ? t('habitRules.outsideWindow', { start: ruleData?.window_start ?? '—', end: ruleData?.window_end ?? '—' })
+  : habit.kind === 'quit' ? t('habitRules.quitRule')
+  : habit.kind === 'timer' ? t('habitRules.timerVisible')
+  : key === 'screen_limit' ? t('habitRules.screenLimitCount', { value: fmtVal(value), target: fmtVal(Number(habit.target)) })
+  : habit.kind === 'count' ? t('todayDesign.count', { value: fmtVal(value), target: fmtVal(Number(habit.target)), unit: habit.unit ?? '' })
+  : (loc(habit.what_counts,i18n.language) || loc(habit.template?.what_counts,i18n.language) || loc(habit.template?.description,i18n.language));
  function release() { if (timer.current) clearTimeout(timer.current); timer.current = null; }
  return <StickerButton variant="secondary" data-habit-id={habit.id} className={`today-habit ${done ? 'is-done' : ''} ${pop ? 'animate-pop' : ''}`} data-color={color} aria-pressed={done} aria-label={habitName(habit,t,i18n.language)} disabled={disabled}
   onPointerDown={e => { if (e.button !== 0 || habit.kind !== 'count') return; held.current = false; timer.current = setTimeout(() => { held.current = true; onStepper(); },500); }} onPointerUp={release} onPointerCancel={release} onPointerLeave={release}

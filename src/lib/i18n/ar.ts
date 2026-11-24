@@ -255,4 +255,9 @@ export const ar: Dict = {
     title: "الإدارة", users: "المستخدمون", activeToday: "نشطون اليوم", checkinsToday: "إنجازات اليوم", crews: "الفرق",
     seasons: "المواسم", forbidden: "هذه المنطقة للمشرفين فقط.", status: "الحالة", entries: "اللاعبون", dates: "التواريخ",
   },
+  habitRules: {
+    outsideWindow: "متاح من {{start}} إلى {{end}} بالتوقيت المحلي.", outsideWindowError: "لا يمكن تسجيل هذه العادة خارج وقتها المحدد.",
+    cleanDay: "يوم بلا تعثر", logSlip: "حصل تعثر", slipSaved: "تم التسجيل. تبدأ من جديد غدًا.", quitRule: "أكد يومك مساءً. التعثر يصفر هذا اليوم فقط.",
+    timerTitle: "المؤقت", timerVisible: "أبقِ الصفحة مفتوحة وظاهرة أثناء النشاط.", timerStart: "ابدأ المؤقت", timerComplete: "أنه المؤقت", timerCancel: "أوقف المؤقت", timerTooShort: "واصل؛ لم تصل بعد إلى الوقت المطلوب.", timerProgress: "{{done}} / {{total}} دقيقة", screenLimitCount: "{{value}} دقيقة مسجلة · الحد {{target}} دقيقة",
+  },
 };

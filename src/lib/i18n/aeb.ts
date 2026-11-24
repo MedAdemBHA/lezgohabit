@@ -255,4 +255,9 @@ export const aeb: Dict = {
     title: "الأدمين", users: "المستعملين", activeToday: "نشطين اليوم", checkinsToday: "تسجيلات اليوم", crews: "الجماعات",
     seasons: "المواسم", forbidden: "البلاصة هاذي للأدمين برك.", status: "الحالة", entries: "اللاعبين", dates: "التواريخ",
   },
+  habitRules: {
+    outsideWindow: "متاح بين {{start}} و{{end}} بالتوقيت المحلي.", outsideWindowError: "ما تنجمش تسجّل العادة هاذي خارج وقتها.",
+    cleanDay: "نهار نظيف", logSlip: "صار تعثّر", slipSaved: "تسجّل. تعاود من غدوة.", quitRule: "أكّد نهارك في العشية. التعثّر يصفر النهار هذا برك.",
+    timerTitle: "المؤقت", timerVisible: "خلّي الصفحة محلولة وظاهرة وقت النشاط.", timerStart: "ابدأ المؤقت", timerComplete: "كمّل المؤقت", timerCancel: "وقّف المؤقت", timerTooShort: "كمّل؛ ما وصلتش للوقت المطلوب.", timerProgress: "{{done}} / {{total}} دقيقة", screenLimitCount: "{{value}} دقيقة تسجّلت · الحد {{target}} دقيقة",
+  },
 };

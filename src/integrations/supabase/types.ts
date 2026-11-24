@@ -1351,6 +1351,7 @@ export type Database = {
           color: string | null
           default_target: number
           description: Json
+          default_rule: Json
           icon: string
           id: string
           is_demo: boolean
@@ -1368,6 +1369,7 @@ export type Database = {
           color?: string | null
           default_target?: number
           description: Json
+          default_rule?: Json
           icon: string
           id?: string
           is_demo?: boolean
@@ -1385,6 +1387,7 @@ export type Database = {
           color?: string | null
           default_target?: number
           description?: Json
+          default_rule?: Json
           icon?: string
           id?: string
           is_demo?: boolean
@@ -2461,6 +2464,16 @@ export type Database = {
           },
         ]
       }
+      habit_timer_sessions: {
+        Row: { id: string; user_id: string; user_habit_id: string; season_id: string; day: string; target_minutes: number; tracked_seconds: number; started_at: string; last_heartbeat_at: string; ended_at: string | null; status: string; is_demo: boolean }
+        Insert: { id?: string; user_id: string; user_habit_id: string; season_id: string; day: string; target_minutes: number; tracked_seconds?: number; started_at?: string; last_heartbeat_at?: string; ended_at?: string | null; status?: string; is_demo?: boolean }
+        Update: { id?: string; user_id?: string; user_habit_id?: string; season_id?: string; day?: string; target_minutes?: number; tracked_seconds?: number; started_at?: string; last_heartbeat_at?: string; ended_at?: string | null; status?: string; is_demo?: boolean }
+        Relationships: [
+          { foreignKeyName: "habit_timer_sessions_user_habit_id_fkey"; columns: ["user_habit_id"]; isOneToOne: false; referencedRelation: "user_habits"; referencedColumns: ["id"] },
+          { foreignKeyName: "habit_timer_sessions_season_id_fkey"; columns: ["season_id"]; isOneToOne: false; referencedRelation: "seasons"; referencedColumns: ["id"] },
+          { foreignKeyName: "habit_timer_sessions_user_id_fkey"; columns: ["user_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+        ]
+      }
       user_habits: {
         Row: {
           active: boolean
@@ -2801,6 +2814,10 @@ export type Database = {
       capsule_read: { Args: { _season_id: string }; Returns: Json }
       challenge_preview: { Args: { _code: string }; Returns: Json }
       challenge_scoreboard: { Args: { _country?: string; _scope?: string; _season_id: string }; Returns: Json }
+      start_habit_timer: { Args: { _user_habit_id: string }; Returns: Json }
+      habit_timer_heartbeat: { Args: { _session_id: string; _visible?: boolean }; Returns: Json }
+      complete_habit_timer: { Args: { _session_id: string }; Returns: Json }
+      cancel_habit_timer: { Args: { _session_id: string }; Returns: undefined }
       create_creator_challenge: { Args: { _cover_color?: string; _days: number; _habits: Json; _name: string; _starts_on: string }; Returns: Json }
       creator_dashboard: { Args: never; Returns: Json }
       creator_requests_admin: { Args: never; Returns: Json }
