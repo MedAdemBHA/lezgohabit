@@ -7,7 +7,8 @@ export const Route = createFileRoute("/sitemap.xml")({
     handlers: {
       GET: async ({ request }) => {
         const { getPublicFeaturedChallenges } = await import("@/lib/public-challenges.server");
-        const challenges = await getPublicFeaturedChallenges();
+        // Keep the sitemap valid even if the database is briefly unreachable: list the static pages.
+        const challenges = await getPublicFeaturedChallenges().catch(() => []);
         const configuredBase = process.env["APP_URL"]?.trim().replace(/\/+$/, "");
         const base = configuredBase || new URL(request.url).origin;
         const paths = ["/", "/start", ...challenges.map(({ code }) => `/c/${encodeURIComponent(code)}`)];

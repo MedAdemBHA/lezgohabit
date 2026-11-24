@@ -16,6 +16,7 @@ migrations (0000–0062), season content, the 15-minute day-lock job and the not
 | Name | Type | Value |
 |---|---|---|
 | `APP_URL` | Text | Your public app origin, e.g. `https://lezgo.<you>.workers.dev` (no trailing slash) |
+| `APP_URL` | Text | your public address, e.g. `https://lezgo.vercel.app` (link previews need absolute image URLs) |
 | `SUPABASE_URL` | Text | `https://yjkniwjneqmtatwozcpv.supabase.co` |
 | `SUPABASE_PUBLISHABLE_KEY` | Text | `sb_publishable_6RNKjzRWhGs6un9RGDXXZg_dgIqZpJV` |
 | `SUPABASE_SERVICE_ROLE_KEY` | Secret | Supabase → Project Settings → API Keys → `service_role` / secret key |
@@ -35,7 +36,7 @@ Tested: the app builds for Vercel with `NITRO_PRESET=vercel` (Node 22 function +
    - Framework preset: **Other**. Install: `bun install`. Build: `bun run build`. Leave Output Directory empty
      (Vercel picks up `.vercel/output` automatically).
 2. **Settings → Environment Variables** (Production + Preview):
-   `NITRO_PRESET=vercel`, plus every variable from the Cloudflare table above
+   `NITRO_PRESET=vercel`, `APP_URL=https://<name>.vercel.app`, plus every variable from the Cloudflare table above
    (`SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `DEMO_PASSWORD`, `DEVICE_HASH_SECRET`,
    `LOVABLE_CRON_SECRET`, and VAPID keys when push is on).
 3. **Settings → Functions → Region: Paris (cdg1)** — next to the Supabase project (eu-west-3, Paris).
