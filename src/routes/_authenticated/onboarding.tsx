@@ -18,7 +18,7 @@ import { BottomSheet } from "@/components/lezgo/ui";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/onboarding")({
-  head: () => pageHead("Get started — lezgo", "Set up your lezgo season in two steps."),
+  head: () => pageHead("Finish your profile — lezgo", "Add the details on your lezgo profile."),
   component: Onboarding,
 });
 
