@@ -160,6 +160,36 @@ risks. Stop and wait for my OK.
   Confirmation sheet: what you keep (history, points so far, badges) and what ends (check-ins, board, crew).
 - When a challenge ends or is surrendered, Today shows one calm "Pick your next challenge" card.
 
+## Phase 3c — Feed → "Challenge pulse"
+
+Today's feed (`src/routes/_authenticated/community.tsx`, `src/components/lezgo/community/*`) feels like a
+generic social network: 4 rows of buttons/filters before any content (switch, create challenge, detox, title,
+habit chips, everyone/crew/Tunisia), text-heavy posts that need typing, and it is empty for new challenges.
+Goal: a feed that is **alive without anyone typing**, about **your challenge**, and calm.
+
+- **Scope = your active challenge.** Two tabs only: **Crew** and **Challenge**. Drop the global
+  "everyone / Tunisia" scopes and the habit filter chips (a filter can live in a small menu if really needed).
+- **Top: the pulse strip.** One compact card: "Today · 18 of 42 checked in" with a progress bar and the
+  avatars of your crew (checked in / not yet). Tap a not-yet crew member → nudge (existing `send_nudge`).
+- **Auto moments (no typing).** The database creates feed items from real events: perfect day, streak
+  milestones (7, 14, 21, 30…), boss level beaten, crew all checked in, challenge completed. One line each,
+  with one-tap **Respect**. Generated server-side from saved data (triggers or the integrity tick), never
+  from the browser, deduplicated, demo-isolated, and they respect privacy (no faith data unless the user
+  opted in with `faith_public`).
+- **Proof posts in one tap.** After a check-in on Today, a small "Add proof" action opens the existing proof
+  upload with the habit pre-tagged. Text is optional (1 line). Reuse `create_post`, the private proof bucket and
+  JPEG re-encode path.
+- **Creator / Lezgo pinned post.** In creator and official challenges, the creator (or admin) can pin one post
+  at the top: today's tip or a daily question ("What made today hard?") with short replies.
+- **Reactions:** one main reaction (Respect) on tap; long-press keeps the others. Show "Respect from 3 in your
+  crew" instead of a bare number.
+- **Clean header:** just the challenge name + Crew/Challenge tabs. Compose = one floating button. Move
+  "Create challenge" to Me/creator and "Detox" to its habit card.
+- **Posts look calmer:** avatar, name, habit tag, time, content, one reaction row. No coloured box per post;
+  colour only on the habit tag. Faith-related posts only show for users who opted in.
+- Keep everything that works: audience-checked RPCs, reports/hides/moderation, rate limits, guest read-only.
+- Empty state for a new challenge shows the pulse + auto moments, so it never looks dead.
+
 ## Phase 4 — Onboarding (≤ 4 screens, no typing)
 
 1. **Pick a challenge** (public route `/start`): featured official challenge first, then short ones (7–14 days),
@@ -184,7 +214,7 @@ dismissible "New" cards. Don't change the write queue, offline queue, locks or `
 
 Tabs 5 → 4: **Today · Board · Crew · Me**.
 - Board = the user's challenge board (tabs: my crew / challenge / Tunisia for official).
-- Crew = crew members + crew activity + community feed (`/community` stays as a route).
+- Crew = crew members + the Challenge pulse feed (Phase 3c). `/community` stays as a route.
 - Me = `/profile` with links to settings, lift, seasons/challenges, trail, wrapped, creator dashboard.
 - Lift opens from the Train habit and from Me; Boss from the Today card. Update every old link.
 
@@ -197,7 +227,7 @@ remove helper text that repeats a title; one obvious primary action per screen.
 
 - `bun run build` and `npx tsc --noEmit -p .` pass; `bunx vitest run` has no new failures
   (`src/test/app-routing.test.tsx` already fails on main: `virtual:pwa-register`).
-- Add tests for: challenge habit list → user habits, one-active-challenge rule, surrender, history, 7-day completion, personal challenges not on boards, find-me-a-crew grouping,
+- Add tests for: auto feed moments (created once, privacy respected), challenge habit list → user habits, one-active-challenge rule, surrender, history, 7-day completion, personal challenges not on boards, find-me-a-crew grouping,
   onboarding auto-finish (unit level where possible).
 - New user: landing → challenge → how to play → Google → Today in ≤ 4 screens, no typing.
 - Invite link `/c/CODE` works signed-out → sign-in → joined.
