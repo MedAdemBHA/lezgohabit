@@ -17,6 +17,8 @@ import { BADGE_KEYS, trailState } from "@/lib/community-rules";
 import { addDays, daysBetween } from "@/lib/time";
 import { loc } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { rolesQuery, challengeLink } from "@/lib/batch6-data";
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () =>
     pageHead(
@@ -52,6 +54,16 @@ function BadgeIcon({ badge }: { badge: (typeof BADGE_KEYS)[number] }) {
 function ProfilePage() {
   const { t, i18n } = useTranslation();
   const { uid, profile, season, today } = useBase();
+  const roles = useQuery({ ...rolesQuery(uid), enabled: !!uid });
+  const creatorDashboard = useQuery({
+    queryKey: ["creatorDashboard", uid],
+    enabled: !!uid && !!roles.data?.includes("creator"),
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("creator_dashboard");
+      if (error) throw error;
+      return data as unknown as { id: string; season_id: string; name: string; code: string; days: number; starts_on: string; ends_on: string; participants: number; surrenders: number; checked_in: number; checkin_percent: number; url: string }[];
+    },
+  });
   const [share, setShare] = useState(false);
   const [winOpen, setWinOpen] = useState(false);
   const [selectedBadge, setSelectedBadge] = useState<(typeof BADGE_KEYS)[number] | null>(null);
@@ -274,6 +286,20 @@ function ProfilePage() {
         <ChevronRight className="shrink-0 rtl:-scale-x-100" />
       </Link>
       <Link to="/create-challenge"><StickerButton block variant="lime">{t("batch6.create")}</StickerButton></Link>
+      {roles.data?.includes("creator") && <section className="sticker mt-3 rounded-[20px] bg-card p-4">
+        <div className="mb-3 flex items-center justify-between gap-3"><h2 className="text-[18px] font-extrabold">{t("batch6.creatorDashboard")}</h2><Link to="/create-challenge"><StickerButton size="sm" variant="lime">{t("batch6.create")}</StickerButton></Link></div>
+        {creatorDashboard.data?.map((challenge) => <article key={challenge.id} className="mb-3 rounded-[16px] bg-background p-3 sticker-border">
+          <h3 className="truncate font-extrabold">{challenge.name}</h3>
+          <p className="text-[13px] font-semibold">{t("batch6.days", { n: challenge.days })} · {challenge.starts_on} — {challenge.ends_on}</p>
+          <div className="mt-2 grid grid-cols-3 gap-2 text-center">
+            <span><Num>{challenge.participants}</Num><small className="block">{t("batch6.participants")}</small></span>
+            <span><Num>{challenge.checkin_percent}%</Num><small className="block">{t("batch6.checkedInToday")}</small></span>
+            <span><Num>{challenge.surrenders}</Num><small className="block">{t("batch6.surrenders")}</small></span>
+          </div>
+          <StickerButton size="sm" variant="secondary" className="mt-2 w-full" onClick={() => void navigator.clipboard.writeText(challengeLink(challenge.code)).then(() => toast(t("crew.copied")))}>{t("batch6.copy")}: <bdi dir="ltr">{challenge.code}</bdi></StickerButton>
+        </article>)}
+        {!creatorDashboard.data?.length && <p className="text-[14px] font-semibold text-muted-foreground">{t("batch6.noCreatorChallenges")}</p>}
+      </section>}
       <Link to="/small-wins"><StickerButton block variant="secondary">{t("batch6.winTitle")}</StickerButton></Link>
       <Link to="/wrapped" search={{season:season.id}}><StickerButton block variant="secondary">{t("batch6.wrapped")}</StickerButton></Link>
       {profile.is_admin && (

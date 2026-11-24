@@ -97,6 +97,15 @@ function AdminPage() {
   const [showDemo, setShowDemo] = useState(false);
   const q = useQuery(adminQuery(section, search, page, target, showDemo));
   const guests = useQuery({ queryKey: ["admin-guest-sessions"], refetchInterval: 60_000, queryFn: async () => { const { data, error } = await supabase.rpc("admin_guest_sessions"); if (error) throw error; return data as unknown as { today: number; week: number }; } });
+  const creatorRequests = useQuery({
+    queryKey: ["creator-requests"],
+    enabled: section === "creators",
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("creator_requests_admin");
+      if (error) throw error;
+      return (data ?? []) as unknown as AdminRow[];
+    },
+  });
   const seedFn = useServerFn(adminDemo);
   async function refresh() {
     await qc.invalidateQueries();
@@ -122,6 +131,13 @@ function AdminPage() {
     } finally {
       setBusy(false);
     }
+  }
+  async function reviewCreator(id: string, approve: boolean) {
+    setBusy(true);
+    const { error } = await supabase.rpc("review_creator_request", { _request_id: id, _approve: approve, _note: "" });
+    setBusy(false);
+    if (error) toast.error(t("batch7.actionFailed"));
+    else { toast.success(t("batch7.saved")); await refresh(); }
   }
   async function demoAction(action: "seed" | "clear" | "reseed") {
     setBusy(true);
@@ -653,6 +669,15 @@ function AdminPage() {
                 : k === "status"
                   ? a(r["approved"] ? "approved" : "open")
                   : str(r, k),
+            )}
+            <h2 className="admin-section-title">{t("batch6.creatorRequests")}</h2>
+            {table(["handle", "created_at", "action"], creatorRequests.data ?? [], (r, k) =>
+              k === "handle" ? <strong>@{str(r, k)}</strong>
+                : k === "action" ? <div className="flex gap-2">
+                  <StickerButton size="sm" variant="lime" disabled={busy} onClick={() => void reviewCreator(str(r, "id"), true)}>{t("batch6.approveCreator")}</StickerButton>
+                  <StickerButton size="sm" variant="secondary" disabled={busy} onClick={() => void reviewCreator(str(r, "id"), false)}>{t("batch6.rejectCreator")}</StickerButton>
+                </div>
+                : str(r, k),
             )}
           </>
         )}

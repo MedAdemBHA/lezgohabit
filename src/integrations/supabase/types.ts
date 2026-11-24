@@ -958,6 +958,15 @@ export type Database = {
           },
         ]
       }
+      creator_requests: {
+        Row: { id: string; user_id: string; status: string; note: string; created_at: string; reviewed_at: string | null; reviewed_by: string | null; review_note: string; is_demo: boolean }
+        Insert: { id?: string; user_id: string; status?: string; note?: string; created_at?: string; reviewed_at?: string | null; reviewed_by?: string | null; review_note?: string; is_demo?: boolean }
+        Update: { id?: string; user_id?: string; status?: string; note?: string; created_at?: string; reviewed_at?: string | null; reviewed_by?: string | null; review_note?: string; is_demo?: boolean }
+        Relationships: [
+          { foreignKeyName: "creator_requests_reviewed_by_fkey"; columns: ["reviewed_by"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+          { foreignKeyName: "creator_requests_user_id_fkey"; columns: ["user_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+        ]
+      }
       crew_results: {
         Row: {
           corrected_at: string | null
@@ -2792,6 +2801,12 @@ export type Database = {
       capsule_read: { Args: { _season_id: string }; Returns: Json }
       challenge_preview: { Args: { _code: string }; Returns: Json }
       challenge_scoreboard: { Args: { _country?: string; _scope?: string; _season_id: string }; Returns: Json }
+      create_creator_challenge: { Args: { _cover_color?: string; _days: number; _habits: Json; _name: string; _starts_on: string }; Returns: Json }
+      creator_dashboard: { Args: never; Returns: Json }
+      creator_requests_admin: { Args: never; Returns: Json }
+      find_challenge_crew: { Args: never; Returns: Json }
+      request_creator: { Args: never; Returns: string }
+      review_creator_request: { Args: { _approve: boolean; _note?: string; _request_id: string }; Returns: undefined }
       challenge_feed: { Args: { _scope?: string; _season_id: string }; Returns: Json }
       create_personal_challenge: { Args: { _days: number; _habits: Json; _name: string }; Returns: string }
       my_challenge_history: { Args: never; Returns: Json }

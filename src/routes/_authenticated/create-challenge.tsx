@@ -1,22 +1,168 @@
-import {createFileRoute,Link} from '@tanstack/react-router';
-import {useQuery,useQueryClient} from '@tanstack/react-query';
-import {useState,useEffect,useRef} from 'react';
-import {useTranslation} from 'react-i18next';
-import {ArrowLeft,ArrowRight,Copy,Share2,Ghost,Check} from 'lucide-react';
-import {toast} from 'sonner';
-import {AppShell} from '@/components/lezgo/app-shell';
-import {FitHeading} from '@/components/lezgo/fit-heading';
-import {BottomSheet,Field,StickerButton,Switch,Num,inputCls} from '@/components/lezgo/ui';
-import {useBase,templatesQuery} from '@/lib/data';
-import {TEMPLATE_DAYS,AUDIENCE_SIZE,rolesQuery,challengeLink,type Audience,type TemplateKey} from '@/lib/batch6-data';
-import {loc} from '@/lib/i18n';
-import {pageHead} from '@/lib/page-head';
-import {featureFlagsQuery} from '@/lib/admin-data';
-import {supabase} from '@/integrations/supabase/client';
-export const Route=createFileRoute('/_authenticated/create-challenge')({head:()=>pageHead('Create a challenge — lezgo','Start a personal, duo or squad challenge and invite your people.'),component:CreateChallenge});
-function CreateChallenge(){const {t,i18n}=useTranslation();const {uid,today}=useBase();const qc=useQueryClient();const templates=useQuery(templatesQuery);const flags=useQuery(featureFlagsQuery);const roles=useQuery({...rolesQuery(uid),enabled:!!uid});const [template,setTemplate]=useState<TemplateKey>('winter_arc');const [days,setDays]=useState(40);const [audience,setAudience]=useState<Audience>('squad');const [same,setSame]=useState(false);const [faith,setFaith]=useState(false);const [weekly,setWeekly]=useState(true);const [publicBoard,setPublic]=useState(true);const [name,setName]=useState('');const [start,setStart]=useState('');const [habits,setHabits]=useState<string[]>(['train','coffee']);const [busy,setBusy]=useState(false);const [contact,setContact]=useState(false);const [created,setCreated]=useState<{id:string;code:string;audience:string}|null>(null);const canvas=useRef<HTMLCanvasElement>(null);
-useEffect(()=>{if(!created||!canvas.current)return;void import('qrcode').then(q=>q.toCanvas(canvas.current,challengeLink(created.code),{width:220,margin:2,errorCorrectionLevel:'M'}));},[created]);
-function choose(k:TemplateKey){setTemplate(k);setDays(TEMPLATE_DAYS[k]);setHabits(k==='reading'?['read']:k==='steps'?['steps']:k==='ramadan'?['read','water']:['train','coffee']);}
-async function create(){if(audience==='club'||audience==='company'){setContact(true);return;}setBusy(true);const r=await supabase.rpc('create_challenge',{_name:name.trim()||t(`batch6.${template}`),_template:template,_days:days,_audience:audience,_same_habits:same,_habit_keys:habits,_faith_allowed:faith,_weekly_bosses:weekly,_public_board:publicBoard,_starts_on:start||today});setBusy(false);if(r.error)toast(t('batch6.challengeError'));else{setCreated(r.data as unknown as {id:string;code:string;audience:string});await qc.invalidateQueries();}}
-return <AppShell todayLayout><Link to="/community" className="self-start"><StickerButton variant="secondary" className="icon-control" aria-label={t('common.back')}><ArrowLeft className="rtl:-scale-x-100"/></StickerButton></Link><FitHeading requestedSize={44} text={t('batch6.create')} className="batch6-heading"/><h2 className="section-label">{t('batch6.templates')}</h2><div className="challenge-templates">{(Object.keys(TEMPLATE_DAYS) as TemplateKey[]).map(k=><StickerButton key={k} variant="secondary" aria-pressed={k===template} className={`challenge-template ${k===template?'selected':''}`} onClick={()=>choose(k)}><span>{t(`batch6.${k}`)}</span><Num>{k==='custom'?'7–90':t('batch6.days',{n:TEMPLATE_DAYS[k]})}</Num></StickerButton>)}</div>{template==='custom'&&<Field label={t('batch6.days',{n:days})}><input className="challenge-slider" type="range" min={7} max={90} value={days} onChange={e=>setDays(Number(e.target.value))}/></Field>}<h2 className="section-label">{t('batch6.who')}</h2><div className="challenge-audiences">{(['solo','duo','squad','club','company',...(roles.data?.includes('creator')&&flags.data?.['creator_challenges']!==false?['creator']:[])] as Audience[]).map(a=><StickerButton key={a} variant="secondary" className={`challenge-audience ${a===audience?'selected':''}`} aria-pressed={a===audience} onClick={()=>setAudience(a)}><span>{t(`batch6.${a}`)}</span><Num>{AUDIENCE_SIZE[a]}</Num></StickerButton>)}</div><section className="challenge-settings">{[{label:'sameHabits',hint:'sameHint',value:same,set:setSame},{label:'faith',hint:'faithHint',value:faith,set:(v:boolean)=>{setFaith(v);if(!v)setHabits(h=>h.filter(k=>!templates.data?.find(x=>x.key===k)?.is_faith));}},{label:'weekly',hint:'weeklyHint',value:weekly,set:setWeekly},{label:'public',hint:'publicHint',value:publicBoard,set:setPublic}].map(r=><div className="challenge-setting" key={r.label}><Switch checked={r.value} onChange={r.set} label={<span><strong>{t(`batch6.${r.label}`)}</strong><small>{t(`batch6.${r.hint}`)}</small></span>}/></div>)}</section><Field label={t('batch6.name')}><input className={inputCls} maxLength={60} value={name} onChange={e=>setName(e.target.value)}/></Field><Field label={t('batch6.start')}><input className={inputCls} dir="ltr" type="date" min={today} value={start||today} onChange={e=>setStart(e.target.value)}/></Field><h2 className="section-label">{t('batch6.habits',{n:habits.length})}</h2><div className="challenge-habits">{templates.data?.filter(h=>faith||!h.is_faith).map(h=><StickerButton key={h.id} variant={habits.includes(h.key)?'lime':'secondary'} size="sm" aria-pressed={habits.includes(h.key)} disabled={!habits.includes(h.key)&&habits.length>=3} onClick={()=>setHabits(v=>v.includes(h.key)?v.filter(x=>x!==h.key):[...v,h.key])}>{habits.includes(h.key)&&<Check size={14}/>}<span>{loc(h.name,i18n.language)}</span></StickerButton>)}</div>{audience==='solo'&&<p className="ghost-inline"><Ghost/>{t('batch6.yourGhost')}</p>}<div className="challenge-summary"><span>{t(`batch6.${template}`)} · {t('batch6.days',{n:days})} · {t(`batch6.${audience}`)} ({AUDIENCE_SIZE[audience]})</span><span className="summary-free">{t(audience==='club'||audience==='company'?'batch6.contact':'batch6.free')}</span></div><StickerButton block size="lg" className="challenge-create" disabled={busy||!habits.length} onClick={()=>void create()}>{t(audience==='club'||audience==='company'?'batch6.contact':'batch6.createButton')}<ArrowRight size={20} className="rtl:-scale-x-100"/></StickerButton><BottomSheet open={contact} onClose={()=>setContact(false)} title={t('batch6.contact')}><p>{t('batch6.contactNote')}</p></BottomSheet><BottomSheet open={!!created} onClose={()=>setCreated(null)} title={t('batch6.invite')}>{created&&<><div className="challenge-invite"><Num>{created.code}</Num><bdi dir="ltr">{challengeLink(created.code)}</bdi><canvas ref={canvas} aria-label={t('batch6.invite')}/></div><div className="mt-4 grid grid-cols-2 gap-3"><StickerButton variant="secondary" onClick={()=>void navigator.clipboard.writeText(challengeLink(created.code)).then(()=>toast(t('crew.copied')))}><Copy size={18}/>{t('batch6.copy')}</StickerButton><StickerButton variant="lime" onClick={async()=>{try{if(navigator.share)await navigator.share({url:challengeLink(created.code),title:name||t(`batch6.${template}`)});else{await navigator.clipboard.writeText(challengeLink(created.code));toast(t('crew.copied'));}}catch{/* cancelled */}}}><Share2 size={18}/>{t('batch6.share')}</StickerButton></div>{created.audience==='solo'&&<p className="my-3 flex items-center gap-2"><Ghost/>{t('batch6.yourGhost')}</p>}<Link to="/today" className="mt-4 block"><StickerButton block>{t('batch6.open')}<ArrowRight className="rtl:-scale-x-100"/></StickerButton></Link></>}</BottomSheet></AppShell>;
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { ArrowLeft, ArrowRight, Check, Copy, Share2 } from "lucide-react";
+import { toast } from "sonner";
+import { AppShell } from "@/components/lezgo/app-shell";
+import { FitHeading } from "@/components/lezgo/fit-heading";
+import { BottomSheet, Field, Num, StickerButton, inputCls } from "@/components/lezgo/ui";
+import { HabitIcon } from "@/components/lezgo/habit-icon";
+import { useBase, templatesQuery, type Template } from "@/lib/data";
+import { rolesQuery, challengeLink } from "@/lib/batch6-data";
+import { loc } from "@/lib/i18n";
+import { pageHead } from "@/lib/page-head";
+import { supabase } from "@/integrations/supabase/client";
+import { stepFor } from "@/lib/habits";
+import type { Json } from "@/integrations/supabase/types";
+
+export const Route = createFileRoute("/_authenticated/create-challenge")({
+  head: () => pageHead("Create a challenge — lezgo", "Create a challenge for your community."),
+  component: CreateChallenge,
+});
+
+const DURATIONS = [7, 14, 21, 30, 40, 66, 90];
+const COLORS = ["blue", "pink", "purple", "orange", "lime", "teal", "yellow"] as const;
+type Picked = { key: string; target: number };
+type Created = { id: string; season_id: string; code: string; days: number; starts_on: string; ends_on: string };
+
+function CreateChallenge() {
+  const { t, i18n } = useTranslation();
+  const { uid, today } = useBase();
+  const qc = useQueryClient();
+  const templates = useQuery(templatesQuery);
+  const roles = useQuery({ ...rolesQuery(uid), enabled: !!uid });
+  const request = useQuery({
+    queryKey: ["creator-request", uid],
+    enabled: !!uid && !roles.data?.includes("creator"),
+    queryFn: async () => {
+      const { data, error } = await supabase.from("creator_requests").select("status").eq("user_id", uid).order("created_at", { ascending: false }).limit(1).maybeSingle();
+      if (error) throw error;
+      return data?.status ?? null;
+    },
+  });
+  const [step, setStep] = useState(0);
+  const [name, setName] = useState("");
+  const [startsOn, setStartsOn] = useState(today);
+  const [days, setDays] = useState(21);
+  const [picks, setPicks] = useState<Picked[]>([]);
+  const [color, setColor] = useState<(typeof COLORS)[number]>("blue");
+  const [busy, setBusy] = useState(false);
+  const [requestSent, setRequestSent] = useState(false);
+  const [created, setCreated] = useState<Created | null>(null);
+  const isCreator = !!roles.data?.includes("creator");
+  const selected = new Map(picks.map((p) => [p.key, p.target]));
+  const list = templates.data ?? [];
+
+  function toggle(template: Template) {
+    if (selected.has(template.key)) {
+      setPicks((old) => old.filter((p) => p.key !== template.key));
+      return;
+    }
+    if (picks.length >= 6) return;
+    setPicks((old) => [...old, { key: template.key, target: Number(template.default_target) || 1 }]);
+  }
+  function adjust(key: string, delta: number) {
+    const template = list.find((h) => h.key === key);
+    if (!template) return;
+    const step = stepFor(template.unit, Number(selected.get(key) ?? template.default_target));
+    setPicks((old) => old.map((p) => p.key === key ? { ...p, target: Math.max(step, p.target + delta * step) } : p));
+  }
+  async function apply() {
+    setBusy(true);
+    const { error } = await supabase.rpc("request_creator");
+    setBusy(false);
+    if (error) { toast(t("common.error")); return; }
+    setRequestSent(true);
+    await qc.invalidateQueries({ queryKey: ["creator-request", uid] });
+  }
+  async function create() {
+    if (!name.trim() || !picks.length || startsOn < today) return;
+    setBusy(true);
+    const habits = picks.map((p) => ({ key: p.key, target: p.target }));
+    const { data, error } = await supabase.rpc("create_creator_challenge", {
+      _name: name.trim(), _days: days, _starts_on: startsOn, _habits: habits as unknown as Json, _cover_color: color,
+    });
+    setBusy(false);
+    if (error) { toast(t("batch6.challengeError")); return; }
+    setCreated(data as unknown as Created);
+    await qc.invalidateQueries();
+  }
+  async function share() {
+    if (!created) return;
+    const url = challengeLink(created.code);
+    try {
+      if (navigator.share) await navigator.share({ title: name, url });
+      else { await navigator.clipboard.writeText(url); toast(t("crew.copied")); }
+    } catch { /* The share sheet was dismissed. */ }
+  }
+
+  return (
+    <AppShell todayLayout>
+      <div className="flex items-center justify-between gap-3">
+        <StickerButton variant="secondary" className="icon-control" aria-label={t("common.back")} onClick={() => step ? setStep(step - 1) : history.back()}>
+          <ArrowLeft className="rtl:-scale-x-100" />
+        </StickerButton>
+        <Num className="rounded-full bg-ink px-3 py-1 text-lime">{isCreator ? `${step + 1} / 3` : "1 / 1"}</Num>
+      </div>
+      <FitHeading requestedSize={44} className="batch6-heading" text={t("batch6.create")} />
+      {!isCreator ? (
+        <section className="sticker rounded-[20px] bg-card p-4">
+          <h2 className="text-[20px] font-extrabold">{t("batch6.applyCreator")}</h2>
+          <p className="mt-2 text-[14px] font-semibold text-muted-foreground">{t("batch6.applyCreatorSub")}</p>
+          <StickerButton block className="mt-4" disabled={busy || requestSent || request.data === "pending"} onClick={() => void apply()}>
+            {requestSent || request.data === "pending" ? t("batch6.creatorPending") : t("batch6.applyCreator")}
+          </StickerButton>
+        </section>
+      ) : step === 0 ? (
+        <div className="space-y-5">
+          <Field label={t("batch6.name")}><input className={inputCls} maxLength={60} value={name} onChange={(e) => setName(e.target.value)} /></Field>
+          <Field label={t("batch6.start")}><input className={inputCls} dir="ltr" type="date" min={today} value={startsOn} onChange={(e) => setStartsOn(e.target.value)} /></Field>
+          <div>
+            <h2 className="mb-2 text-[14px] font-extrabold">{t("batch6.length")}</h2>
+            <div className="grid grid-cols-4 gap-2">
+              {DURATIONS.map((n) => <StickerButton key={n} size="sm" variant={days === n ? "lime" : "secondary"} aria-pressed={days === n} onClick={() => setDays(n)}><Num>{n}</Num></StickerButton>)}
+            </div>
+          </div>
+          <StickerButton block size="lg" disabled={!name.trim() || startsOn < today} onClick={() => setStep(1)}>{t("common.next")}<ArrowRight className="rtl:-scale-x-100" /></StickerButton>
+        </div>
+      ) : step === 1 ? (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between"><h2 className="section-label">{t("batch6.habits", { n: picks.length })}</h2><Num>{picks.length}/6</Num></div>
+          <div className="grid grid-cols-2 gap-2">
+            {list.map((h) => {
+              const target = selected.get(h.key);
+              return (
+                <div key={h.id} className="min-w-0">
+                  <StickerButton block variant={target !== undefined ? "lime" : "secondary"} aria-pressed={target !== undefined} className="min-h-[86px] justify-start" onClick={() => toggle(h)}>
+                    <HabitIcon name={h.icon} className="size-6 shrink-0" />
+                    <span className="min-w-0 text-start"><span className="block truncate">{loc(h.name, i18n.language)}</span>{target !== undefined && h.kind === "count" && <Num className="text-[12px]">{target} {h.unit ?? ""}</Num>}</span>
+                    {target !== undefined && <Check className="ms-auto size-4 shrink-0" />}
+                  </StickerButton>
+                  {target !== undefined && h.kind === "count" && <div className="mt-1 flex items-center justify-center gap-2"><StickerButton size="sm" variant="ghost" aria-label={t("batch6.lowerTarget")} onClick={() => adjust(h.key, -1)}>−</StickerButton><StickerButton size="sm" variant="ghost" aria-label={t("batch6.raiseTarget")} onClick={() => adjust(h.key, 1)}>+</StickerButton></div>}
+                </div>
+              );
+            })}
+          </div>
+          <StickerButton block size="lg" disabled={!picks.length} onClick={() => setStep(2)}>{t("common.next")}<ArrowRight className="rtl:-scale-x-100" /></StickerButton>
+        </div>
+      ) : (
+        <div className="space-y-5">
+          <h2 className="section-label">{t("batch6.cover")}</h2>
+          <div className="grid grid-cols-4 gap-3">
+            {COLORS.map((c) => <StickerButton key={c} variant="secondary" aria-label={t(`batch6.color_${c}`)} aria-pressed={color === c} className={`min-h-12 ${color === c ? "ring-4 ring-ink" : ""}`} data-color={c} onClick={() => setColor(c)}><span className="sr-only">{t(`batch6.color_${c}`)}</span>{color === c && <Check />}</StickerButton>)}
+          </div>
+          <section className="sticker rounded-[18px] bg-card p-4">
+            <h3 className="text-[18px] font-extrabold">{name}</h3>
+            <p className="mt-1 text-[14px] font-semibold">{t("batch6.days", { n: days })} · {startsOn}</p>
+            <p className="mt-2 text-[13px] font-semibold text-muted-foreground">{picks.map((p) => loc(list.find((h) => h.key === p.key)?.name, i18n.language)).join(" · ")}</p>
+          </section>
+          <StickerButton block size="lg" disabled={busy} onClick={() => void create()}>{t("batch6.createButton")}<ArrowRight className="rtl:-scale-x-100" /></StickerButton>
+        </div>
+      )}
+      <BottomSheet open={!!created} onClose={() => setCreated(null)} title={t("batch6.invite")}>
+        {created && <div className="space-y-4"><p className="font-bold">{t("batch6.creatorReady")}</p><Num className="block text-center text-[28px]">{created.code}</Num><bdi className="block break-all text-center" dir="ltr">{challengeLink(created.code)}</bdi><div className="grid grid-cols-2 gap-3"><StickerButton block variant="secondary" onClick={() => void navigator.clipboard.writeText(challengeLink(created.code)).then(() => toast(t("crew.copied")))}><Copy size={18} />{t("batch6.copy")}</StickerButton><StickerButton block variant="lime" onClick={() => void share()}><Share2 size={18} />{t("batch6.share")}</StickerButton></div><Link to="/profile" className="block"><StickerButton block>{t("common.openProfile")}</StickerButton></Link></div>}
+      </BottomSheet>
+    </AppShell>
+  );
 }

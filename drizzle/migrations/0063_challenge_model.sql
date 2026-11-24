@@ -229,6 +229,7 @@ CREATE OR REPLACE FUNCTION public.activate_challenge(_id uuid DEFAULT NULL) RETU
 LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$
 DECLARE uid uuid:=auth.uid(); sid uuid;
 BEGIN
+  PERFORM public._guest_guard();
   IF uid IS NULL THEN RAISE EXCEPTION 'not_authenticated'; END IF;
   IF _id IS NULL THEN
     SELECT season_id INTO sid FROM public.season_entries WHERE user_id=uid AND status='active' AND kind='official' ORDER BY joined_at DESC LIMIT 1;
@@ -541,6 +542,7 @@ CREATE OR REPLACE FUNCTION public.admin_set_challenge_habits(_season_id uuid,_ha
 LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$
 DECLARE s public.seasons; item jsonb; pos integer:=0; tpl public.habit_templates;
 BEGIN
+  PERFORM public._guest_guard();
   PERFORM public._require_admin();
   SELECT * INTO s FROM public.seasons WHERE id=_season_id AND NOT challenge_owned FOR UPDATE;
   IF NOT FOUND OR s.frozen_at IS NOT NULL OR jsonb_typeof(_habits)<>'array' OR jsonb_array_length(_habits) NOT BETWEEN 1 AND 6 THEN RAISE EXCEPTION 'invalid_challenge_habits'; END IF;
