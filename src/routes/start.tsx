@@ -203,8 +203,8 @@ function ChallengeChoice({ card, selected, onSelect }: { card: CatalogCard; sele
   const { t, i18n } = useTranslation();
   return (
     <button type="button" aria-pressed={selected} onClick={onSelect} className={`w-full rounded-[18px] border-2 p-3 text-start sticker-border ${selected ? "bg-lime shadow-hard" : "bg-card shadow-hard-sm"}`}>
-      <div className="flex items-start justify-between gap-2"><div className="min-w-0"><h3 className="truncate text-[18px] font-extrabold">{loc(card.name,i18n.language)}</h3>{card.kind === "creator" && <p className="text-[12px] font-semibold">{t("batch6.creatorLabel",{name:card.creator})}</p>}</div><span className="shrink-0 rounded-full bg-yellow px-2 py-1 text-[12px] font-extrabold"><Num>{card.days}</Num> {t("challengeHistory.dayUnit")}</span></div>
-      <div className="mt-2 flex flex-wrap gap-1.5">{card.habits.slice(0,6).map((habit) => <span key={habit.key} className="rounded-full bg-background px-2 py-1 text-[11px] font-bold">{loc(habit.name,i18n.language)}</span>)}</div>
+      <div className="flex items-start justify-between gap-2"><div className="min-w-0"><h3 className="truncate text-[16px] font-extrabold">{loc(card.name,i18n.language)}</h3>{card.kind === "creator" && <p className="text-[12px] font-semibold">{t("batch6.creatorLabel",{name:card.creator})}</p>}</div><span className="shrink-0 rounded-full bg-yellow px-2 py-1 text-[12px] font-extrabold"><Num>{card.days}</Num> {t("challengeHistory.dayUnit")}</span></div>
+      <div className="mt-2 flex flex-wrap gap-1.5">{card.habits.slice(0,6).map((habit) => <span key={habit.key} className="rounded-full bg-background px-2 py-1 text-[12px] font-bold">{loc(habit.name,i18n.language)}</span>)}</div>
       <p className="mt-2 line-clamp-2 text-[12px] font-semibold text-design-muted">{card.habits.slice(0,2).map((habit) => loc(habit.what_counts,i18n.language)).filter(Boolean).join(" · ")}</p>
     </button>
   );

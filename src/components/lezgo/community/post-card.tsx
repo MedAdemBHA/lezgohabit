@@ -87,8 +87,8 @@ export function PostCard({ post, uid, start, canPin = false }: { post: Post; uid
       <div className="post-head">
         <Avatar id={post.user_id} name={post.display_name} url={post.avatar_url} size={44} />
         <div className="min-w-0 flex-1">
-          <h2 className="truncate text-[18px] font-extrabold">{post.display_name}</h2>
-          <p className="text-[14px] font-semibold text-muted-foreground">
+          <h2 className="truncate font-extrabold">{post.display_name}</h2>
+          <p className="font-semibold text-muted-foreground">
             {ago} · {t("batch4.day", { n: daysBetween(start, post.day) + 1 })}
           </p>
         </div>
@@ -109,7 +109,7 @@ export function PostCard({ post, uid, start, canPin = false }: { post: Post; uid
           <MoreHorizontal size={22} />
         </StickerButton>
       </div>
-      {post.hidden && <p className="font-bold text-warning">{t("batch4.pending")}</p>}
+      {post.hidden && <p className="text-[12px] font-bold text-warning">{t("batch4.pending")}</p>}
       {post.is_pinned && <span className="inline-flex items-center gap-1 rounded-full bg-yellow px-3 py-1 text-[12px] font-extrabold sticker-border"><Pin size={14} />{t("challengePulse.pinned")}</span>}
       {post.body && <p className="post-body">{post.body}</p>}
       {post.image_path &&
@@ -171,7 +171,7 @@ export function PostCard({ post, uid, start, canPin = false }: { post: Post; uid
           <span aria-hidden="true">{post.reactions}</span>
         </StickerButton>
       </div>
-      <p className="mt-1 text-[11px] font-semibold text-muted-foreground">
+      <p className="mt-1 text-[12px] font-semibold text-muted-foreground">
         {t(post.visibility === "crew" ? "challengePulse.respectCrew" : "challengePulse.respectChallenge", { n: post.reactions })}
       </p>
       <BottomSheet open={picker} onClose={() => setPicker(false)} title={t("batch4.react")}>

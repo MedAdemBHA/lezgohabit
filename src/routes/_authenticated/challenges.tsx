@@ -61,24 +61,25 @@ function ChallengesPage() {
                   {t(`challengeHistory.kind_${selected.kind}`)}
                   {selected.creator ? ` · ${t("challengeHistory.by", { name: selected.creator })}` : ""}
                 </p>
-                <h1 className="mt-1 break-words text-[28px] font-extrabold leading-tight">{selected.name}</h1>
+                <h1 className="mt-1 break-words text-[24px] font-extrabold leading-tight">{selected.name}</h1>
               </div>
               <span className="shrink-0 rounded-full bg-card px-3 py-1 text-[13px] font-extrabold sticker-border">
                 {t(`challengeHistory.status_${selected.status}`)}
               </span>
             </div>
-            <div className="mt-4 flex items-center gap-2 text-[14px] font-bold">
+            <div className="mt-4 flex items-center gap-2 text-[13px] font-bold">
               <CalendarDays size={18} />
               <span>{formatDayMonth(selected.start_date, i18n.language)} — {formatDayMonth(selected.end_date, i18n.language)}</span>
               <span>·</span><Num>{t("challengeHistory.days", { done: selected.completed_days, total: selected.length })}</Num>
             </div>
-            <div className="mt-4 grid grid-cols-2 gap-2">
-              <Stat icon={<Footprints size={18} />} label={t("challengeHistory.consistency")} value={pct(selected.consistency)} />
-              <Stat icon={<Trophy size={18} />} label={t("challengeHistory.points")} value={<Num>{selected.points}</Num>} />
-              <Stat icon={<Flag size={18} />} label={t("challengeHistory.perfectDays")} value={<Num>{selected.perfect_days}</Num>} />
-              <Stat icon={<Trophy size={18} />} label={t("challengeHistory.rank")} value={selected.rank ? `#${selected.rank}` : "—"} />
-            </div>
-            {selected.crew && <p className="mt-3 text-[14px] font-bold">{t("challengeHistory.crew", { name: selected.crew.name })}</p>}
+            {selected.crew && <p className="mt-3 text-[13px] font-bold">{t("challengeHistory.crew", { name: selected.crew.name })}</p>}
+          </section>
+
+          <section className="grid grid-cols-2 gap-3">
+            <Stat icon={<Footprints size={18} />} label={t("challengeHistory.consistency")} value={pct(selected.consistency)} />
+            <Stat icon={<Trophy size={18} />} label={t("challengeHistory.points")} value={<Num>{selected.points}</Num>} />
+            <Stat icon={<Flag size={18} />} label={t("challengeHistory.perfectDays")} value={<Num>{selected.perfect_days}</Num>} />
+            <Stat icon={<Trophy size={18} />} label={t("challengeHistory.rank")} value={selected.rank ? `#${selected.rank}` : "—"} />
           </section>
 
           <section className="mt-4 space-y-2">
@@ -131,12 +132,12 @@ function HistoryCard({ entry }: { entry: ChallengeHistoryEntry }) {
     <Link to="/challenges" search={{ season: entry.season_id }} className="block rounded-[20px] bg-card p-4 sticker-border shadow-hard-sm">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <h2 className="truncate text-[20px] font-extrabold">{entry.name}</h2>
+          <h2 className="truncate text-[18px] font-extrabold">{entry.name}</h2>
           <p className="mt-1 text-[13px] font-semibold">{formatDayMonth(entry.start_date, i18n.language)} — {formatDayMonth(entry.end_date, i18n.language)} · {entry.length} {t("challengeHistory.dayUnit")}</p>
         </div>
-        <span className="shrink-0 rounded-full bg-yellow px-3 py-1 text-[12px] font-extrabold">{t(`challengeHistory.status_${entry.status}`)}</span>
+        <span className="shrink-0 rounded-full bg-yellow px-3 py-1 text-[13px] font-extrabold">{t(`challengeHistory.status_${entry.status}`)}</span>
       </div>
-      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[14px] font-bold">
+      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[13px] font-bold">
         <span>{t("challengeHistory.days", { done: entry.completed_days, total: entry.length })}</span>
         <span>{Math.round(entry.consistency)}%</span>
         <span><Num>{entry.points}</Num> {t("challengeHistory.pointsShort")}</span>

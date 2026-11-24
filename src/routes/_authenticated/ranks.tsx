@@ -237,7 +237,7 @@ function Ranks() {
       )}
       <div
         className={cn(
-          "mt-2 -rotate-1 rounded-[18px] bg-lime px-[18px] py-[14px] sticker-border",
+          "mt-2 rounded-[18px] bg-lime px-[18px] py-[14px] sticker-border",
           pinned && "mb-[76px]",
         )}
       >
@@ -323,7 +323,7 @@ function RankRow({ row, onClick }: { row: RankRowData; onClick: () => void }) {
       >
         <Num>{delta > 0 ? `▲${delta}` : delta < 0 ? `▼${-delta}` : "–"}</Num>
       </span>
-      <Num className="shrink-0 text-[18px] font-bold">{row.points.toLocaleString("en-US")}</Num>
+      <Num className="shrink-0 text-[16px] font-bold">{row.points.toLocaleString("en-US")}</Num>
     </StickerButton>
   );
 }

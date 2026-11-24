@@ -109,8 +109,8 @@ function Community() {
       <section className="rounded-[20px] bg-yellow p-4 sticker-border shadow-hard-lg" aria-label={t("challengePulse.title")}>
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-[13px] font-extrabold uppercase tracking-wide">{t("challengePulse.today")}</p>
-            <p className="text-[18px] font-extrabold">{t("challengePulse.checkedIn", { done: pulse.data?.checked_in ?? 0, total: pulse.data?.participants ?? 0 })}</p>
+            <p className="text-[12px] font-extrabold uppercase tracking-wide">{t("challengePulse.today")}</p>
+            <p className="text-[16px] font-extrabold">{t("challengePulse.checkedIn", { done: pulse.data?.checked_in ?? 0, total: pulse.data?.participants ?? 0 })}</p>
           </div>
           <Users size={26} aria-hidden />
         </div>
