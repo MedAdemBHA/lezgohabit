@@ -23,11 +23,10 @@ export function AppShell({ children, hideTabs, todayLayout = false }: { children
   }, [profile, i18n.language]);
 
   const tabs = [
-    { to: "/today" as const, label: t("common.today"), kind: "today" as const },
-    { to: "/lift" as const, label: t("design.lift"), kind: "lift" as const },
-    { to: "/ranks" as const, label: t("common.ranks"), kind: "ranks" as const },
-    { to: "/boss" as const, label: t("design.boss"), kind: "boss" as const },
-    { to: "/community" as const, label: t("design.community"), kind: "community" as const },
+    { to: "/today" as const, label: t("nav.today"), kind: "today" as const },
+    { to: "/ranks" as const, label: t("nav.board"), kind: "ranks" as const },
+    { to: "/crew" as const, label: t("nav.crew"), kind: "crew" as const },
+    { to: "/profile" as const, label: t("nav.me"), kind: "profile" as const },
   ];
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-[440px] flex-col bg-background">
@@ -46,7 +45,12 @@ export function AppShell({ children, hideTabs, todayLayout = false }: { children
         <nav className="main-tab-wrap">
           <div className="main-tab-bar">
             {tabs.map(({ to, label, kind }) => {
-              const active = loc.pathname.startsWith(to) || (to === "/community" && (loc.pathname.startsWith("/crew") || loc.pathname === "/buddies"));
+              const mePaths = ["/profile","/settings","/lift","/boss","/seasons","/wrapped","/trail","/challenges","/create-challenge","/small-wins","/admin","/capsule"];
+              const crewPaths = ["/community","/crew-details","/buddies"];
+              const active = loc.pathname.startsWith(to)
+                || (to === "/crew" && crewPaths.some((path) => loc.pathname.startsWith(path)))
+                || (to === "/profile" && mePaths.some((path) => loc.pathname.startsWith(path)))
+                || (to === "/ranks" && loc.pathname.startsWith("/scoring"));
               return (
                 <Link key={to} to={to} aria-current={active ? "page" : undefined} className={cn("main-tab",
                   active ? "bg-ink text-lime" : "text-ink")}>

@@ -185,6 +185,7 @@ export const fr: Dict = {
     error: "Oups, un souci. Réessaie.", next: "Suivant", skip: "Passer", pts: "pts", language: "Langue",
     season1: "Saison 1", live: "LIVE", openProfile: "Ouvrir le profil",
   },
+  nav: { today: "Aujourd’hui", board: "Classement", crew: "Crew", me: "Moi", pulse: "Pulse" },
   landing: {
     hero: "Sois là.\nLezgo.",
     subtitle: "Choisis un challenge entre amis ou en solo. De petites habitudes, cochées en moins d'une minute par jour.",
@@ -229,7 +230,7 @@ export const fr: Dict = {
   },
   ranks: {
     tunisia: "Tunisie", world: "Monde", crews: "Crews", today: "Aujourd'hui", week: "Semaine", season: "Saison",
-    empty: "Pas encore de scores. Sois le premier.", you: "Toi", members: "{{n}} membres", next: "Prochaine étape : un go pour grimper",
+    empty: "Pas encore de scores. Sois le premier.", you: "Toi", members: "{{n}} membres", next: "Prochaine étape : un go pour grimper", noCrew: "Rejoins ou trouve un crew pour voir ce classement.", privateChallenge: "Les challenges personnels restent privés. Pas de classement public.", myCrew: "Mon crew",
   },
   crew: {
     noneTitle: "Joue avec ton crew", create: "Créer un crew", createDesc: "Lance-le, partage le code",

@@ -168,23 +168,14 @@ function Scoring() {
       <p className="scoring-cap">{t("integrity.stackCap")}</p>
       <h2 className="section-label mt-2">{t("batch4.boards")}</h2>
       <div className="flex flex-wrap gap-2">
-        {(["country", "world", "crews", "average"] as const).map((s) => (
+        {(["challenge", "crew"] as const).map((scope) => (
           <Link
             to="/ranks"
-            search={{
-              scope: s === "average" ? "world" : s,
-              metric: s === "average" ? "average" : "total",
-            }}
-            key={s}
+            search={{ scope }}
+            key={scope}
           >
             <StickerButton variant="secondary" size="sm" className="feed-chip">
-              {t(
-                s === "average"
-                  ? "batch4.average"
-                  : s === "country"
-                    ? "ranks.tunisia"
-                    : `ranks.${s}`,
-              )}
+              {t(scope === "crew" ? "challengePulse.crewTab" : "challengePulse.challengeTab")}
             </StickerButton>
           </Link>
         ))}

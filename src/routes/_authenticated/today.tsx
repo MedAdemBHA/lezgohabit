@@ -283,6 +283,7 @@ function Today() {
   function tap(h: UserHabit) {
     if (h.kind === "timer") { void startTimer(h); return; }
     if (h.kind === "quit") { setQuitHabit(h); return; }
+    if (h.template?.key === "train") { void navigate({ to: "/lift" }); return; }
     if (h.template?.key === 'detox') {
       void navigate({ to: '/detox' });
       return;

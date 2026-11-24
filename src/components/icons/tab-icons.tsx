@@ -3,6 +3,8 @@ const paths = {
   today: <><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></>,
   lift: <path d="M6 7v10M18 7v10M3 10v4M21 10v4M6 12h12"/>,
   ranks: <path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4zM17 6h3v2a3 3 0 0 1-3 3M7 6H4v2a3 3 0 0 0 3 3"/>,
+  crew: <><path d="M16 20v-1.5a3.5 3.5 0 0 0-3.5-3.5h-5A3.5 3.5 0 0 0 4 18.5V20"/><circle cx="10" cy="8" r="3.5"/><path d="M17 11a3.2 3.2 0 1 0-.5-6.3M17 15h1a3 3 0 0 1 3 3v2"/></>,
+  profile: <><circle cx="12" cy="12" r="9"/><circle cx="12" cy="9" r="3"/><path d="M6.5 19a6 6 0 0 1 11 0"/></>,
   boss: <path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/>,
   community: <><rect x="4" y="4" width="16" height="6" rx="1.5"/><rect x="4" y="14" width="16" height="6" rx="1.5"/></>,
 };

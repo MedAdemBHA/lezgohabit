@@ -193,7 +193,7 @@
 
 /* Today artwork and the shared five-tab navigation. */
 .main-tab-wrap { position:fixed; inset-inline:0; bottom:calc(16px + env(safe-area-inset-bottom,0px)); z-index:40; width:100%; max-width:440px; margin-inline:auto; padding-inline:16px; }
-.main-tab-bar { height:64px; display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:4px; padding:5px; background:var(--card); border:2.5px solid var(--ink); border-radius:20px; box-shadow:var(--sx) 4px 0 var(--ink); }
+.main-tab-bar { height:64px; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:4px; padding:5px; background:var(--card); border:2.5px solid var(--ink); border-radius:20px; box-shadow:var(--sx) 4px 0 var(--ink); }
 .main-tab { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; border-radius:14px; min-width:0; font-size:11px; font-weight:800; line-height:14px; letter-spacing:0; }
 .today-content { display:flex; flex-direction:column; gap:12px; padding:16px 18px calc(104px + env(safe-area-inset-bottom,0px)); flex:1; }
 .today-top { display:flex; align-items:center; justify-content:space-between; gap:8px; height:40px; flex-shrink:0; }

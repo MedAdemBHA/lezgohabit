@@ -16,7 +16,7 @@ export function CommunitySwitch({ active }: { active: "feed" | "crew" | "buddies
             tabIndex={-1}
             className={active === view ? "bg-ink text-lime" : "text-ink"}
           >
-            {t(`batch4.${view}`)}
+            {view === "feed" ? t("nav.pulse") : t(`batch4.${view}`)}
           </StickerButton>
         </Link>
       ))}

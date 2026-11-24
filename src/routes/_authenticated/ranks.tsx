@@ -8,62 +8,65 @@ import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/lezgo/app-shell";
 import { Avatar, BottomSheet, Num, StickerButton } from "@/components/lezgo/ui";
 import { FitHeading } from "@/components/lezgo/fit-heading";
-import { useHabitStatLabel } from "@/components/lezgo/habit-stat";
-import { useBase } from "@/lib/data";
-import { countryName, summaryQuery, type RankRowData } from "@/lib/community-data";
-import { movement, seasonWeek } from "@/lib/community-rules";
+import { myCrewQuery, useBase } from "@/lib/data";
+import { summaryQuery, type RankRowData } from "@/lib/community-data";
+import { movement } from "@/lib/community-rules";
 import { daysBetween } from "@/lib/time";
 import { cn } from "@/lib/utils";
+import { challengeHistoryQuery } from "@/lib/challenge-history";
+import { loc } from "@/lib/i18n";
 export const Route = createFileRoute("/_authenticated/ranks")({
   validateSearch: (
     search: Record<string, unknown>,
-  ): { scope?: Scope; metric?: "total" | "average" } => ({
-    scope:
-      search["scope"] === "world"
-        ? ("world" as const)
-        : search["scope"] === "crews"
-          ? ("crews" as const)
-          : ("country" as const),
-    metric: search["metric"] === "average" ? ("average" as const) : ("total" as const),
+  ): { scope?: Scope } => ({
+    scope: search["scope"] === "crew" || search["scope"] === "country" ? search["scope"] : "challenge",
   }),
-  head: () =>
-    pageHead("Scoreboard — lezgo", "Your country, World and Crew scores, podium and solo ghost."),
+  head: () => pageHead("Challenge board — lezgo", "Compare points and consistency within your challenge."),
   component: Ranks,
 });
-type Scope = "country" | "world" | "crews";
-type Period = "today" | "week" | "season";
+type Scope = "crew" | "challenge" | "country";
 function Ranks() {
   const { t, i18n } = useTranslation();
   const { season, profile, uid, today } = useBase();
   const search = Route.useSearch();
-  const [scope, setScope] = useState<Scope>(search.scope ?? "country");
-  const [metric, setMetric] = useState<"total" | "average">(search.metric ?? "total");
-  const [period, setPeriod] = useState<Period>("season");
+  const [scope, setScope] = useState<Scope>(search.scope ?? "challenge");
   const [sel, setSel] = useState<RankRowData | null>(null);
   const [ghost, setGhost] = useState(false);
   const myAnchor = useRef<HTMLDivElement>(null);
   const [selfVisible, setSelfVisible] = useState(true);
+  const entry = useQuery({
+    queryKey: ["challengeEntry",uid,season?.id],
+    enabled: !!uid && !!season,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("season_entries").select("kind,status").eq("user_id",uid).eq("season_id",season!.id).single();
+      if (error) throw error;
+      return data;
+    },
+  });
+  const history = useQuery({ ...challengeHistoryQuery(uid), enabled: !!uid && entry.data?.kind === "personal" });
+  const personalStats = history.data?.find((item) => item.season_id === season?.id);
+  const official = entry.data?.kind === "official";
+  const boardScope: Scope = !official && scope === "country" ? "challenge" : scope;
+  const mineCrew = useQuery({ ...myCrewQuery(uid,season?.id ?? ""), enabled: !!uid && !!season && entry.data?.kind !== "personal" });
   const q = useQuery({
-    queryKey: ["scoreboard", uid, season?.id, scope, period, metric, profile?.country_code],
-    enabled: !!season && !!profile,
+    queryKey: ["challengeScoreboard", uid, season?.id, boardScope],
+    enabled: !!season && !!profile && !!entry.data && entry.data.kind !== "personal",
     queryFn: async () => {
       if (!season || !profile) throw Error("missing season");
-      const { data, error } = await supabase.rpc("scoreboard_v4", {
+      const { data, error } = await supabase.rpc("challenge_scoreboard", {
         _season_id: season.id,
-        _scope: scope,
-        _period: period,
-        _country_code: profile.country_code,
-        _metric: metric,
+        _scope: boardScope,
+        _country: "TN",
       });
       if (error) throw error;
       return data as unknown as { rows: RankRowData[]; me: RankRowData | null };
     },
     refetchInterval: 30_000,
   });
-  const summary = useQuery({ ...summaryQuery(uid, season?.id ?? ""), enabled: !!uid && !!season });
+  const summary = useQuery({ ...summaryQuery(uid, season?.id ?? ""), enabled: !!uid && !!season && entry.data?.kind !== "personal" });
   const g = useQuery({
     queryKey: ["ghost", uid, season?.id],
-    enabled: !!season && ghost,
+    enabled: !!season && ghost && entry.data?.kind !== "personal",
     queryFn: async () => {
       if (!season) throw Error("missing season");
       const { data, error } = await supabase.rpc("solo_ghost", { _season_id: season.id });
@@ -92,23 +95,28 @@ function Ranks() {
   }, [q.data, me]);
   const pinned = !!me && !selfVisible;
   const top = [rows[1], rows[0], rows[2]];
+  const scopes: Scope[] = official ? ["crew","challenge","country"] : ["crew","challenge"];
+  useEffect(() => {
+    if (!official && scope === "country") setScope("challenge");
+  }, [official, scope]);
+
+  if (!season) return <AppShell todayLayout><FitHeading text={t("nav.board")} requestedSize={44} className="board-title"/><p className="font-semibold">{t("challengeHistory.noActiveBody")}</p><Link to="/start"><StickerButton block variant="lime">{t("challengeHistory.pickNext")}</StickerButton></Link></AppShell>;
+  if (entry.isLoading) return <AppShell todayLayout><p className="py-8 text-center">{t("common.loading")}</p></AppShell>;
+  if (entry.data?.kind === "personal") return <AppShell todayLayout><FitHeading text={t("nav.board")} requestedSize={44} className="board-title"/><h2 className="text-[22px] font-extrabold">{loc(season.name,i18n.language)}</h2><p className="font-semibold">{t("ranks.privateChallenge")}</p><div className="grid grid-cols-2 gap-3"><div className="rounded-[18px] bg-yellow p-4 sticker-border"><span className="block text-[12px] font-bold">{t("challengeHistory.points")}</span><Num className="text-[24px] font-bold">{personalStats?.points ?? 0}</Num></div><div className="rounded-[18px] bg-lime p-4 sticker-border"><span className="block text-[12px] font-bold">{t("challengeHistory.consistency")}</span><Num className="text-[24px] font-bold">{Math.round(personalStats?.consistency ?? 0)}%</Num></div></div><Link to="/challenges" search={{season:season.id}}><StickerButton block variant="secondary">{t("challengeHistory.details")}</StickerButton></Link></AppShell>;
   return (
     <AppShell todayLayout>
       <div className="board-header">
         <FitHeading
-          text={t("socialDesign.scoreboard")}
-          requestedSize={56}
+          text={t("nav.board")}
+          requestedSize={44}
           className="board-title"
         />
-        <span className="week-sticker num">
-          {t("socialDesign.seasonWeek", {
-            n: seasonWeek(season ? daysBetween(season.starts_on, today) + 1 : 1),
-          })}
-        </span>
+        <Num className="week-sticker">{Math.max(1,Math.min(daysBetween(season.starts_on,season.ends_on)+1,daysBetween(season.starts_on,today)+1))}/{daysBetween(season.starts_on,season.ends_on)+1}</Num>
       </div>
+      <p className="truncate text-[15px] font-bold">{loc(season.name,i18n.language)}</p>
       <p className="board-updated" role="status">{t("integrity.updated")}</p>
       <div className="board-segments" role="group" aria-label={t("socialDesign.scoreboard")}>
-        {(["country", "world", "crews"] as const).map((s) => (
+        {scopes.map((s) => (
           <StickerButton
             key={s}
             variant="ghost"
@@ -119,41 +127,11 @@ function Ranks() {
               setGhost(false);
             }}
           >
-            {s === "country"
-              ? countryName(profile?.country_code ?? "TN", i18n.language)
-              : t(`ranks.${s}`)}
+            {s === "country" ? t("ranks.tunisia") : s === "crew" ? t("ranks.myCrew") : t("challengePulse.challengeTab")}
           </StickerButton>
         ))}
       </div>
-      <div className="flex flex-wrap gap-2">
-        {(["today", "week", "season"] as const).map((p) => (
-          <StickerButton
-            key={p}
-            size="sm"
-            variant="secondary"
-            className={cn("period-chip", period === p ? "bg-lime shadow-hard-sm" : "shadow-none")}
-            aria-pressed={period === p}
-            onClick={() => setPeriod(p)}
-          >
-            {t(`ranks.${p}`)}
-          </StickerButton>
-        ))}
-      </div>
-      <div className="flex flex-wrap gap-2">
-        {(["total", "average"] as const).map((m) => (
-          <StickerButton
-            variant="secondary"
-            size="sm"
-            key={m}
-            aria-pressed={metric === m}
-            className={cn("period-chip", metric === m ? "bg-lime" : "shadow-none")}
-            onClick={() => setMetric(m)}
-          >
-            {t(m === "average" ? "batch4.averageShort" : "batch4.total")}
-          </StickerButton>
-        ))}
-      </div>
-      {summary.data?.mode === "solo" && scope !== "crews" && (
+      {summary.data?.mode === "solo" && scope !== "crew" && (
         <StickerButton
           variant="secondary"
           size="sm"
@@ -172,7 +150,7 @@ function Ranks() {
           {t("common.error")}
         </StickerButton>
       ) : rows.length === 0 ? (
-        <p className="py-8 text-center font-bold">{t("ranks.empty")}</p>
+        scope === "crew" && !mineCrew.data ? <div className="space-y-3 rounded-[20px] bg-card p-5 text-center sticker-border"><p className="font-bold">{t("ranks.noCrew")}</p><Link to="/crew"><StickerButton variant="lime">{t("challengePulse.findCrew")}</StickerButton></Link></div> : <p className="py-8 text-center font-bold">{t("ranks.empty")}</p>
       ) : (
         <>
           <div className="podium">
@@ -297,6 +275,7 @@ function Ranks() {
                   {t("common.pts")}
                 </p>
                 <p>{t("socialDesign.streakStat", { n: sel.streak })}</p>
+                <p>{t("challengeHistory.days",{done:sel.completed_days ?? 0,total:sel.elapsed_days ?? 0})} · {Math.round(sel.consistency ?? 0)}% {t("challengeHistory.consistency")}</p>
               </div>
             </div>
             {sel.is_me && (
@@ -314,7 +293,6 @@ function Ranks() {
 }
 function RankRow({ row, onClick }: { row: RankRowData; onClick: () => void }) {
   const { t } = useTranslation();
-  const stat = useHabitStatLabel(row.stat);
   const delta = movement(row.previous_rank, row.rank);
   return (
     <StickerButton
@@ -334,7 +312,7 @@ function RankRow({ row, onClick }: { row: RankRowData; onClick: () => void }) {
         <span className="rank-sub block truncate">
           {row.members != null
             ? t("ranks.members", { n: row.members })
-            : `${t("socialDesign.streakStat", { n: row.streak })}${row.stat ? ` · ${t("socialDesign.habitStat", { value: row.stat.value, name: stat })}` : ""}`}
+            : `${Math.round(row.consistency ?? 0)}% · ${t("challengeHistory.days",{done:row.completed_days ?? 0,total:row.elapsed_days ?? 0})}`}
         </span>
       </span>
       <span

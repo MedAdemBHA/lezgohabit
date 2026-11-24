@@ -1,7 +1,7 @@
 import { queryOptions } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 export type HabitStat = { value:number; name:Record<string,string>; kind:string; key:string|null; faith:boolean };
-export type RankRowData = { rank:number; user_id:string|null; crew_id:string|null; display_name:string; handle:string|null; avatar_url:string|null; country_code:string|null; streak:number; points:number; previous_rank:number|null; is_me:boolean; members:number|null; stat:HabitStat|null };
+export type RankRowData = { rank:number; user_id:string|null; crew_id:string|null; display_name:string; handle:string|null; avatar_url:string|null; country_code:string|null; streak:number; points:number; previous_rank:number|null; is_me:boolean; members:number|null; stat:HabitStat|null; completed_days?:number; perfect_days?:number; elapsed_days?:number; consistency?:number };
 export type Member = { user_id:string; display_name:string; handle:string; avatar_url:string|null; total:number; done:number; points:number; perfect:boolean; nudged:boolean };
 export type CrewDetails = { crew:{id:string;name:string;code:string;max_members:number}; members:Member[]; country_code:string; country_rank:number; season_points:number };
 export type Summary = { points:number; streak:number; rank:number|null; stat:HabitStat|null; badges:string[]; crew:{id:string;name:string}|null; mode:string };

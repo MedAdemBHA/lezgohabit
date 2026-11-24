@@ -184,6 +184,7 @@ export const en = {
     error: "Something went wrong. Try again.", next: "Next", skip: "Skip", pts: "pts", language: "Language",
     season1: "Season 1", live: "LIVE", openProfile: "Open profile",
   },
+  nav: { today: "Today", board: "Board", crew: "Crew", me: "Me", pulse: "Pulse" },
   landing: {
     hero: "Show up.\nLezgo.",
     subtitle: "Choose a challenge with friends or solo. Small habits, checked in under a minute a day.",
@@ -228,7 +229,7 @@ export const en = {
   },
   ranks: {
     tunisia: "Tunisia", world: "World", crews: "Crews", today: "Today", week: "Week", season: "Season",
-    empty: "No scores yet. Be the first.", you: "You", members: "{{n}} members", next: "Next: log a go to climb",
+    empty: "No scores yet. Be the first.", you: "You", members: "{{n}} members", next: "Next: log a go to climb", noCrew: "Join or find a crew to see this board.", privateChallenge: "Personal challenges stay private. There is no public board.", myCrew: "My crew",
   },
   crew: {
     noneTitle: "Play with your crew", create: "Create a crew", createDesc: "Start one, share the code",

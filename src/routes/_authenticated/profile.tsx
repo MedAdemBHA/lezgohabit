@@ -98,6 +98,7 @@ function ProfilePage() {
         <Link to="/challenges" search={{ season: "" }} className="mt-3 block"><StickerButton block variant="lime">{t("challengeHistory.openHistory")}</StickerButton></Link>
         <Link to="/start" className="mt-3 block"><StickerButton block variant="secondary">{t("challengeHistory.pickNext")}</StickerButton></Link>
         <Link to="/create-challenge" className="mt-3 block"><StickerButton block variant="secondary">{t("batch6.create")}</StickerButton></Link>
+        <div className="mt-3 grid grid-cols-2 gap-3"><Link to="/lift"><StickerButton block variant="secondary">{t("design.lift")}</StickerButton></Link><Link to="/boss"><StickerButton block variant="secondary">{t("design.boss")}</StickerButton></Link></div>
       </AppShell>
     );
   const data = q.data;
@@ -282,6 +283,10 @@ function ProfilePage() {
         </span>
         <ChevronRight className="shrink-0 rtl:-scale-x-100" />
       </Link>
+      <div className="mt-3 grid grid-cols-2 gap-3">
+        <Link to="/lift"><StickerButton block variant="secondary">{t("design.lift")}</StickerButton></Link>
+        <Link to="/boss"><StickerButton block variant="secondary">{t("design.boss")}</StickerButton></Link>
+      </div>
       <Link
         to="/buddies"
         className="mt-2 flex items-center gap-3 rounded-[20px] bg-card px-[18px] py-4 dashed-ink"
