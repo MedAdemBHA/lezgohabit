@@ -23,26 +23,27 @@ Apply these files in order after confirming `0062_own_hosting_cron` is recorded:
 8. `drizzle/migrations/0070_winter_arc_sleep7_seed.sql`
 9. `drizzle/migrations/0071_fix_freeze_season_alias.sql`
 
-Codex did not apply these migrations or push the branch. The legacy overlap fallback remains in `0063`; it preserves existing check-ins and classifies mismatched official entries as private personal history.
+The Supabase migration history now confirms `0063`–`0071` are applied to `yjkniwjneqmtatwozcpv`. The legacy overlap fallback remains in `0063`; it preserves existing check-ins and classifies mismatched official entries as private personal history.
 
 ## Manual steps
 
-1. Apply migrations `0063` through `0070` sequentially to the own-hosting Supabase project.
-2. After they are applied, run `scripts/verify_v2.sql` in a PostgreSQL session with permission to create throwaway `auth.users` rows. It sets `request.jwt.claims` for fixtures, prints PASS/FAIL rows, and ends with `ROLLBACK`.
-3. Smoke-test Google sign-in and a signed-out `/c/CODE` invite through auth to Today; test a personal challenge, find-me-a-crew, a creator invite, surrender/history, and the official Tunisia board on a staging session.
-4. Deploy the frontend through the existing Cloudflare Workers flow after the database migration is complete.
+1. Provide the real app base URL if `joinlezgo.com` is not owned/configured, so every invite link can use the deployed address.
+2. Complete Google sign-in once with a throwaway/staging account to exercise the post-auth start and surrender screens end to end.
+3. Deploy the frontend through the existing Cloudflare Workers flow.
 
 ## Verification
 
 - `bun run build`: passed. Existing warnings remain for deprecated `inputValidator`, chunk size, and the PWA glob that finds no files in `dist`.
 - `npx tsc --noEmit -p .`: passed.
 - `bunx vitest run`: 52 passed, 109 skipped, with one known failing suite: `src/test/app-routing.test.tsx` cannot resolve `virtual:pwa-register` in Vitest. The remaining tests pass.
-- The SQL verifier was authored but not run because its target schema migrations are intentionally unapplied.
+- `scripts/verify_v2.sql` ran against the migrated Supabase project. It reported `ALL V2 CHECKS PASS`; all fixture users and rows were rolled back. A local alias typo in the personal-checkin fixture was corrected before the successful run.
+- Local UI smoke test: the 7-day personal picker and the official “Find me a crew” path both reach the sign-in handoff. Authenticated UI actions were not attempted without a staging account; the SQL verifier covers their database rules.
 
 ## Open items
 
 - Personal challenges remain solo-only and use existing library templates. Custom-named personal habits and personal crews need a separate snapshot contract and game-rule decision.
 - The existing `virtual:pwa-register` resolution issue remains in the Vitest routing suite.
+- `roadmap.md` still marks `joinlezgo.com` as a domain-ownership/DNS task, `DEPLOY.md` gives only a Worker URL placeholder, and the domain did not resolve from this environment.
 
 ## Applied to Supabase (2026-11-24, by Claude)
 

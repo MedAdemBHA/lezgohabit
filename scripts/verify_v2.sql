@@ -304,7 +304,7 @@ BEGIN
   UPDATE public.season_entries SET joined_at=((public._local_today(u[8])-7)::timestamp AT TIME ZONE 'Africa/Tunis') WHERE user_id=u[8] AND season_id=personal_season;
   SELECT id INTO h_personal FROM public.user_habits WHERE user_id=u[8] AND season_id=personal_season AND active;
   INSERT INTO public.checkins(user_id,user_habit_id,day,value,detail,done_at,is_demo)
-  SELECT u[8],h_personal,d,1,'{}'::jsonb,now(),false
+  SELECT u[8],h_personal,day::date,1,'{}'::jsonb,now(),false
     FROM generate_series(public._local_today(u[8])-6,public._local_today(u[8])-1,interval '1 day') AS series(day);
   PERFORM public._freeze_season(personal_season);
   SELECT trophy,trophy_private INTO v_trophy,v_private FROM public.season_results WHERE user_id=u[8] AND season_id=personal_season;
