@@ -25,6 +25,23 @@ migrations (0000–0062), season content, the 15-minute day-lock job and the not
 
 The browser build reads `VITE_SUPABASE_*` from the committed `.env` (public values only).
 
+## Option B: Vercel (instead of Cloudflare)
+
+Tested: the app builds for Vercel with `NITRO_PRESET=vercel` (Node 22 function + static assets in `.vercel/output`).
+
+1. https://vercel.com/new → import `lezgohabit` from GitHub, branch `own-hosting` (or `lezgo-v2` until merged).
+   - Framework preset: **Other**. Install: `bun install`. Build: `bun run build`. Leave Output Directory empty
+     (Vercel picks up `.vercel/output` automatically).
+2. **Settings → Environment Variables** (Production + Preview):
+   `NITRO_PRESET=vercel`, plus every variable from the Cloudflare table above
+   (`SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `DEMO_PASSWORD`, `DEVICE_HASH_SECRET`,
+   `LOVABLE_CRON_SECRET`, and VAPID keys when push is on).
+3. **Settings → Functions → Region: Paris (cdg1)** — next to the Supabase project (eu-west-3, Paris).
+4. Supabase → Authentication → URL Configuration: Site URL and Redirect URL = your Vercel address (`https://<name>.vercel.app/**`).
+5. Store the app URL for the notifications job: `select vault.create_secret('https://<name>.vercel.app', 'lezgo_app_url');`
+
+Note: Vercel's free Hobby plan is for non-commercial personal use only; once Lezgo earns money (sponsors, paid creators, ads), move to Pro.
+
 ## 2. Supabase login settings
 
 Supabase → **Authentication**:
