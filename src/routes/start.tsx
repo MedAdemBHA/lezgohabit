@@ -12,7 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { templatesQuery, type Template } from "@/lib/data";
 import { loc } from "@/lib/i18n";
 import { pageHead } from "@/lib/page-head";
-import { saveStartFlow, type StartFlow } from "@/lib/start-flow";
+import { saveStartFlow, toggleStartHabit, type StartFlow } from "@/lib/start-flow";
 
 type CatalogHabit = { key: string; name: unknown; what_counts: unknown; kind: string; target: number; unit: string | null; is_faith: boolean };
 type CatalogCard = { id: string; season_id: string; challenge_id: string | null; kind: "official" | "creator"; name: unknown; creator: string; code: string | null; days: number; starts_on: string; ends_on: string; status: string; members: number; habits: CatalogHabit[] };
@@ -73,11 +73,7 @@ function StartPage() {
   }, [code, inviteQuery.data]);
 
   function toggleHabit(tpl: Template) {
-    setPicked((current) => {
-      if (current.includes(tpl.key)) return current.filter((key) => key !== tpl.key);
-      if (current.length >= 6) return current;
-      return [...current, tpl.key];
-    });
+    setPicked((current) => toggleStartHabit(current, tpl.key));
   }
 
   function continueToPlay() {

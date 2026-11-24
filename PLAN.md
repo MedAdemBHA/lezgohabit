@@ -96,3 +96,8 @@
 - Proof remains optional for every habit. Seed Winter Arc with `train`, `read`, and `sleep7`.
 - Start-flow implementation keeps private personal challenges solo for now. `create_personal_challenge` creates an `audience='solo'` challenge and `join_challenge` intentionally rejects solo-audience rows; adding personal crews would require a deliberate database rule change.
 - The first personal flow uses the existing habit library. Custom-named habits are not exposed there because the personal RPC accepts template keys and there is no shared custom-habit snapshot contract yet.
+
+## Phase 8 implementation note
+
+- A final audit found `_freeze_season` still divided completed days by the full challenge length for consistency, even when a participant joined later. Migration `0069_local_participation_consistency.sql` updates frozen snapshots to use local elapsed participation days from `max(start date, local join date)` through challenge end. Trophy eligibility continues to use the full challenge length, as decided.
+- `0063` seeds challenge habits before `0065` adds the expanded template library, so `sleep7` was not available at seed time. Migration `0070_winter_arc_sleep7_seed.sql` adds the 7-hour count habit and completes the agreed Winter Arc snapshot.

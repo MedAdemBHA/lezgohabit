@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export const START_FLOW_KEY = "lezgo_start_flow";
+export const MAX_CHALLENGE_HABITS = 6;
 type PersonalPick = { key: string; target: number };
 export type StartFlow =
   | { challenge: { kind: "official"; seasonId: string }; play: { mode: "solo" | "find" | "create" } }
@@ -9,6 +10,12 @@ export type StartFlow =
   | { challenge: { kind: "crew_invite"; code: string } }
   | { challenge: { kind: "creator"; code: string }; play: { mode: "code"; code: string } }
   | { challenge: { kind: "official"; seasonId: string }; play: { mode: "code"; code: string } };
+
+export function toggleStartHabit(current: string[], key: string): string[] {
+  if (current.includes(key)) return current.filter((item) => item !== key);
+  if (current.length >= MAX_CHALLENGE_HABITS) return current;
+  return [...current, key];
+}
 
 export function saveStartFlow(flow: StartFlow) {
   sessionStorage.setItem(START_FLOW_KEY, JSON.stringify(flow));
