@@ -7,6 +7,11 @@ Read `AGENTS.md` and `DEPLOY.md` first and follow every rule in them.
 Start from branch `own-hosting`, create branch `lezgo-v2`. Commit after each phase. Do not push.
 Work phase by phase. **Stop after each phase** and show me a short summary + what to test before continuing.
 
+**This is a direction, not a fixed spec.** The goals and the rules of the game below matter; the exact tables,
+names, screens and numbers are suggestions. If you see a simpler or better way, propose it in `PLAN.md`
+with the trade-off, and ask me when a choice changes how the game feels. Reuse what already exists before
+adding anything new.
+
 ---
 
 ## North star — read this before every decision
@@ -45,15 +50,31 @@ Facts from the current code (verify them yourself before changing anything):
 
 ## The new model: 3 simple ideas
 
-1. **Challenge = what you do, for how long.** Every ranked activity is a challenge with a **fixed habit list**
-   (1–6 habits, chosen by whoever creates the challenge). Everyone in a challenge does the same habits,
-   so its scoreboard is fair.
-   - **Official challenges** by Lezgo (the existing seasons: Winter Arc, New Year Reset, Ramadan, …).
+1. **Challenge = what you do, for how long.** Every activity is a challenge with a **habit list** (1–6 habits,
+   chosen by whoever creates it) and a **length** (from 7 days up to 90 — e.g. 7, 14, 21, 30, 40, 66, 90).
+   Everyone in a challenge does the same habits, so its scoreboard is fair.
+   - **Official challenges** by Lezgo (the existing seasons: Winter Arc, New Year Reset, …) and short ones
+     (e.g. "7-day sugar reset", "14-day steps").
    - **Creator challenges** by approved creators (influencers, coaches, clubs). Shared by link/code.
-   - **Personal mode**: free habit pick (1–6), streaks, trail, ghost — **no public ranking**.
+   - **Personal challenge**: the user picks their own habits (1–6) and length; private, **no public ranking**.
 2. **Crew = who you do it with.** Small groups (4–8) **inside a challenge**. Friends create one with a code;
    solo players can tap "Find me a crew" and get auto-grouped with other solo players of the same challenge.
 3. **Habit = check in.** Unchanged: locks after 10 min, day final at 03:00, `mark_prayer` for salat, proof photos.
+
+### Rules of the game (keep these)
+
+- **One active challenge at a time.** A user is in exactly one challenge (official, creator or personal) at once.
+  To start another, they finish or surrender the current one. Keeps focus and keeps boards honest.
+- **Surrender.** A user can quit their active challenge at any time: a clear "Surrender" action with a calm
+  confirmation sheet (shows what they keep and what ends). After surrender: no more check-ins in it, they leave
+  its scoreboard and crew, their points so far stay frozen in their history, and they cannot rejoin that same
+  challenge. Their crew sees "X surrendered" once (no shaming copy).
+- **Every challenge ends with a status:** `completed` (reached the last day), `surrendered`, or `active`.
+  Optionally `missed` if you find a fair rule (propose it, don't invent one silently).
+- **History is forever.** Every challenge a user ever joined is logged: name, creator, habits, start/end dates,
+  length, days completed, consistency %, final points, final rank (if ranked), crew, status, and the day-by-day
+  trail. Nothing is deleted when a challenge ends or is surrendered (account deletion still deletes everything).
+  Reuse frozen `season_results` / `crew_results` and the trail where possible.
 
 Defaults I chose (keep them unless the code makes them impossible, then tell me):
 - Only users with the creator role can create public challenges. Admins grant the role (already exists).
@@ -99,9 +120,20 @@ risks. Stop and wait for my OK.
   `challenge_habits(season_id, template_id, target, position)` table — choose and justify in PLAN.md.
   Seed the official live season (Winter Arc) with a sensible list (e.g. train, read, sleep) and make
   that list editable by admins.
+- Challenge length: start/end dates with 7–90 days. Short challenges must work with everything that assumes
+  40 days today (trophies "≥30 active days", bosses, wrapped, day counters "X/40" → "X/N"). List each place
+  in PLAN.md and adapt it.
 - Joining a challenge creates the user's `user_habits` from that list (no free pick). Habit limit becomes
-  "the challenge's list size" (1–6); personal mode allows 1–6 free picks.
-- Add `mode` to the user's entry: `challenge` vs `personal`. Personal entries never appear on public boards.
+  "the challenge's list size" (1–6); a personal challenge allows 1–6 free picks.
+- Participation record per user per challenge (extend `season_entries` or add a table): `kind`
+  (official / creator / personal), `status` (active / completed / surrendered), `joined_at`, `ended_at`,
+  `end_reason`. Enforce **one active participation per user** in the database (unique partial index +
+  checks in the join RPCs), not only in the UI.
+- `surrender_challenge(_season_id)` RPC: guest-guarded, sets status, freezes this user's result row, removes
+  them from boards and crew counts, logs an activity/audit event. Completion is set automatically by the
+  existing integrity tick when the last day is final.
+- `my_challenge_history()` RPC: all past and current participations with the summary fields above.
+- Personal challenges never appear on public boards.
 - Scoreboards: per challenge; country/world boards only from official challenges.
 - Consistency %: return it from the scoreboard RPCs (computed in SQL).
 - Keep existing data working (current users keep their habits; migrate them into "personal" if their habits
@@ -116,13 +148,23 @@ risks. Stop and wait for my OK.
 - Crews inside a challenge: create (name → code), join by code, **"Find me a crew"** (RPC that places solo
   players of the same challenge into open crews of max 6, or creates one). Reuse `challenge_squads` /
   `assign_sub_squad` / `crews` where possible.
-- Creator dashboard on `/profile` for creators: participants, today's check-in %, invite link.
+- Creator dashboard on `/profile` for creators: participants, today's check-in %, surrenders, invite link.
+- Creators choose the length (7–90 days) and start date; a challenge can't change habits or length after it starts.
+
+## Phase 3b — History and surrender (UI)
+
+- **Me → "My challenges"**: a timeline of every challenge (active on top), each as a card with status badge
+  (Active / Completed / Surrendered), dates, length, days completed, consistency %, points, rank, crew.
+  Tap → detail with the habit list and the day-by-day trail (reuse `/trail`).
+- **Surrender** lives in the challenge detail and in Today's challenge header menu, never as a big button.
+  Confirmation sheet: what you keep (history, points so far, badges) and what ends (check-ins, board, crew).
+- When a challenge ends or is surrendered, Today shows one calm "Pick your next challenge" card.
 
 ## Phase 4 — Onboarding (≤ 4 screens, no typing)
 
-1. **Pick a challenge** (public route `/start`): featured official challenge first, then featured creator
-   challenges, then "Personal mode (no ranking)". If they came from `/c/CODE`, that challenge is preselected.
-2. Personal mode only: pick 1–6 habits.
+1. **Pick a challenge** (public route `/start`): featured official challenge first, then short ones (7–14 days),
+   then featured creator challenges, then "Make my own (private)". Each card shows length and habits. If they came from `/c/CODE`, that challenge is preselected.
+2. Personal challenge only: pick 1–6 habits and a length.
 3. **How to play**: "With my crew (code)", "Create a crew", "Find me a crew", "Solo".
 4. **Sign in**: one primary button "I'm 18+ · Continue with Google"; email link + "Explore as guest" secondary.
 After auth, finish automatically from sessionStorage: display name from Google metadata (else email prefix),
@@ -132,7 +174,7 @@ Returning users / empty sessionStorage → existing onboarding as fallback. City
 
 ## Phase 5 — Today (split `today.tsx` into components under `src/components/lezgo/today/`)
 
-Top to bottom: challenge name + day X/N + score (tap for breakdown) → habit cards (main content, one colour
+Top to bottom: challenge name + day X/N (N = its length) + score (tap for breakdown) → habit cards (main content, one colour
 per habit) → salat card → one collapsed **Bonus** section (daily dare, proof photo, moments, small wins;
 open state in localStorage) → compact weekly boss card → crew strip (members' check-ins, nudge).
 Progressive reveal: day 1 = habits + salat only; ghost, streak info, boss, capsule appear from day 2–3 as
@@ -155,9 +197,11 @@ remove helper text that repeats a title; one obvious primary action per screen.
 
 - `bun run build` and `npx tsc --noEmit -p .` pass; `bunx vitest run` has no new failures
   (`src/test/app-routing.test.tsx` already fails on main: `virtual:pwa-register`).
-- Add tests for: challenge habit list → user habits, personal mode not on boards, find-me-a-crew grouping,
+- Add tests for: challenge habit list → user habits, one-active-challenge rule, surrender, history, 7-day completion, personal challenges not on boards, find-me-a-crew grouping,
   onboarding auto-finish (unit level where possible).
 - New user: landing → challenge → how to play → Google → Today in ≤ 4 screens, no typing.
 - Invite link `/c/CODE` works signed-out → sign-in → joined.
+- A user can't be in two active challenges (DB-enforced); surrender works and shows up in history;
+  a 7-day challenge completes on day 7 and appears as Completed.
 - All 4 languages complete, ar/aeb mirrored.
 - `CHANGES.md`: what moved where, list of migrations to apply in order, and anything I must do by hand.
