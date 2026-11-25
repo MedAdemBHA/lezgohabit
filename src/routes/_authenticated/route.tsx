@@ -7,8 +7,11 @@ export const Route = createFileRoute("/_authenticated")({
   beforeLoad: async ({ location }) => {
     const { data } = await supabase.auth.getUser();
     if (!data.user) {
-      if (location.pathname === "/admin") throw redirect({ to: "/auth", search: { next: "/admin" } });
-      throw redirect({ to: "/auth" });
+      // Start sign-in with a fresh document so the protected route can finish leaving hydration.
+      if (location.pathname === "/admin") {
+        throw redirect({ to: "/auth", search: { next: "/admin" }, reloadDocument: true });
+      }
+      throw redirect({ to: "/auth", reloadDocument: true });
     }
     // The admin dashboard authorizes its own data and actions on the server.
     if (location.pathname === "/admin") return { user: data.user };
