@@ -99,12 +99,7 @@ function Invite() {
   return (
     <main className="challenge-public">
       <LezgoMark size={64} />
-      {issue ? (
-        <>
-          <h1>{t(issue)}</h1>
-          <Link to="/start" className="font-extrabold underline">{t("challengeHistory.pickNext")}</Link>
-        </>
-      ) : challenge ? (
+      {challenge ? (
         <>
           <h1>{challenge.name}</h1>
           <p>{t("batch6.days", { n: challenge.days })} · {challenge.starts_on} — {challenge.ends_on}</p>

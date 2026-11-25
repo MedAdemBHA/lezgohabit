@@ -28,7 +28,7 @@ function GoogleG() {
 }
 
 function AuthPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const nav = useNavigate();
   const [adult, setAdult] = useState(false);
   const [email, setEmail] = useState("");
