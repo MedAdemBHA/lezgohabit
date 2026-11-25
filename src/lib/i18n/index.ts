@@ -22,6 +22,10 @@ export const LANG_LABELS: Record<Lang, string> = { en: "EN", fr: "FR", ar: "عر
 export const isRtl = (l: string) => l === "ar" || l === "aeb";
 export const LANG_KEY = "lezgo_lang";
 
+export function selectLang(value: unknown): Lang | undefined {
+  return LANGS.find((lang) => lang === value);
+}
+
 if (!i18n.isInitialized) {
   void i18n.use(initReactI18next).init({
     resources: {

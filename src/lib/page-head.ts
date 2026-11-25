@@ -1,4 +1,5 @@
 import { publicUrl } from "@/lib/public-url";
+import type { Lang } from "@/lib/i18n";
 
 type PublicHeadOptions = {
   /** Public pages opt out of the default noindex metadata. */
@@ -8,10 +9,10 @@ type PublicHeadOptions = {
   imageAlt?: string;
   localeAlternates?: boolean;
   /** Page language, published as og:locale. */
-  lang?: "en" | "fr" | "ar";
+  lang?: Lang;
 };
 
-const OG_LOCALES = { en: "en_US", fr: "fr_FR", ar: "ar_AR" } as const;
+const OG_LOCALES = { en: "en_US", fr: "fr_FR", ar: "ar_AR", aeb: "ar_TN" } as const;
 /** Every page shares with a preview image; the home card is the default. */
 const DEFAULT_IMAGE = "/og-home.png";
 

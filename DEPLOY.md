@@ -51,13 +51,13 @@ Supabase → **Authentication**:
 - **URL Configuration**: Site URL = your Worker URL (e.g. `https://lezgo.<you>.workers.dev`); add `https://lezgo.<you>.workers.dev/**` to Redirect URLs.
 - **Sign In / Providers → Google**: create an OAuth client (type *Web*) in Google Cloud Console with redirect URI
   `https://yjkniwjneqmtatwozcpv.supabase.co/auth/v1/callback`, then paste its Client ID and Secret here.
-- **Emails**: Supabase's built-in mailer only sends a few emails per hour. Before real users, add your own SMTP (e.g. Resend) under **Authentication → Emails → SMTP**.
+- **Emails**: Supabase's built-in mailer delivers to project team addresses. Configure and test custom SMTP under **Authentication → Emails → SMTP** before setting the frontend build variable `VITE_PUBLIC_EMAIL_SIGNIN=true`. Google is the public sign-in option until that flag is enabled. The admin sign-in screen still offers email for team testing.
 
 ## 3. After the first deploy
 
 1. Store the app URL so the notifications job starts calling it:
    `select vault.create_secret('https://lezgo.<you>.workers.dev', 'lezgo_app_url');`
-2. Sign in with `med.adem.1999@gmail.com` (becomes admin automatically) → **Admin → Seed demo**, so "Explore as guest" works.
+2. Provision the three demo secrets in the hosting environment, redeploy, and sign in with `med.adem.1999@gmail.com` (becomes admin automatically). Go to **Admin → Demo data → Seed demo**. The guest button appears after the sample account is ready.
 3. Accounts from the old Lovable app are not moved; people sign up again.
 
 ## Changing the database from now on

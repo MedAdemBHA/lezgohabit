@@ -1,8 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
-import { localDate } from "@/lib/time";
 import type { Database } from "@/integrations/supabase/types";
+import type { CatalogCard } from "@/lib/challenge-catalog";
 
-export type FeaturedCreatorChallenge = { name: string; code: string; days: number };
 export type PublicChallengePreview = {
   id: string;
   season_id: string;
@@ -46,19 +45,17 @@ export async function getPublicChallengePreview(code: string): Promise<PublicCha
   return data as unknown as PublicChallengePreview | null;
 }
 
-export async function getFeaturedCreatorChallenges(): Promise<FeaturedCreatorChallenge[]> {
-  const { data, error } = await publicSupabase().rpc("featured_creator_challenges");
-  if (error) throw new Error("featured_challenges_unavailable");
-  return (data ?? []) as unknown as FeaturedCreatorChallenge[];
+export async function getPublicFeaturedChallenges(): Promise<{ code: string; starts_on: string; ends_on: string }[]> {
+  const cards = await getPublicChallengeCatalog();
+  return cards.flatMap((card) => card.kind === "creator" && card.code
+    ? [{ code: card.code, starts_on: card.starts_on, ends_on: card.ends_on }]
+    : []);
 }
 
-export async function getPublicFeaturedChallenges(): Promise<{ code: string; starts_on: string; ends_on: string }[]> {
+export async function getPublicChallengeCatalog(): Promise<CatalogCard[]> {
   const { data, error } = await publicSupabase().rpc("public_challenge_catalog");
   if (error) throw new Error("public_challenges_unavailable");
-  const cards = (data ?? []) as unknown as { kind?: string; code?: string | null; starts_on?: string; ends_on?: string }[];
-  return cards
-    .filter((card) => card.kind === "creator" && typeof card.code === "string" && !!card.code)
-    .map((card) => ({ code: card.code!, starts_on: card.starts_on ?? "", ends_on: card.ends_on ?? "" }));
+  return (data ?? []) as unknown as CatalogCard[];
 }
 
 export type CrewInvitePreview = {
@@ -74,20 +71,4 @@ export async function getCrewInvitePreview(code: string): Promise<CrewInvitePrev
   const { data, error } = await publicSupabase().rpc("crew_invite_preview", { _code: code });
   if (error) throw new Error("public_challenge_unavailable");
   return data as unknown as CrewInvitePreview | null;
-}
-
-export type OfficialEventPreview = {
-  id: string;
-  name: Record<string, string>;
-  goal?: Record<string, string>;
-  color?: string;
-  starts_on: string;
-  ends_on: string;
-};
-export async function getCurrentOfficialEvent(): Promise<OfficialEventPreview | null> {
-  const { data, error } = await publicSupabase().rpc("public_challenge_catalog");
-  if (error) throw new Error("public_challenges_unavailable");
-  const cards = (data ?? []) as unknown as (OfficialEventPreview & { kind: string })[];
-  const date = localDate("Africa/Tunis");
-  return cards.find(card => card.kind === "official" && card.starts_on <= date && date <= card.ends_on) ?? null;
 }

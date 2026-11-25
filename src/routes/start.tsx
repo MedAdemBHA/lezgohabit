@@ -1,150 +1,164 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { ArrowLeft, ArrowRight, Lock } from "lucide-react";
-import { Brand } from "@/components/lezgo/brand";
-import { DesignLanguage } from "@/components/lezgo/design-language";
+import {
+  ArrowLeft,
+  ArrowRight,
+  CalendarDays,
+  Check,
+  CircleHelp,
+  Lock,
+  Plus,
+  Ticket,
+  User,
+  Users,
+} from "lucide-react";
+import {
+  ChallengeDates,
+  ChallengeHabits,
+  InviteCodeButton,
+  PublicHeader,
+  usePublicLanguage,
+} from "@/components/lezgo/public-entry";
 import { HabitIcon } from "@/components/lezgo/habit-icon";
-import { Num, StickerButton, Tile, inputCls } from "@/components/lezgo/ui";
-import { challengePreview, crewInvitePreview } from "@/lib/challenge-preview.functions";
-import { supabase } from "@/integrations/supabase/client";
+import { Field, Num, StickerButton, Tile, inputCls } from "@/components/lezgo/ui";
+import {
+  challengePreview,
+  crewInvitePreview,
+  publicChallengeCatalog,
+} from "@/lib/challenge-preview.functions";
+import { groupCatalog, type CatalogCard } from "@/lib/challenge-catalog";
 import { templatesQuery, useUser, type Template } from "@/lib/data";
-import { formatDayMonth, loc } from "@/lib/i18n";
+import i18n, { formatDayMonth, loc, selectLang, type Lang } from "@/lib/i18n";
 import { pageHead } from "@/lib/page-head";
-import { saveStartFlow, toggleStartHabit, type StartFlow } from "@/lib/start-flow";
-import { eventColor, myActiveEventQuery } from "@/lib/event-data";
-import type { CrewInvitePreview } from "@/lib/public-challenges.server";
+import { myActiveEventQuery } from "@/lib/event-data";
 import { localDate } from "@/lib/time";
+import {
+  MAX_CHALLENGE_HABITS,
+  saveStartFlow,
+  toggleStartHabit,
+  type StartFlow,
+} from "@/lib/start-flow";
 
-type CatalogHabit = { key: string; name: unknown; what_counts: unknown; kind: string; target: number; unit: string | null; is_faith: boolean };
-type CatalogCard = { id: string; season_id: string; challenge_id: string | null; kind: "official" | "creator"; name: unknown; creator: string; code: string | null; days: number; starts_on: string; ends_on: string; status: string; goal?: unknown; color?: string; members: number; habits: CatalogHabit[] };
-type Invite =
-  | { type: "challenge"; challenge: CatalogCard }
-  | { type: "crew"; crew: CrewInvitePreview }
-  | { type: "invalid" | "early" | "closed" | "full" };
 type Step = "challenge" | "personal" | "play" | "invite";
-type PlayMode = "solo" | "find" | "create" | "code";
+type InviteResult =
+  | { kind: "challenge"; card: CatalogCard }
+  | { kind: "crew"; name: string }
+  | {
+      kind: "unavailable";
+      message:
+        "events.invalidCode" | "events.closed" | "events.early" | "events.crewFull" | "batch6.full";
+    };
+const PLAY_OPTIONS = { solo: User, find: Users, create: Plus, code: Ticket };
+type PlayMode = keyof typeof PLAY_OPTIONS;
+const INVITE_CODE = /^[A-Z0-9]{6}$/;
+const DURATIONS = [7, 14, 21, 30, 40, 66, 90];
 
 export const Route = createFileRoute("/start")({
-  ssr: false,
-  validateSearch: (s: Record<string, unknown>) => ({
-    ...(typeof s["code"] === "string" ? { code: s["code"].toUpperCase() } : {}),
-    ...(s["lang"] === "fr" || s["lang"] === "ar" ? { lang: s["lang"] } : {}),
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { code?: string | undefined; season?: string | undefined; lang?: Lang | undefined } => ({
+    code: typeof search["code"] === "string" ? search["code"].trim().toUpperCase() : undefined,
+    season: typeof search["season"] === "string" ? search["season"] : undefined,
+    lang: selectLang(search["lang"]),
   }),
-  head: () => pageHead("Start a challenge — lezgo", "Choose a challenge and make your first check-in.", {
+  loader: async () => {
+    try {
+      return { ...groupCatalog(await publicChallengeCatalog()), catalogError: false };
+    } catch {
+      return { open: [], upcoming: [], catalogError: true };
+    }
+  },
+  head: ({ match }) => {
+    const lang = match.search.lang ?? "en";
+    const t = i18n.getFixedT(lang);
+    return pageHead(`${t("startFlow.pickTitle")} — lezgo`, t("startFlow.pickSub"), {
       privatePage: false,
       canonicalPath: "/start",
       imagePath: "/og-home.png",
-      imageAlt: "Choose a challenge on lezgo",
-    }),
+      imageAlt: t("landing.hero").replace(/\n/g, " "),
+      lang,
+    });
+  },
   component: StartPage,
 });
 
 function StartPage() {
-  const { t, i18n } = useTranslation();
+  const { lang: requestedLang, code = "", season } = Route.useSearch();
+  const lang = usePublicLanguage(requestedLang);
+  const { open, upcoming, catalogError } = Route.useLoaderData();
+  const t = i18n.getFixedT(lang);
   const nav = useNavigate();
-  const code = Route.useSearch().code ?? "";
+  const router = useRouter();
   const user = useUser();
-  const active = useQuery({ ...myActiveEventQuery(user?.id ?? ""), enabled: !!user });
-  const activeName = loc(active.data?.seasons?.name, i18n.language);
-  const catalog = useQuery({
-    queryKey: ["publicChallengeCatalog"],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc("public_challenge_catalog");
-      if (error) throw error;
-      return (data ?? []) as unknown as CatalogCard[];
-    },
-  });
-  const templates = useQuery(templatesQuery);
-  const inviteQuery = useQuery({
-    queryKey: ["startInvite", code],
-    enabled: /^[A-Z0-9]{6}$/.test(code),
-    queryFn: async (): Promise<Invite> => {
-      const result = await challengePreview({ data: code }) as unknown as (CatalogCard & { full?: boolean; ended?: boolean }) | null;
-      if (!result) {
-        const crew = await crewInvitePreview({ data: code });
-        if (!crew) return { type: "invalid" };
-        if (crew.ended) return { type: "closed" };
-        if (crew.full) return { type: "full" };
-        if (crew.starts_on > localDate("Africa/Tunis")) return { type: "early" };
-        return { type: "crew", crew };
-      }
-      if (result.ended) return { type: "closed" };
-      if (result.full) return { type: "full" };
-      if (result.starts_on > localDate("Africa/Tunis")) return { type: "early" };
-      return { type: "challenge", challenge: { ...result, kind: "creator", challenge_id: result.challenge_id ?? result.id, members: result.members ?? 0, status: "live", name: { en: result.name, fr: result.name, ar: result.name, aeb: result.name }, habits: result.habits ?? [] } };
-    },
-  });
+  const activeEvent = useQuery({ ...myActiveEventQuery(user?.id ?? ""), enabled: !!user });
+  const activeName = loc(activeEvent.data?.seasons?.name, lang);
+  const suggested = open.find((card) => card.season_id === season) ?? null;
   const [step, setStep] = useState<Step>("challenge");
   const [selected, setSelected] = useState<CatalogCard | null>(null);
-  const [personal, setPersonal] = useState(false);
   const [days, setDays] = useState(7);
   const [picked, setPicked] = useState<string[]>([]);
   const [playMode, setPlayMode] = useState<PlayMode>("solo");
   const [crewCode, setCrewCode] = useState("");
   const [busy, setBusy] = useState(false);
-  const processedInvite = useRef("");
-  const today = localDate("Africa/Tunis");
-  const allOfficial = (catalog.data ?? []).filter(
-    (card) => card.kind === "official" && card.starts_on <= today && today <= card.ends_on,
-  );
-  const longerOfficial = allOfficial.filter((card) => card.days > 14);
-  const shortOfficial = allOfficial.filter((card) => card.days <= 14);
-  const upcomingOfficial = (catalog.data ?? [])
-    .filter((card) => card.kind === "official" && card.starts_on > today)
-    .sort((a, b) => a.starts_on.localeCompare(b.starts_on));
-  const creators = (catalog.data ?? []).filter((card) => card.kind === "creator");
-  const templatesList = (templates.data ?? []).filter((tpl) => !tpl.is_faith && tpl.key !== "custom");
-  const pickedTemplates = picked.map((key) => templatesList.find((tpl) => tpl.key === key)).filter((tpl): tpl is Template => !!tpl);
+  const heading = useRef<HTMLHeadingElement>(null);
+  const previousStep = useRef(step);
+  const templates = useQuery({ ...templatesQuery, enabled: step === "personal" });
+  const invite = useQuery({
+    queryKey: ["startInvite", code],
+    enabled: INVITE_CODE.test(code),
+    queryFn: async (): Promise<InviteResult> => {
+      const today = localDate("Africa/Tunis");
+      const challenge = await challengePreview({ data: code });
+      if (challenge) {
+        if (challenge.ended) return { kind: "unavailable", message: "events.closed" };
+        if (challenge.full) return { kind: "unavailable", message: "batch6.full" };
+        if (challenge.starts_on > today) return { kind: "unavailable", message: "events.early" };
+        return {
+          kind: "challenge",
+          card: { ...challenge, kind: "creator", name: { en: challenge.name } },
+        };
+      }
+      const crew = await crewInvitePreview({ data: code });
+      if (!crew) return { kind: "unavailable", message: "events.invalidCode" };
+      if (crew.ended) return { kind: "unavailable", message: "events.closed" };
+      if (crew.full) return { kind: "unavailable", message: "events.crewFull" };
+      if (crew.starts_on > today) return { kind: "unavailable", message: "events.early" };
+      return { kind: "crew", name: crew.name };
+    },
+    retry: false,
+  });
 
   useEffect(() => {
-    if (!code || inviteQuery.data === undefined || processedInvite.current === code) return;
-    processedInvite.current = code;
-    if (inviteQuery.data.type === "challenge") setSelected(inviteQuery.data.challenge);
-    else if (inviteQuery.data.type === "crew") setStep("invite");
-  }, [code, inviteQuery.data]);
+    if (previousStep.current === step) return;
+    previousStep.current = step;
+    heading.current?.focus();
+  }, [step]);
 
-  function toggleHabit(tpl: Template) {
-    setPicked((current) => toggleStartHabit(current, tpl.key));
+  useEffect(() => {
+    if (invite.data?.kind === "crew") setStep("invite");
+  }, [invite.data]);
+
+  function enterCode(nextCode?: string) {
+    if (nextCode === code) return;
+    setSelected(null);
+    setStep("challenge");
+    void nav({ to: "/start", search: { code: nextCode, lang } });
   }
 
-  function continueToPlay() {
-    if (personal) {
-      if (picked.length < 1 || picked.length > 6) return;
-      setStep("play");
-      return;
-    }
-    if (selected?.season_id === active.data?.season_id && active.data) {
+  function selectCard(card: CatalogCard) {
+    if (activeEvent.data?.season_id === card.season_id) {
       void nav({ to: "/today" });
-    } else if (selected) setStep("play");
-  }
-
-  async function continueToSignIn() {
-    if (busy) return;
-    let flow: StartFlow;
-    if (personal) {
-      if (!pickedTemplates.length) return;
-      flow = {
-        challenge: {
-          kind: "personal",
-          name: t("startFlow.personalName", { n: days }),
-          days,
-          habits: pickedTemplates.map((tpl) => ({ key: tpl.key, target: Number(tpl.default_target) })),
-        },
-        play: { mode: "solo" },
-      };
-    } else if (selected?.kind === "official") {
-      flow = playMode === "code"
-        ? { challenge: { kind: "official", seasonId: selected.season_id }, play: { mode: "code", code: crewCode } }
-        : { challenge: { kind: "official", seasonId: selected.season_id }, play: { mode: playMode as "solo" | "find" | "create" } };
-    } else if (selected?.kind === "creator" && selected.code) {
-      flow = playMode === "code"
-        ? { challenge: { kind: "creator", code: selected.code }, play: { mode: "code", code: crewCode } }
-        : { challenge: { kind: "creator", code: selected.code }, play: { mode: playMode as "solo" | "find" | "create" } };
-    } else {
       return;
     }
+    setSelected(card);
+    setPlayMode("solo");
+    setCrewCode("");
+    setStep("play");
+  }
+
+  async function continueToAuth(flow: StartFlow) {
+    if (busy) return;
     setBusy(true);
     try {
       saveStartFlow(flow);
@@ -154,129 +168,456 @@ function StartPage() {
     }
   }
 
-  async function continueCrewInvite() {
-    if (!/^[A-Z0-9]{6}$/.test(code)) return;
-    setBusy(true);
-    try {
-      saveStartFlow({ challenge: { kind: "crew_invite", code } });
-      await nav({ to: "/auth" });
-    } finally {
-      setBusy(false);
+  const templatesList = (templates.data ?? []).filter(
+    (item) => !item.is_faith && item.key !== "custom",
+  );
+  const pickedTemplates = picked
+    .map((key) => templatesList.find((item) => item.key === key))
+    .filter((item): item is Template => !!item);
+  const preview = invite.data;
+  const inviteCard =
+    preview?.kind === "challenge"
+      ? (open.find((card) => card.code === code) ?? preview.card)
+      : null;
+  const highlighted = inviteCard ?? suggested;
+  const visibleCards = highlighted
+    ? [highlighted, ...open.filter((card) => card.season_id !== highlighted.season_id)]
+    : open;
+  const inviteError =
+    code && !INVITE_CODE.test(code)
+      ? t("events.invalidCode")
+      : invite.isError
+        ? t("events.joinError")
+        : preview?.kind === "unavailable"
+          ? t(preview.message)
+          : "";
+
+  function startPersonalChallenge() {
+    if (!pickedTemplates.length) return;
+    void continueToAuth({
+      challenge: {
+        kind: "personal",
+        name: t("startFlow.personalName", { n: days }),
+        days,
+        habits: pickedTemplates.map((item) => ({
+          key: item.key,
+          target: Number(item.default_target),
+        })),
+      },
+      play: { mode: "solo" },
+    });
+  }
+
+  function joinSelectedChallenge() {
+    if (!selected) return;
+    const play = playMode === "code" ? { mode: playMode, code: crewCode } : { mode: playMode };
+    if (selected.kind === "official") {
+      void continueToAuth({ challenge: { kind: "official", seasonId: selected.season_id }, play });
+    } else if (selected.code) {
+      void continueToAuth({ challenge: { kind: "creator", code: selected.code }, play });
     }
   }
 
-  const challengeSections = [
-    { label: t("startFlow.official"), cards: longerOfficial },
-    { label: t("startFlow.short"), cards: shortOfficial },
-    { label: t("startFlow.creator"), cards: creators.filter(card => card.starts_on <= today && today <= card.ends_on) },
-  ];
-
   return (
-    <main className="design-screen mx-auto flex min-h-screen w-full max-w-[480px] flex-col gap-4 px-5 pb-8 pt-4">
-      <header className="flex items-center justify-between gap-2">
-        <Brand size={36} />
-        <div className="flex items-center gap-2">
-          <DesignLanguage />
-          <Link to="/auth" className="inline-flex min-h-11 shrink-0 items-center rounded-xl bg-card px-3 text-sm font-extrabold sticker-border">{t("auth.signIn")}</Link>
-        </div>
-      </header>
+    <div className="public-site">
+      <div className="public-wrap">
+        <PublicHeader
+          lang={lang}
+          onBrowse={() => setStep("challenge")}
+          onLanguage={(next) =>
+            void nav({
+              to: "/start",
+              search: { lang: next, code: code || undefined, season },
+              replace: true,
+            })
+          }
+        />
 
-      {active.data && <div className="space-y-2 rounded-2xl bg-yellow p-3 sticker-border">
-        <p className="font-extrabold">{activeName ? t("events.current", { name: activeName }) : t("events.currentGeneric")}</p>
-        <p className="text-sm">{t("events.keepPlaying")}</p>
-        <div className="flex flex-wrap gap-2">
-          <Link to="/today"><StickerButton size="sm">{t("events.goToday")}</StickerButton></Link>
-          <Link to="/challenges" search={{ season: active.data.season_id }}><StickerButton size="sm" variant="secondary">{t("events.viewEvent")}</StickerButton></Link>
-        </div>
-      </div>}
-      {code && (!/^[A-Z0-9]{6}$/.test(code) || inviteQuery.isError || inviteQuery.data?.type === "invalid" || inviteQuery.data?.type === "early" ||
-        inviteQuery.data?.type === "closed" || inviteQuery.data?.type === "full") &&
-        <p role="alert" className="sticker rounded-xl p-3 font-semibold">{t(inviteQuery.isError ? "events.joinError"
-          : inviteQuery.data?.type === "early" ? "events.early" : inviteQuery.data?.type === "closed" ? "events.closed"
-          : inviteQuery.data?.type === "full" ? "batch6.full" : "events.invalidCode")}</p>}
-
-      {step === "invite" ? (
-        <section className="my-auto space-y-4 rounded-[22px] bg-yellow p-5 sticker-border shadow-hard-lg">
-          <Lock size={28} />
-          <h1 className="text-[28px] font-extrabold">{inviteQuery.data?.type === "crew" ? inviteQuery.data.crew.name : t("startFlow.inviteTitle")}</h1>
-          <Num className="block text-center text-[32px] tracking-[0.25em]">{code}</Num>
-          <p className="font-semibold">{t("startFlow.inviteCrewBody")}</p>
-          <StickerButton block size="lg" disabled={busy} onClick={() => void continueCrewInvite()}>{t("startFlow.joinInvite")}<ArrowRight className="rtl:-scale-x-100" /></StickerButton>
-        </section>
-      ) : step === "challenge" ? (
-        <>
-          <div><p className="text-[12px] font-extrabold uppercase tracking-wide">{t("startFlow.step", { n: 1 })}</p><h1 className="mt-1 text-[30px] font-extrabold leading-tight">{t("startFlow.pickTitle")}</h1><p className="mt-1 text-[14px] font-semibold text-design-muted">{t("events.sameHabits")}</p></div>
-          {code && inviteQuery.data?.type === "challenge" && selected && <div className="rounded-[18px] bg-yellow p-3 text-[14px] font-extrabold sticker-border">{t("startFlow.inviteSelected")}</div>}
-          {catalog.isLoading || (code && inviteQuery.isLoading) ? <p>{t("common.loading")}</p> : catalog.isError ? <p>{t("common.error")}</p> : challengeSections.map((section) => section.cards.length > 0 && (
-            <section key={section.label} className="space-y-2">
-              <h2 className="text-[13px] font-extrabold uppercase tracking-wide">{section.label}</h2>
-              {section.cards.map((card) => <ChallengeChoice key={card.id} card={card} selected={selected?.id === card.id || (!!selected?.code && selected.code === card.code)} onSelect={() => { setPersonal(false); setSelected(card); }} />)}
-            </section>
-          ))}
-          {catalog.isSuccess && !allOfficial.length && <p>{t("events.noLive")}</p>}
-          {code && inviteQuery.data?.type === "challenge" && selected && !catalog.data?.some((card) => card.code === code) && <ChallengeChoice card={selected} selected onSelect={() => undefined} />}
-          <button type="button" className={`rounded-[18px] border-2 p-4 text-start sticker-border ${personal ? "bg-lime shadow-hard" : "bg-card"}`} onClick={() => { setPersonal(true); setSelected(null); setStep("personal"); }}>
-            <span className="block text-[18px] font-extrabold">{t("startFlow.personal")}</span><span className="text-[13px] font-semibold">{t("startFlow.personalPrivate")}</span>
-          </button>
-          {upcomingOfficial.length > 0 && (
-            <section aria-labelledby="upcoming-events" className="space-y-2">
-              <h2 id="upcoming-events" className="text-[13px] font-extrabold uppercase tracking-wide">{t("socialDesign.upcoming")}</h2>
-              <ul className="space-y-2">
-                {upcomingOfficial.map((card) => (
-                  <li key={card.id} className="flex items-center justify-between gap-3 rounded-[18px] bg-card p-3 sticker-border">
-                    <span className="font-extrabold">{loc(card.name, i18n.language)}</span>
-                    <time dateTime={card.starts_on} className="shrink-0 text-sm font-semibold">
-                      {formatDayMonth(card.starts_on, i18n.language)}
-                    </time>
-                  </li>
-                ))}
-              </ul>
+        <main className="catalog-page">
+          {activeEvent.data && (
+            <section className="catalog-notice space-y-2">
+              <h2 className="font-extrabold">
+                {activeName
+                  ? t("events.current", { name: activeName })
+                  : t("events.currentGeneric")}
+              </h2>
+              <p className="text-sm">{t("events.keepPlaying")}</p>
+              <div className="flex flex-wrap gap-2">
+                <Link to="/today" className="public-action public-action-primary">
+                  {t("events.goToday")}
+                </Link>
+                <Link
+                  to="/challenges"
+                  search={{ season: activeEvent.data.season_id }}
+                  className="public-action public-action-secondary"
+                >
+                  {t("events.viewEvent")}
+                </Link>
+              </div>
             </section>
           )}
-          {selected && <div className="sticky bottom-0 z-10 bg-background py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
-            <StickerButton block size="lg" onClick={continueToPlay}>{t(active.data?.season_id === selected.season_id ? "events.goToday" : "common.next")}<ArrowRight className="rtl:-scale-x-100" /></StickerButton>
-          </div>}
-        </>
-      ) : step === "personal" ? (
-        <>
-          <div className="flex items-center gap-3"><StickerButton variant="secondary" className="size-11 p-0" aria-label={t("common.back")} onClick={() => setStep("challenge")}><ArrowLeft className="rtl:-scale-x-100" /></StickerButton><div><p className="text-[12px] font-extrabold uppercase tracking-wide">{t("startFlow.step", { n: 2 })}</p><h1 className="text-[26px] font-extrabold">{t("startFlow.personal")}</h1></div></div>
-          <p className="text-[14px] font-semibold">{t("startFlow.personalHint")}</p>
-          <div className="flex flex-wrap gap-2">{[7,14,21,30,40,66,90].map((n) => <button key={n} type="button" aria-pressed={days === n} onClick={() => setDays(n)} className={`min-h-11 rounded-full px-4 font-extrabold sticker-border ${days === n ? "bg-lime shadow-hard-sm" : "bg-card"}`}>{t("batch6.days", { n })}</button>)}</div>
-          <div className="flex items-center justify-between"><h2 className="font-extrabold">{t("startFlow.pickHabits")}</h2><Num className="rounded-full bg-ink px-3 py-1 text-lime">{picked.length}/6</Num></div>
-          {templates.isLoading ? <p>{t("common.loading")}</p> : <div className="grid grid-cols-2 gap-3">{templatesList.map((tpl) => {
-            const on = picked.includes(tpl.key);
-            return <Tile key={tpl.id} selected={on} aria-pressed={on} onClick={() => toggleHabit(tpl)}><span className="flex items-center justify-between"><HabitIcon name={tpl.icon} className="size-6" />{on && <span className="rounded-full bg-ink px-2 text-lime">✓</span>}</span><span className="truncate text-[15px] font-extrabold">{loc(tpl.name,i18n.language)}</span><span className="truncate text-[11px] font-semibold text-design-muted">{loc(tpl.what_counts,i18n.language) || loc(tpl.description,i18n.language)}</span></Tile>;
-          })}</div>}
-          <StickerButton block size="lg" disabled={picked.length < 1 || picked.length > 6} onClick={() => setStep("play")}>{t("common.next")}<ArrowRight className="rtl:-scale-x-100" /></StickerButton>
-        </>
-      ) : (
-        <>
-          <div className="flex items-center gap-3"><StickerButton variant="secondary" className="size-11 p-0" aria-label={t("common.back")} onClick={() => setStep(personal ? "personal" : "challenge")}><ArrowLeft className="rtl:-scale-x-100" /></StickerButton><div><p className="text-[12px] font-extrabold uppercase tracking-wide">{t("startFlow.step", { n: personal ? 3 : 2 })}</p><h1 className="text-[26px] font-extrabold">{t("startFlow.playTitle")}</h1></div></div>
-          {selected && <div className="rounded-[18px] bg-yellow p-3 sticker-border"><strong>{loc(selected.name,i18n.language)}</strong><p className="text-[13px] font-semibold">{t("batch6.days", { n: selected.days })}</p></div>}
-          {personal ? <>
-            <button type="button" className="min-h-[60px] rounded-[18px] bg-lime p-4 text-start font-extrabold sticker-border shadow-hard" aria-pressed="true" onClick={() => setPlayMode("solo")}>{t("startFlow.solo")}</button>
-            <p className="text-[13px] font-semibold text-design-muted">{t("startFlow.personalSoloHint")}</p>
-          </> : <div className="grid grid-cols-2 gap-3">
-            {(["solo","find","create","code"] as const).map((mode) => <button key={mode} type="button" aria-pressed={playMode === mode} onClick={() => setPlayMode(mode)} className={`min-h-[76px] rounded-[18px] p-3 text-start font-extrabold sticker-border ${playMode === mode ? "bg-lime shadow-hard" : "bg-card"}`}>{t(`startFlow.${mode}`)}</button>)}
-          </div>}
-          {!personal && playMode === "code" && <label className="block text-[14px] font-extrabold">{t("startFlow.codeHint")}<input dir="ltr" value={crewCode} maxLength={6} autoCapitalize="characters" onChange={(e) => setCrewCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,""))} className={`${inputCls} num mt-2 text-center text-[24px] tracking-[0.25em]`} /></label>}
-          <div className="mt-auto space-y-3"><StickerButton block size="lg" disabled={busy || (!!active.data && playMode !== "code") || (!personal && playMode === "code" && crewCode.length !== 6)} onClick={() => void continueToSignIn()}>{t("startFlow.continue")}<ArrowRight className="rtl:-scale-x-100" /></StickerButton><p className="text-center text-[12px] font-semibold text-design-muted">{t("startFlow.signInNext")}</p></div>
-        </>
-      )}
-    </main>
+          {step === "challenge" ? (
+            <>
+              <section className="catalog-intro">
+                <div>
+                  <h1 ref={heading} tabIndex={-1}>
+                    {t("startFlow.pickTitle")}
+                  </h1>
+                  <p>{t("startFlow.pickSub")}</p>
+                </div>
+                <InviteCodeButton lang={lang} onSubmit={enterCode} />
+              </section>
+              {invite.isLoading && (
+                <p role="status" className="font-semibold">
+                  {t("common.loading")}
+                </p>
+              )}
+              {inviteError && (
+                <p role="alert" className="catalog-notice">
+                  {inviteError}
+                </p>
+              )}
+              <div className="catalog-grid">
+                <section id="open-challenges" aria-labelledby="open-title" className="catalog-open">
+                  <h2 id="open-title" className="catalog-section-title">
+                    <span className="public-status-dot" />
+                    {t("startFlow.openNow")}
+                  </h2>
+                  {catalogError && (
+                    <div className="catalog-notice">
+                      <p role="alert">{t("startFlow.catalogError")}</p>
+                      <button
+                        type="button"
+                        className="min-h-11 font-extrabold underline"
+                        onClick={() => void router.invalidate()}
+                      >
+                        {t("common.retry")}
+                      </button>
+                    </div>
+                  )}
+                  {!catalogError && !visibleCards.length && (
+                    <p className="catalog-notice">{t("startFlow.noOpen")}</p>
+                  )}
+                  {visibleCards.map((card) => (
+                    <ChallengeChoice
+                      key={card.id}
+                      card={card}
+                      lang={lang}
+                      invited={inviteCard?.id === card.id}
+                      current={activeEvent.data?.season_id === card.season_id}
+                      onSelect={() => selectCard(card)}
+                    />
+                  ))}
+                  <p className="catalog-rule">
+                    <CircleHelp className="size-4 shrink-0" aria-hidden="true" />
+                    {t("startFlow.oneAtATime")}
+                  </p>
+                </section>
+                <aside className="catalog-side">
+                  <section className="catalog-personal">
+                    <span className="catalog-personal-icon" aria-hidden="true">
+                      <Lock className="size-5" />
+                    </span>
+                    <h2>{t("startFlow.personal")}</h2>
+                    <p>{t("startFlow.personalPrivate")}</p>
+                    <button
+                      type="button"
+                      className="public-action public-action-secondary"
+                      onClick={() => {
+                        setSelected(null);
+                        setStep("personal");
+                      }}
+                    >
+                      {t("startFlow.personalAction")}{" "}
+                      <ArrowRight className="size-5 rtl:rotate-180" aria-hidden="true" />
+                    </button>
+                  </section>
+                  {upcoming.length > 0 && (
+                    <section className="catalog-upcoming" aria-labelledby="upcoming-events">
+                      <h2 id="upcoming-events" className="catalog-section-title">
+                        <CalendarDays className="size-5 shrink-0" aria-hidden="true" />
+                        {t("socialDesign.upcoming")}
+                      </h2>
+                      <ul>
+                        {upcoming.map((card) => (
+                          <li key={card.id}>
+                            <div>
+                              <div className="font-extrabold leading-tight">
+                                {loc(card.name, lang)}
+                              </div>
+                              <time dateTime={card.starts_on} className="catalog-upcoming-date">
+                                {t("startFlow.opensOn", {
+                                  date: formatDayMonth(card.starts_on, lang),
+                                })}
+                              </time>
+                            </div>
+                            <span className="catalog-upcoming-length">
+                              {t("batch6.days", { n: card.days })}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </section>
+                  )}
+                </aside>
+              </div>
+            </>
+          ) : step === "invite" ? (
+            <section className="public-flow catalog-invite">
+              <StepHeading
+                heading={heading}
+                title={preview?.kind === "crew" ? preview.name : t("startFlow.inviteTitle")}
+                back={t("common.back")}
+                onBack={() => enterCode()}
+              />
+              <Num className="block text-center text-[32px] tracking-[0.25em]">{code}</Num>
+              <p className="font-semibold">{t("startFlow.inviteCrewBody")}</p>
+              <StickerButton
+                block
+                size="lg"
+                disabled={busy || preview?.kind !== "crew"}
+                onClick={() => void continueToAuth({ challenge: { kind: "crew_invite", code } })}
+              >
+                {t("startFlow.joinInvite")}
+                <ArrowRight className="size-5 rtl:rotate-180" aria-hidden="true" />
+              </StickerButton>
+            </section>
+          ) : step === "personal" ? (
+            <section className="public-flow">
+              <StepHeading
+                heading={heading}
+                title={t("startFlow.personal")}
+                back={t("common.back")}
+                onBack={() => setStep("challenge")}
+              />
+              <p className="font-semibold text-design-body">{t("startFlow.personalHint")}</p>
+              <fieldset className="space-y-2">
+                <legend className="font-extrabold">{t("startFlow.duration")}</legend>
+                <div className="flex flex-wrap gap-2">
+                  {DURATIONS.map((n) => (
+                    <button
+                      key={n}
+                      type="button"
+                      aria-pressed={days === n}
+                      onClick={() => setDays(n)}
+                      className={`min-h-11 rounded-full px-4 font-extrabold sticker-border ${days === n ? "bg-lime shadow-hard-sm" : "bg-card"}`}
+                    >
+                      {t("batch6.days", { n })}
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
+              <div className="flex items-center justify-between gap-2">
+                <h2 className="font-extrabold">{t("startFlow.pickHabits")}</h2>
+                <Num className="rounded-full bg-ink px-3 py-1 text-lime">
+                  {picked.length}/{MAX_CHALLENGE_HABITS}
+                </Num>
+              </div>
+              {templates.isLoading && <p role="status">{t("common.loading")}</p>}
+              {templates.isError && (
+                <div role="alert">
+                  <p>{t("common.error")}</p>
+                  <button
+                    type="button"
+                    className="min-h-11 font-extrabold underline"
+                    onClick={() => void templates.refetch()}
+                  >
+                    {t("common.retry")}
+                  </button>
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-3">
+                {templatesList.map((item) => {
+                  const on = picked.includes(item.key);
+                  return (
+                    <Tile
+                      key={item.id}
+                      className="h-auto min-h-24 gap-2 disabled:opacity-65"
+                      selected={on}
+                      aria-pressed={on}
+                      disabled={!on && picked.length >= MAX_CHALLENGE_HABITS}
+                      onClick={() => setPicked((items) => toggleStartHabit(items, item.key))}
+                    >
+                      <span className="flex w-full items-center justify-between gap-1">
+                        <HabitIcon name={item.icon} className="size-6" />
+                        {on && <Check className="size-5" aria-hidden="true" />}
+                      </span>
+                      <span className="text-sm font-extrabold">{loc(item.name, lang)}</span>
+                      <span className="text-xs font-semibold text-design-body">
+                        {loc(item.what_counts, lang) || loc(item.description, lang)}
+                      </span>
+                    </Tile>
+                  );
+                })}
+              </div>
+              <div className="catalog-flow-action">
+                <div>
+                  <p className="font-extrabold">{t("startFlow.personalName", { n: days })}</p>
+                  <p className="text-sm font-medium text-design-muted">
+                    {t("startFlow.personalSoloHint")}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="public-action public-action-primary"
+                  disabled={busy || !pickedTemplates.length}
+                  onClick={startPersonalChallenge}
+                >
+                  {t("startFlow.joinInvite")}
+                  <ArrowRight className="size-5 rtl:rotate-180" aria-hidden="true" />
+                </button>
+              </div>
+            </section>
+          ) : (
+            <section className="public-flow">
+              <StepHeading
+                heading={heading}
+                title={t("startFlow.playTitle")}
+                back={t("common.back")}
+                onBack={() => setStep("challenge")}
+              />
+              {selected && (
+                <div className="catalog-play-summary">
+                  <p className="font-extrabold">{loc(selected.name, lang)}</p>
+                  <div className="public-meta">
+                    <ChallengeDates card={selected} lang={lang} />
+                    <span>{t("batch6.days", { n: selected.days })}</span>
+                  </div>
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-3">
+                {(Object.keys(PLAY_OPTIONS) as PlayMode[]).map((mode) => {
+                  const Icon = PLAY_OPTIONS[mode];
+                  return (
+                    <button
+                      key={mode}
+                      type="button"
+                      aria-pressed={playMode === mode}
+                      onClick={() => setPlayMode(mode)}
+                      className="catalog-play-option"
+                    >
+                      <Icon className="mb-1 size-5" aria-hidden="true" />
+                      <span className="block font-extrabold">{t(`startFlow.${mode}`)}</span>
+                      <span className="block text-sm font-semibold">
+                        {t(`startFlow.playHints.${mode}`)}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+              {playMode === "code" && (
+                <Field label={t("startFlow.codeHint")}>
+                  <input
+                    dir="ltr"
+                    value={crewCode}
+                    maxLength={6}
+                    autoCapitalize="characters"
+                    onChange={(event) =>
+                      setCrewCode(event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))
+                    }
+                    className={`${inputCls} num text-center text-[24px] tracking-[0.25em]`}
+                  />
+                </Field>
+              )}
+              <button
+                type="button"
+                className="public-action public-action-primary"
+                disabled={busy || (playMode === "code" && !INVITE_CODE.test(crewCode))}
+                onClick={joinSelectedChallenge}
+              >
+                {t("startFlow.joinInvite")}
+                <ArrowRight className="size-5 rtl:rotate-180" aria-hidden="true" />
+              </button>
+            </section>
+          )}
+        </main>
+      </div>
+    </div>
   );
 }
 
-function ChallengeChoice({ card, selected, onSelect }: { card: CatalogCard; selected: boolean; onSelect: () => void }) {
-  const { t, i18n } = useTranslation();
-  const goal = loc(card.goal, i18n.language);
+function StepHeading({
+  heading,
+  title,
+  back,
+  onBack,
+}: {
+  heading: React.RefObject<HTMLHeadingElement | null>;
+  title: string;
+  back: string;
+  onBack: () => void;
+}) {
   return (
-    <button type="button" aria-pressed={selected} onClick={onSelect} style={{ borderInlineStart: `6px solid ${eventColor(card.color)}` }} className={`w-full rounded-[18px] border-2 p-3 text-start sticker-border ${selected ? "bg-lime shadow-hard" : "bg-card shadow-hard-sm"}`}>
-      <div className="flex items-start justify-between gap-2"><div className="min-w-0"><h3 className="truncate text-[16px] font-extrabold">{loc(card.name,i18n.language)}</h3>{card.kind === "creator" && <p className="text-[12px] font-semibold">{t("batch6.creatorLabel",{name:card.creator})}</p>}</div><span className="shrink-0 rounded-full bg-yellow px-2 py-1 text-[12px] font-extrabold"><Num>{card.days}</Num> {t("challengeHistory.dayUnit")}</span></div>
-      <p className="mt-1 text-[12px] font-bold">{t("events.live")} · {formatDayMonth(card.starts_on, i18n.language)} – {formatDayMonth(card.ends_on, i18n.language)} · {t("events.free")}</p>
-      {goal && <p className="mt-1 text-[13px] font-semibold">{goal}</p>}
-      <div className="mt-2 flex flex-wrap gap-1.5">{card.habits.slice(0,6).map((habit) => <span key={habit.key} className="rounded-full bg-background px-2 py-1 text-[12px] font-bold">{loc(habit.name,i18n.language)}</span>)}</div>
-      <p className="mt-2 line-clamp-2 text-[12px] font-semibold text-design-muted">{card.habits.slice(0,2).map((habit) => loc(habit.what_counts,i18n.language)).filter(Boolean).join(" · ")}</p>
-    </button>
+    <div className="flex items-center gap-3">
+      <StickerButton
+        variant="secondary"
+        className="size-11 min-h-11 shrink-0 p-0"
+        aria-label={back}
+        onClick={onBack}
+      >
+        <ArrowLeft className="size-5 rtl:rotate-180" aria-hidden="true" />
+      </StickerButton>
+      <h1 ref={heading} tabIndex={-1} className="catalog-flow-title">
+        {title}
+      </h1>
+    </div>
+  );
+}
+
+function ChallengeChoice({
+  card,
+  invited,
+  current,
+  onSelect,
+  lang,
+}: {
+  card: CatalogCard;
+  invited: boolean;
+  current: boolean;
+  onSelect: () => void;
+  lang: Lang;
+}) {
+  const t = i18n.getFixedT(lang);
+  const name = loc(card.name, lang);
+  return (
+    <article className="catalog-card">
+      <div className="catalog-card-heading">
+        <div>
+          <p className="public-caption">
+            {t(
+              invited
+                ? "startFlow.inviteSelected"
+                : card.kind === "creator"
+                  ? "startFlow.creator"
+                  : "startFlow.official",
+            )}
+          </p>
+          <h3>{name}</h3>
+          <div className="public-meta">
+            <ChallengeDates card={card} lang={lang} />
+            <span>{t("events.free")}</span>
+            {card.kind === "creator" && card.creator && (
+              <span>
+                {t("batch6.creatorLabel", { name: `@${card.creator.replace(/^@/, "")}` })}
+              </span>
+            )}
+          </div>
+        </div>
+        <span className="catalog-duration">{t("batch6.days", { n: card.days })}</span>
+      </div>
+      <div className="catalog-card-body">
+        {loc(card.goal, lang) && <p className="font-semibold">{loc(card.goal, lang)}</p>}
+        <ChallengeHabits card={card} lang={lang} />
+        <button
+          type="button"
+          className="public-action public-action-primary"
+          aria-label={current ? undefined : t("startFlow.chooseNamed", { name })}
+          onClick={onSelect}
+        >
+          {t("startFlow.chooseMode")}{" "}
+          <ArrowRight className="size-5 rtl:rotate-180" aria-hidden="true" />
+        </button>
+      </div>
+    </article>
   );
 }

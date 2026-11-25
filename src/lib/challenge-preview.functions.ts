@@ -8,9 +8,9 @@ export const challengePreview = createServerFn({ method: "GET" })
     return getPublicChallengePreview(code);
   });
 
-export const featuredCreatorChallenges = createServerFn({ method: "GET" }).handler(async () => {
-  const { getFeaturedCreatorChallenges } = await import("@/lib/public-challenges.server");
-  return getFeaturedCreatorChallenges();
+export const publicChallengeCatalog = createServerFn({ method: "GET" }).handler(async () => {
+  const { getPublicChallengeCatalog } = await import("@/lib/public-challenges.server");
+  return getPublicChallengeCatalog();
 });
 
 export const crewInvitePreview = createServerFn({ method: "GET" })
@@ -20,8 +20,3 @@ export const crewInvitePreview = createServerFn({ method: "GET" })
     const { getCrewInvitePreview } = await import("@/lib/public-challenges.server");
     return getCrewInvitePreview(data);
   });
-
-export const currentOfficialEvent = createServerFn({ method: "GET" }).handler(async () => {
-  const { getCurrentOfficialEvent } = await import("@/lib/public-challenges.server");
-  return getCurrentOfficialEvent();
-});

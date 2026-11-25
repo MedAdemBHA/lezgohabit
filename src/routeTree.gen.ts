@@ -38,6 +38,7 @@ import { Route as AuthenticatedTodayRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedTrailRouteImport } from './routes/_authenticated/trail'
 import { Route as AuthenticatedWrappedRouteImport } from './routes/_authenticated/wrapped'
 import { Route as CCodeRouteImport } from './routes/c.$code'
+import { Route as LegalDocumentRouteImport } from './routes/legal.$document'
 import { Route as ApiPublicNotificationsRouteImport } from './routes/api/public/notifications'
 import { Route as OgChallengeCodeRouteImport } from './routes/og.challenge.$code'
 
@@ -187,6 +188,11 @@ const CCodeRoute = CCodeRouteImport.update({
   path: '/c/$code',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LegalDocumentRoute = LegalDocumentRouteImport.update({
+  id: '/legal/$document',
+  path: '/legal/$document',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicNotificationsRoute = ApiPublicNotificationsRouteImport.update({
   id: '/api/public/notifications',
   path: '/api/public/notifications',
@@ -227,6 +233,7 @@ export interface FileRoutesByFullPath {
   '/trail': typeof AuthenticatedTrailRoute
   '/wrapped': typeof AuthenticatedWrappedRoute
   '/c/$code': typeof CCodeRoute
+  '/legal/$document': typeof LegalDocumentRoute
   '/api/public/notifications': typeof ApiPublicNotificationsRoute
   '/og/challenge/$code': typeof OgChallengeCodeRoute
 }
@@ -259,6 +266,7 @@ export interface FileRoutesByTo {
   '/trail': typeof AuthenticatedTrailRoute
   '/wrapped': typeof AuthenticatedWrappedRoute
   '/c/$code': typeof CCodeRoute
+  '/legal/$document': typeof LegalDocumentRoute
   '/api/public/notifications': typeof ApiPublicNotificationsRoute
   '/og/challenge/$code': typeof OgChallengeCodeRoute
 }
@@ -293,6 +301,7 @@ export interface FileRoutesById {
   '/_authenticated/trail': typeof AuthenticatedTrailRoute
   '/_authenticated/wrapped': typeof AuthenticatedWrappedRoute
   '/c/$code': typeof CCodeRoute
+  '/legal/$document': typeof LegalDocumentRoute
   '/api/public/notifications': typeof ApiPublicNotificationsRoute
   '/og/challenge/$code': typeof OgChallengeCodeRoute
 }
@@ -327,6 +336,7 @@ export interface FileRouteTypes {
     | '/trail'
     | '/wrapped'
     | '/c/$code'
+    | '/legal/$document'
     | '/api/public/notifications'
     | '/og/challenge/$code'
   fileRoutesByTo: FileRoutesByTo
@@ -359,6 +369,7 @@ export interface FileRouteTypes {
     | '/trail'
     | '/wrapped'
     | '/c/$code'
+    | '/legal/$document'
     | '/api/public/notifications'
     | '/og/challenge/$code'
   id:
@@ -392,6 +403,7 @@ export interface FileRouteTypes {
     | '/_authenticated/trail'
     | '/_authenticated/wrapped'
     | '/c/$code'
+    | '/legal/$document'
     | '/api/public/notifications'
     | '/og/challenge/$code'
   fileRoutesById: FileRoutesById
@@ -403,6 +415,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StartRoute: typeof StartRoute
   CCodeRoute: typeof CCodeRoute
+  LegalDocumentRoute: typeof LegalDocumentRoute
   ApiPublicNotificationsRoute: typeof ApiPublicNotificationsRoute
   OgChallengeCodeRoute: typeof OgChallengeCodeRoute
 }
@@ -612,6 +625,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CCodeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/legal/$document': {
+      id: '/legal/$document'
+      path: '/legal/$document'
+      fullPath: '/legal/$document'
+      preLoaderRoute: typeof LegalDocumentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/notifications': {
       id: '/api/public/notifications'
       path: '/api/public/notifications'
@@ -691,6 +711,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   StartRoute: StartRoute,
   CCodeRoute: CCodeRoute,
+  LegalDocumentRoute: LegalDocumentRoute,
   ApiPublicNotificationsRoute: ApiPublicNotificationsRoute,
   OgChallengeCodeRoute: OgChallengeCodeRoute,
 }

@@ -1,87 +1,227 @@
-import { ClientOnly, createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
-import { useTranslation } from "react-i18next";
-import { ArrowRight } from "lucide-react";
+import { createFileRoute, Link, useLocation, useNavigate } from "@tanstack/react-router";
+import { ArrowRight, CalendarCheck, Flame, Target, Users } from "lucide-react";
+import { Brand, LezgoMark } from "@/components/lezgo/brand";
+import { FitHeading } from "@/components/lezgo/fit-heading";
 import { ExploreAsGuest } from "@/components/lezgo/guest";
-import { Brand } from "@/components/lezgo/brand";
-import { DesignLanguage } from "@/components/lezgo/design-language";
-import { BottomSheet, StickerButton, inputCls } from "@/components/lezgo/ui";
-import { officialEventEndsAt, pad, splitMs, useNow } from "@/lib/time";
-import { currentOfficialEvent, featuredCreatorChallenges } from "@/lib/challenge-preview.functions";
-import { eventColor } from "@/lib/event-data";
+import {
+  ChallengeDates,
+  ChallengeHabits,
+  InviteCodeButton,
+  PublicHeader,
+  usePublicLanguage,
+} from "@/components/lezgo/public-entry";
+import { publicChallengeCatalog } from "@/lib/challenge-preview.functions";
+import { guestDemoAvailable } from "@/lib/admin.functions";
+import { groupCatalog, type CatalogCard } from "@/lib/challenge-catalog";
 import { pageHead } from "@/lib/page-head";
-import i18n, { loc } from "@/lib/i18n";
+import { eventColor } from "@/lib/event-data";
+import i18n, { isRtl, loc, selectLang, type Lang } from "@/lib/i18n";
 
 export const Route = createFileRoute("/")({
-  validateSearch: (search: Record<string, unknown>) =>
-    search["lang"] === "fr" || search["lang"] === "ar" ? { lang: search["lang"] } : {},
-  loader: async ({ location }) => {
-    const requestedLang = new URLSearchParams(location.searchStr).get("lang");
-    const lang: "en" | "fr" | "ar" = requestedLang === "fr" || requestedLang === "ar" ? requestedLang : "en";
-    const [challenges, event] = await Promise.all([
-      featuredCreatorChallenges().catch(() => []),
-      currentOfficialEvent().catch(() => null),
+  validateSearch: (search: Record<string, unknown>): { lang?: Lang | undefined } => ({
+    lang: selectLang(search["lang"]),
+  }),
+  loader: async () => {
+    const [cards, demoAvailable] = await Promise.all([
+      publicChallengeCatalog().catch(() => []),
+      guestDemoAvailable().catch(() => false),
     ]);
-    return { challenges, event, lang };
+    return { ...groupCatalog(cards), demoAvailable };
   },
-  head: ({ loaderData }) => {
-    const t = i18n.getFixedT(loaderData?.lang ?? "en");
-    return pageHead(
-      `lezgo — ${t("landing.hero").replace(/\n/g, " ")}`,
-      t("landing.subtitle"),
-      { privatePage: false, canonicalPath: "/", imagePath: "/og-home.png", imageAlt: "Show up. Lezgo.", lang: loaderData?.lang ?? "en" },
-    );
+  head: ({ match }) => {
+    const lang = match.search.lang ?? "en";
+    const t = i18n.getFixedT(lang);
+    return pageHead(`${t("landing.headline").replace(/\n/g, " ")} — lezgo`, t("landing.subtitle"), {
+      privatePage: false,
+      canonicalPath: "/",
+      imagePath: "/og-home.png",
+      imageAlt: t("landing.hero").replace(/\n/g, " "),
+      lang,
+    });
   },
   component: Landing,
 });
 
 function Landing() {
-  const { lang, event, challenges: featured } = Route.useLoaderData();
+  const lang = usePublicLanguage(Route.useSearch().lang);
+  const { open, upcoming, demoAvailable } = Route.useLoaderData();
   const t = i18n.getFixedT(lang);
   const nav = useNavigate();
-  const [codeOpen, setCodeOpen] = useState(false);
-  const [code, setCode] = useState("");
-  const steps = [t("landing.step1"), t("landing.step2"), t("landing.step3")];
+  const hash = useLocation({ select: (location) => location.hash });
+  const current = open.find((card) => card.kind === "official") ?? open[0];
+  const featured = current ?? upcoming[0];
+  const steps = [
+    { icon: Target, color: "bg-lime", label: t("landing.step1"), detail: t("landing.step1Detail") },
+    {
+      icon: CalendarCheck,
+      color: "bg-orange",
+      label: t("landing.step2"),
+      detail: t("landing.step2Detail"),
+    },
+    {
+      icon: Users,
+      color: "bg-purple",
+      label: t("landing.step3"),
+      detail: t("landing.step3Detail"),
+    },
+  ];
 
   return (
-    <div className="design-screen join-screen">
-      <header className="join-header flex items-center justify-between gap-2">
-        <Brand size={38} />
-        <div className="flex items-center gap-2">
-          <DesignLanguage />
-          <Link to="/auth" className="inline-flex min-h-11 shrink-0 items-center rounded-xl bg-card px-3 text-sm font-extrabold sticker-border">{t("auth.signIn")}</Link>
-        </div>
-      </header>
-      <div className="flex flex-col gap-2.5"><h1 className="join-hero">{t("landing.hero")}</h1><p className="text-[17px] font-semibold leading-[1.5] text-design-body">{t("landing.subtitle")}</p></div>
-      {event && <div className="join-season" style={{ borderInlineStart: `6px solid ${eventColor(event.color)}` }}>
-        <div className="flex items-center justify-between gap-2"><span className="text-[16px] font-extrabold">{loc(event.name, lang)}</span><span className="rounded-lg bg-lime px-2 py-[3px] text-[12px] font-extrabold text-ink">{t("common.live")}</span></div>
-        <ClientOnly fallback={null}><SeasonCountdown endsOn={event.ends_on} /></ClientOnly>
-      </div>}
-      <ol className="flex flex-col gap-3">{steps.map((step, i) => <li key={step} className="flex items-center gap-3"><span className={`num flex size-[34px] shrink-0 items-center justify-center rounded-[10px] text-[15px] font-bold sticker-border ${["bg-lime", "bg-yellow", "bg-blue"][i] ?? "bg-lime"}`}>{i + 1}</span><span className="text-[17px] font-bold leading-[1.35]">{step}</span></li>)}</ol>
-      {featured.map((challenge) => <StickerButton key={challenge.code} variant="secondary" onClick={() => void nav({ to: "/c/$code", params: { code: challenge.code } })}>{challenge.name}<ArrowRight className="size-4 rtl:rotate-180" /></StickerButton>)}
-      <div className="join-actions">
-        <StickerButton block className="join-primary" onClick={() => nav({ to: "/start" })}>{t("common.cta")}</StickerButton>
-        <StickerButton block variant="secondary" className="join-code" onClick={() => setCodeOpen(true)}>{t("landing.haveCode")}</StickerButton>
-        <ClientOnly fallback={null}><ExploreAsGuest /></ClientOnly>
-        <p className="text-center text-[13px] font-semibold text-design-muted">{t("landing.footer")} · <bdi>EN · FR · عربي · تونسي</bdi></p>
+    <div className="public-site">
+      <div className="public-wrap">
+        <PublicHeader
+          lang={lang}
+          onLanguage={(next) => void nav({ to: "/", search: { lang: next }, hash, replace: true })}
+        />
+        <main>
+          <section className="home-masthead" aria-labelledby="home-hero">
+            <div className="home-hero-copy">
+              <p className="public-kicker">
+                <Flame className="size-5" aria-hidden="true" />
+                {t("landing.freeChallenges")}
+              </p>
+              <FitHeading
+                id="home-hero"
+                className="home-headline"
+                text={t("landing.headline")}
+                requestedSize={isRtl(lang) ? 44 : 58}
+                useCssInitialSize
+              />
+              <p className="home-intro">{t("landing.subtitle")}</p>
+              <div className="public-actions">
+                <Link to="/start" search={{ lang }} className="public-action public-action-primary">
+                  {t("landing.browse")}{" "}
+                  <ArrowRight className="size-5 rtl:rotate-180" aria-hidden="true" />
+                </Link>
+                <InviteCodeButton
+                  lang={lang}
+                  onSubmit={(code) => void nav({ to: "/start", search: { code, lang } })}
+                />
+              </div>
+            </div>
+            <div className="home-photo">
+              <img
+                src="/images/lezgo-track.webp"
+                width={1122}
+                height={1402}
+                alt={t("landing.trackPhoto")}
+                fetchPriority="high"
+              />
+              <span className="home-photo-mark" aria-hidden="true">
+                <LezgoMark size={78} />
+              </span>
+            </div>
+          </section>
+
+          {featured && <FeaturedChallenge card={featured} isOpen={!!current} lang={lang} />}
+
+          <section id="how-it-works" aria-labelledby="how-heading" className="home-how">
+            <h2 id="how-heading" className="public-section-title">
+              {t("landing.how")}
+            </h2>
+            <ol>
+              {steps.map(({ icon: Icon, color, label, detail }) => (
+                <li key={label}>
+                  <span className={`home-step-icon ${color}`}>
+                    <Icon className="size-6" aria-hidden="true" />
+                  </span>
+                  <div>
+                    <h3>{label}</h3>
+                    <p>{detail}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </section>
+
+          {demoAvailable && (
+            <div className="home-demo">
+              <div>
+                <h2 className="text-2xl font-extrabold">{t("landing.demoTitle")}</h2>
+                <p className="mt-1 text-sm font-medium">{t("landing.demoDetail")}</p>
+              </div>
+              <ExploreAsGuest lang={lang} className="home-demo-button" />
+            </div>
+          )}
+        </main>
+
+        <footer className="public-footer">
+          <Link to="/" search={{ lang }} aria-label={t("landing.home")}>
+            <Brand size={28} />
+          </Link>
+          <div className="flex flex-wrap items-center gap-x-3">
+            <Link
+              to="/legal/$document"
+              params={{ document: "terms" }}
+              search={{ lang }}
+              className="public-footer-link"
+            >
+              {t("design.terms")}
+            </Link>
+            <Link
+              to="/legal/$document"
+              params={{ document: "privacy" }}
+              search={{ lang }}
+              className="public-footer-link"
+            >
+              {t("design.privacy")}
+            </Link>
+          </div>
+          <Link to="/admin" className="public-footer-link">
+            {t("auth.adminSignIn")}
+          </Link>
+        </footer>
       </div>
-      <BottomSheet open={codeOpen} onClose={() => setCodeOpen(false)} title={t("landing.codeTitle")}>
-        <p className="mb-3 text-[15px] text-muted-foreground">{t("landing.codeHint")}</p>
-        <input dir="ltr" value={code} maxLength={6} autoCapitalize="characters" placeholder="ABC123"
-          onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))}
-          className={`${inputCls} num text-center text-[26px] tracking-[0.3em]`} />
-        <StickerButton block className="mt-4" disabled={code.length !== 6}
-          onClick={() => void nav({ to: "/c/$code", params: { code } })}>
-          {t("common.cta")}
-        </StickerButton>
-      </BottomSheet>
     </div>
   );
 }
 
-function SeasonCountdown({ endsOn }: { endsOn: string }) {
-  const { t } = useTranslation();
-  const now = useNow();
-  const left = splitMs(now ? officialEventEndsAt(endsOn) - now.getTime() : 0);
-  return <div className="grid grid-cols-4 gap-2" dir="ltr">{([ ["d", left.d, t("landing.days")], ["h", left.h, t("landing.hrs")], ["m", left.m, t("landing.min")], ["s", left.s, t("landing.sec")] ] as const).map(([key, value, label]) => <div key={key} className="flex flex-col items-center"><span className={`num text-[28px] font-bold leading-none ${key === "s" ? "text-orange" : ""}`}>{pad(value)}</span><span className="mt-1 text-[11px] font-bold text-countdown-muted">{label}</span></div>)}</div>;
+function FeaturedChallenge({
+  card,
+  isOpen,
+  lang,
+}: {
+  card: CatalogCard;
+  isOpen: boolean;
+  lang: Lang;
+}) {
+  const t = i18n.getFixedT(lang);
+  return (
+    <section aria-labelledby="featured-title" className="home-featured">
+      <div
+        className="home-featured-lead"
+        style={
+          card.color ? { borderInlineStart: `6px solid ${eventColor(card.color)}` } : undefined
+        }
+      >
+        <p className="public-kicker">
+          <span className="public-status-dot" />
+          {t(isOpen ? "startFlow.openNow" : "socialDesign.upcoming")}
+        </p>
+        <h2 id="featured-title">{loc(card.name, lang)}</h2>
+        {loc(card.goal, lang) && <p className="font-semibold">{loc(card.goal, lang)}</p>}
+        <div className="public-meta">
+          <ChallengeDates card={card} lang={lang} />
+          <span>{t("batch6.days", { n: card.days })}</span>
+        </div>
+        {card.kind === "creator" && card.creator && (
+          <p className="text-sm font-bold">
+            {t("batch6.creatorLabel", { name: `@${card.creator.replace(/^@/, "")}` })}
+          </p>
+        )}
+        {isOpen && (
+          <Link
+            to="/start"
+            search={{ lang, season: card.season_id }}
+            hash="open-challenges"
+            className="public-action public-action-dark"
+          >
+            {t("landing.viewChallenge")}{" "}
+            <ArrowRight className="size-5 rtl:rotate-180" aria-hidden="true" />
+          </Link>
+        )}
+      </div>
+      <ChallengeHabits card={card} lang={lang} />
+    </section>
+  );
 }

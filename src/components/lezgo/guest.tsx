@@ -9,6 +9,7 @@ import { enterDemo } from "@/lib/admin.functions";
 import { installGuestFetch, onGuestSheet, setGuestMode } from "@/lib/guest";
 import { BottomSheet, StickerButton } from "./ui";
 import { useBase } from "@/lib/data";
+import i18n, { type Lang } from "@/lib/i18n";
 
 /** One tap into the read-only sample world. */
 export function useEnterGuest() {
@@ -38,8 +39,9 @@ export function useEnterGuest() {
   return { enter, busy };
 }
 
-export function ExploreAsGuest({ className = "" }: { className?: string }) {
-  const { t } = useTranslation();
+export function ExploreAsGuest({ className = "", lang }: { className?: string; lang?: Lang }) {
+  const { t: translate } = useTranslation();
+  const t = lang ? i18n.getFixedT(lang) : translate;
   const { enter, busy } = useEnterGuest();
   return (
     <StickerButton block variant="secondary" className={`guest-entry ${className}`} disabled={busy} onClick={() => void enter()}>

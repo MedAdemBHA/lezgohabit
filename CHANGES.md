@@ -8,6 +8,12 @@
 - Reworked the app shell to Today · Board · Crew · Me. The board scopes to the active challenge, the viewer's crew, and Tunisia for official challenges. Personal boards remain private.
 - Calmed the new challenge surfaces, normalized the high-traffic card typography, removed decorative tilt from progress labels, and raised the touched controls to 44px targets.
 - Added unit coverage for six-habit selection and post-auth auto-join, plus the transaction-only database verifier at `scripts/verify_v2.sql`.
+- Refreshed the homepage and Start on mobile and desktop. The homepage features a challenge from the live catalog. Start renders open and upcoming dates on the server, explains the crew choices, and takes personal challenges straight from habit selection to sign-in.
+- Reworked the public design around a photo-led homepage and detailed challenge cards. The cards show each habit and what counts before players choose a mode. Upcoming challenges show their opening date and duration as information.
+- Kept the homepage and Start in one phone-width column at every screen size. Both show the How it works link on mobile, and the homepage preserves that section when the language changes.
+- Added an admin sign-in path from the homepage and `/admin`. The dashboard uses its existing server authorization and can open before an admin completes a player profile. Player profile setup is a single form.
+- Matched Today’s workout rule to the saved challenge habit and kept the creator dashboard available before and between challenges.
+- Added public Terms and Privacy pages, kept email sign-in available for team testing, and made the guest button depend on the deployed demo configuration and seeded account.
 
 ## Migration order
 
@@ -35,7 +41,8 @@ The Supabase migration history now confirms `0063`–`0071` are applied to `yjkn
 
 - `bun run build`: passed. Existing warnings remain for deprecated `inputValidator`, chunk size, and the PWA glob that finds no files in `dist`.
 - `npx tsc --noEmit -p .`: passed.
-- `bunx vitest run`: 54 passed, 109 skipped. The `virtual:pwa-register` routing-suite mock now resolves in Vitest.
+- Vitest passed 56 tests and skipped 109 database-dependent tests. Routing coverage isolates the service worker and checks the admin sign-in destination and challenge date boundaries.
+- Browser checks covered the desktop and mobile public screens, Arabic right-to-left layout, 7-day personal and official crew sign-in handoffs, and admin versus player routing with mocked Supabase sessions.
 - `scripts/verify_v2.sql` ran against the migrated Supabase project. It reported `ALL V2 CHECKS PASS`; all fixture users and rows were rolled back. A local alias typo in the personal-checkin fixture was corrected before the successful run.
 - Local UI smoke test: the 7-day personal picker and the official “Find me a crew” path both reach the sign-in handoff. Authenticated UI actions were not attempted without a staging account; the SQL verifier covers their database rules.
 
@@ -65,3 +72,5 @@ Fixes made while applying (already in the files above):
 - Migration order: `0072_official_event_dashboard.sql`, `0073_scoped_moderation.sql`, `0074_moderation_reports_and_appeals.sql`. Apply in order to a test Supabase project, then run `scripts/verify_v2.sql` and `scripts/verify_event_controls.sql`. Both scripts roll back their fixtures. Apply the schema before releasing the frontend.
 - For hosted acceptance, sign in with a real admin, creator, crew owner, and member. Check that an invite opens in the intended browser, complete a check-in, exercise both moderation scopes, then reply to a player appeal. Production sign-in and guest seeding remain separate setup tasks.
 - Local verification passed both production builds, TypeScript, 54 Vitest tests, and 53 SQL checks in a temporary PGlite database. The local SQL run omits the hosted Vault/cron setup, and seven hosted test suites remained skipped. The public browser smoke check covered the event picker at 390 px and the crew sign-in handoff.
+
+The event release keeps the production phone-width pages and protected admin sign-in. The public catalog includes scheduled event goals, invite checks distinguish missing, early, full and closed events, and a signed-in player can return to their active challenge. Verify the email redirect allowlist in the hosted project before enabling email.
