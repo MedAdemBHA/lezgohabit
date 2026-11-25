@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { ArrowRight, CalendarCheck, Flame, Target, Users } from "lucide-react";
 import { Brand, LezgoMark } from "@/components/lezgo/brand";
 import { FitHeading } from "@/components/lezgo/fit-heading";
@@ -39,6 +39,7 @@ function Landing() {
   const { open, upcoming } = Route.useLoaderData();
   const t = i18n.getFixedT(lang);
   const nav = useNavigate();
+  const hash = useLocation({ select: (location) => location.hash });
   const current = open.find((card) => card.kind === "official") ?? open[0];
   const featured = current ?? upcoming[0];
   const steps = [
@@ -58,11 +59,12 @@ function Landing() {
   ];
 
   return (
-    <div className="public-site">
+    <div className="public-site public-home">
       <div className="public-wrap">
         <PublicHeader
+          home
           lang={lang}
-          onLanguage={(next) => void nav({ to: "/", search: { lang: next }, replace: true })}
+          onLanguage={(next) => void nav({ to: "/", search: { lang: next }, hash, replace: true })}
         />
         <main>
           <section className="home-masthead" aria-labelledby="home-hero">
@@ -75,7 +77,7 @@ function Landing() {
                 id="home-hero"
                 className="home-headline"
                 text={t("landing.headline")}
-                requestedSize={isRtl(lang) ? 68 : 87}
+                requestedSize={isRtl(lang) ? 44 : 58}
                 useCssInitialSize
               />
               <p className="home-intro">{t("landing.subtitle")}</p>
@@ -116,8 +118,10 @@ function Landing() {
                   <span className={`home-step-icon ${color}`}>
                     <Icon className="size-6" aria-hidden="true" />
                   </span>
-                  <h3>{label}</h3>
-                  <p>{detail}</p>
+                  <div>
+                    <h3>{label}</h3>
+                    <p>{detail}</p>
+                  </div>
                 </li>
               ))}
             </ol>

@@ -19,12 +19,35 @@ export function PublicHeader({
   lang,
   onLanguage,
   start = false,
+  home = false,
 }: {
   lang: Lang;
   onLanguage: (lang: Lang) => void;
   start?: boolean;
+  home?: boolean;
 }) {
   const t = i18n.getFixedT(lang);
+  const navigation = (
+    <nav aria-label={t("landing.navigation")} className="public-nav">
+      <Link
+        to="/start"
+        search={{ lang }}
+        aria-current={start ? "page" : undefined}
+        className="public-nav-link"
+      >
+        {t("landing.browse")}
+      </Link>
+      <Link
+        to="/"
+        search={{ lang }}
+        hash="how-it-works"
+        className="public-nav-link"
+        activeOptions={{ includeHash: true }}
+      >
+        {t("landing.how")}
+      </Link>
+    </nav>
+  );
   return (
     <header className="public-header">
       <Link
@@ -36,25 +59,7 @@ export function PublicHeader({
       >
         <Brand size={35} />
       </Link>
-      <nav aria-label={t("landing.navigation")} className="public-nav">
-        <Link
-          to="/start"
-          search={{ lang }}
-          aria-current={start ? "page" : undefined}
-          className="public-nav-link"
-        >
-          {t("landing.browse")}
-        </Link>
-        <Link
-          to="/"
-          search={{ lang }}
-          hash="how-it-works"
-          className="public-nav-link"
-          activeOptions={{ includeHash: true }}
-        >
-          {t("landing.how")}
-        </Link>
-      </nav>
+      {!home && navigation}
       <div className="flex items-center gap-1.5 sm:gap-3">
         <DesignLanguage lang={lang} onSelect={onLanguage} />
         <Link to="/auth" className="public-sign-in">
@@ -62,6 +67,7 @@ export function PublicHeader({
           {t("auth.signIn")}
         </Link>
       </div>
+      {home && navigation}
     </header>
   );
 }
