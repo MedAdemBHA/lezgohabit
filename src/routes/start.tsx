@@ -91,6 +91,9 @@ function StartPage() {
   );
   const longerOfficial = allOfficial.filter((card) => card.days > 14);
   const shortOfficial = allOfficial.filter((card) => card.days <= 14);
+  const upcomingOfficial = (catalog.data ?? [])
+    .filter((card) => card.kind === "official" && card.starts_on > today)
+    .sort((a, b) => a.starts_on.localeCompare(b.starts_on));
   const creators = (catalog.data ?? []).filter((card) => card.kind === "creator");
   const templatesList = (templates.data ?? []).filter((tpl) => !tpl.is_faith && tpl.key !== "custom");
   const pickedTemplates = picked.map((key) => templatesList.find((tpl) => tpl.key === key)).filter((tpl): tpl is Template => !!tpl);
@@ -209,6 +212,21 @@ function StartPage() {
           <button type="button" className={`rounded-[18px] border-2 p-4 text-start sticker-border ${personal ? "bg-lime shadow-hard" : "bg-card"}`} onClick={() => { setPersonal(true); setSelected(null); setStep("personal"); }}>
             <span className="block text-[18px] font-extrabold">{t("startFlow.personal")}</span><span className="text-[13px] font-semibold">{t("startFlow.personalPrivate")}</span>
           </button>
+          {upcomingOfficial.length > 0 && (
+            <section aria-labelledby="upcoming-events" className="space-y-2">
+              <h2 id="upcoming-events" className="text-[13px] font-extrabold uppercase tracking-wide">{t("socialDesign.upcoming")}</h2>
+              <ul className="space-y-2">
+                {upcomingOfficial.map((card) => (
+                  <li key={card.id} className="flex items-center justify-between gap-3 rounded-[18px] bg-card p-3 sticker-border">
+                    <span className="font-extrabold">{loc(card.name, i18n.language)}</span>
+                    <time dateTime={card.starts_on} className="shrink-0 text-sm font-semibold">
+                      {formatDayMonth(card.starts_on, i18n.language)}
+                    </time>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
           {selected && <div className="sticky bottom-0 z-10 bg-background py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
             <StickerButton block size="lg" onClick={continueToPlay}>{t(active.data?.season_id === selected.season_id ? "events.goToday" : "common.next")}<ArrowRight className="rtl:-scale-x-100" /></StickerButton>
           </div>}

@@ -28,18 +28,17 @@ export const Route = createFileRoute("/c/$code")({
   validateSearch: (search: Record<string, unknown>) =>
     search["lang"] === "fr" || search["lang"] === "ar" ? { lang: search["lang"] } : {},
   loader: async ({ context, params, location }) => {
-    const invite = await (async () => {
-      try {
-        const challenge = await context.queryClient.ensureQueryData(preview(params.code));
-        const crew = challenge ? null : await crewInvitePreview({ data: params.code });
-        return { challenge, crew, unavailable: false };
-      } catch {
-        return { challenge: null, crew: null, unavailable: true };
-      }
-    })();
     const requestedLang = new URLSearchParams(location.searchStr).get("lang");
     const lang = requestedLang === "fr" || requestedLang === "ar" ? requestedLang : "en";
-    return { ...invite, lang };
+    const code = params.code.toUpperCase();
+    if (!/^[A-Z0-9]{6}$/.test(code)) return { challenge: null, crew: null, unavailable: false, lang };
+    try {
+      const challenge = await context.queryClient.ensureQueryData(preview(code));
+      const crew = challenge ? null : await crewInvitePreview({ data: code });
+      return { challenge, crew, unavailable: false, lang };
+    } catch {
+      return { challenge: null, crew: null, unavailable: true, lang };
+    }
   },
   head: ({ params, loaderData }) => {
     const data = loaderData as { challenge: ChallengePreview | null; lang: "en" | "fr" | "ar" } | undefined;
@@ -89,7 +88,8 @@ export const Route = createFileRoute("/c/$code")({
 });
 
 function Invite() {
-  const { code } = Route.useParams();
+  const { code: rawCode } = Route.useParams();
+  const code = rawCode.toUpperCase();
   const { lang, challenge, crew, unavailable } = Route.useLoaderData();
   const preview = challenge ?? crew;
   const blocked = preview?.ended ? "events.closed" : preview?.full ? (crew ? "events.crewFull" : "batch6.full")
@@ -99,7 +99,12 @@ function Invite() {
   return (
     <main className="challenge-public">
       <LezgoMark size={64} />
-      {challenge ? (
+      {issue ? (
+        <>
+          <h1>{t(issue)}</h1>
+          <Link to="/start" className="font-extrabold underline">{t("challengeHistory.pickNext")}</Link>
+        </>
+      ) : challenge ? (
         <>
           <h1>{challenge.name}</h1>
           <p>{t("batch6.days", { n: challenge.days })} · {challenge.starts_on} — {challenge.ends_on}</p>
