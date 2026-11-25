@@ -115,9 +115,9 @@ function ProfilePage() {
       streak: info.streak,
     });
     try {
-      if (navigator.share) await navigator.share({ title: "lezgo", text });
+      if (navigator.share) await navigator.share({ title: "lezgo", text, url: window.location.origin });
       else {
-        await navigator.clipboard.writeText(text);
+        await navigator.clipboard.writeText(`${text} ${window.location.origin}`);
         toast(t("crew.copied"));
       }
     } catch {

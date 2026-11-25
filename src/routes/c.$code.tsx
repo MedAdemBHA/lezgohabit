@@ -39,23 +39,41 @@ export const Route = createFileRoute("/c/$code")({
     if (!challenge) return pageHead(
       lang === "fr" ? "Rejoignez votre crew sur lezgo" : lang === "ar" ? "انضم إلى فريقك على lezgo" : "Join a crew on lezgo",
       lang === "fr" ? "Rejoignez votre crew et soyez présents ensemble sur lezgo." : lang === "ar" ? "انضم إلى فريقك واظهروا معاً على lezgo." : "Join your crew and show up together on lezgo.",
-      { privatePage: false, canonicalPath: `/c/${params.code}`, imagePath: `/og/challenge/${params.code}`, imageAlt: "Join a crew on lezgo" },
+      { privatePage: false, canonicalPath: `/c/${params.code}`, imagePath: `/og/challenge/${params.code}`, imageAlt: "Join a crew on lezgo", lang },
     );
-    const creator = challenge.creator ? `@${challenge.creator.replace(/^@/, "")}` : "a creator";
-    const title = lang === "fr"
-      ? `Rejoignez « ${challenge.name} » avec ${creator} sur Lezgo — ${challenge.days} jours, ${challenge.habits.length} habitudes`
-      : lang === "ar"
-        ? `انضم إلى «${challenge.name}» مع ${creator} على Lezgo — ${challenge.days} أيام، ${challenge.habits.length} عادات`
-        : `Join “${challenge.name}” by ${creator} on Lezgo — ${challenge.days} days, ${challenge.habits.length} habits`;
-    const description = lang === "fr"
-      ? `Rejoignez « ${challenge.name} » sur Lezgo. ${challenge.days} jours et ${challenge.habits.length} habitudes, à partir du ${challenge.starts_on}.`
-      : lang === "ar"
-        ? `انضم إلى «${challenge.name}» على Lezgo. ${challenge.days} أيام و${challenge.habits.length} عادات، ابتداءً من ${challenge.starts_on}.`
-        : `Join “${challenge.name}” by ${creator} on Lezgo. ${challenge.days} days, ${challenge.habits.length} habits, starting ${challenge.starts_on}.`;
+    const creator = challenge.creator ? `@${challenge.creator.replace(/^@/, "")}` : "";
+    const habits = challenge.habits.map((habit) => loc(habit.name, lang)).filter(Boolean);
+    const habitList = habits.slice(0, 3).join(", ") + (habits.length > 3 ? "…" : "");
+    const startDate = new Intl.DateTimeFormat(lang === "ar" ? "ar-TN" : lang, { day: "numeric", month: "long", timeZone: "UTC" })
+      .format(new Date(`${challenge.starts_on}T00:00:00Z`));
+    const copy = {
+      en: {
+        title: `Join “${challenge.name}” on lezgo`,
+        who: creator ? `${creator} invited you` : "You're invited",
+        meta: `${challenge.days} days · ${habits.length} habits`,
+        people: challenge.members === 1 ? "1 person in" : `${challenge.members} people in`,
+        when: challenge.ended ? "Season ended" : challenge.full ? "Crew is full" : `Starts ${startDate}`,
+      },
+      fr: {
+        title: `Rejoins « ${challenge.name} » sur lezgo`,
+        who: creator ? `${creator} t'invite` : "Tu es invité·e",
+        meta: `${challenge.days} jours · ${habits.length} habitudes`,
+        people: `${challenge.members} inscrit${challenge.members > 1 ? "s" : ""}`,
+        when: challenge.ended ? "Saison terminée" : challenge.full ? "Crew complet" : `Début le ${startDate}`,
+      },
+      ar: {
+        title: `انضم إلى «${challenge.name}» على lezgo`,
+        who: creator ? `${creator} يدعوك` : "أنت مدعو",
+        meta: `${challenge.days} يوم · ${habits.length} عادات`,
+        people: `${challenge.members} مشارك`,
+        when: challenge.ended ? "انتهى الموسم" : challenge.full ? "الفريق مكتمل" : `يبدأ ${startDate}`,
+      },
+    }[lang];
+    const description = `${copy.who}: ${copy.meta} (${habitList}). ${copy.people} · ${copy.when}.`;
     return pageHead(
-      title,
+      copy.title,
       description,
-      { privatePage: false, canonicalPath: `/c/${params.code}`, imagePath: `/og/challenge/${params.code}`, imageAlt: `${challenge.name} challenge card` },
+      { privatePage: false, canonicalPath: `/c/${params.code}`, imagePath: `/og/challenge/${params.code}`, imageAlt: `${challenge.name} — ${copy.meta}`, lang },
     );
   },
   component: Invite,

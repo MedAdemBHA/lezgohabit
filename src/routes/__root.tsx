@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { publicUrl } from "@/lib/public-url";
 import {
   Outlet, Link, createRootRouteWithContext, useRouter, useRouterState, HeadContent, Scripts, type ErrorComponentProps,
 } from "@tanstack/react-router";
@@ -57,7 +58,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:title", content: "lezgo — Show up. Lezgo." },
       { property: "og:description", content: "A 40-day habit season with friends or solo." },
       { property: "og:type", content: "website" },
+      { property: "og:site_name", content: "lezgo" },
+      { property: "og:image", content: publicUrl("/og-home.png") },
+      { property: "og:image:type", content: "image/png" },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:image", content: publicUrl("/og-home.png") },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },

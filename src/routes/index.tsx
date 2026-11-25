@@ -19,7 +19,7 @@ export const Route = createFileRoute("/")({
     search["lang"] === "fr" || search["lang"] === "ar" ? { lang: search["lang"] } : {},
   loader: async ({ location }) => {
     const requestedLang = new URLSearchParams(location.searchStr).get("lang");
-    const lang = requestedLang === "fr" || requestedLang === "ar" ? requestedLang : "en";
+    const lang: "en" | "fr" | "ar" = requestedLang === "fr" || requestedLang === "ar" ? requestedLang : "en";
     const challenges = await featuredCreatorChallenges().catch(() => []);
     return { challenges, lang };
   },
@@ -28,7 +28,7 @@ export const Route = createFileRoute("/")({
     return pageHead(
       `lezgo — ${t("landing.hero").replace(/\n/g, " ")}`,
       t("landing.subtitle"),
-      { privatePage: false, canonicalPath: "/", imagePath: "/og-home.png", imageAlt: "Show up. Lezgo." },
+      { privatePage: false, canonicalPath: "/", imagePath: "/og-home.png", imageAlt: "Show up. Lezgo.", lang: loaderData?.lang ?? "en" },
     );
   },
   component: Landing,

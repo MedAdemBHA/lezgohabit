@@ -1,4 +1,5 @@
 {
   // Cloudflare Worker settings; the build (nitro) merges this into .output/server/wrangler.json
-  "name": "lezgo"
+  "name": "lezgo",
+  "rules": [{ "type": "CompiledWasm", "globs": ["**/*.wasm"] }]
 }
