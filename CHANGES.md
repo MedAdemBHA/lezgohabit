@@ -33,9 +33,10 @@ The Supabase migration history now confirms `0063`–`0071` are applied to `yjkn
 
 ## Manual steps
 
-1. Provide the real app base URL if `joinlezgo.com` is not owned/configured, so every invite link can use the deployed address.
-2. Complete Google sign-in once with a throwaway/staging account to exercise the post-auth start and surrender screens end to end.
-3. Deploy the frontend through the existing Cloudflare Workers flow.
+1. The Vercel production deployment uses `APP_URL=https://lezgohabit.vercel.app` for share links and public metadata. Update it when the custom domain goes live.
+2. Complete a fresh Google sign-in on production to check the callback and onboarding with a real account.
+3. Set `SUPABASE_SERVICE_ROLE_KEY`, `DEMO_PASSWORD`, and `DEVICE_HASH_SECRET` in the Vercel production environment, redeploy, then run **Admin → Demo data → Seed demo** to enable the guest walkthrough.
+4. Add the operator name and privacy contact to the published Terms and Privacy pages. Configure and test custom SMTP before enabling public email sign-in.
 
 ## Verification
 
@@ -44,7 +45,7 @@ The Supabase migration history now confirms `0063`–`0071` are applied to `yjkn
 - Vitest passed 55 tests and skipped 109 database-dependent tests. Routing coverage isolates the service worker and checks the admin sign-in destination and challenge date boundaries.
 - Browser checks covered the desktop and mobile public screens, Arabic right-to-left layout, 7-day personal and official crew sign-in handoffs, and admin versus player routing with mocked Supabase sessions.
 - `scripts/verify_v2.sql` ran against the migrated Supabase project. It reported `ALL V2 CHECKS PASS`; all fixture users and rows were rolled back. A local alias typo in the personal-checkin fixture was corrected before the successful run.
-- Local UI smoke test: the 7-day personal picker and the official “Find me a crew” path both reach the sign-in handoff. Authenticated UI actions were not attempted without a staging account; the SQL verifier covers their database rules.
+- The deployed build reached Google OAuth and the admin sign-in form. A browser run with mocked Supabase responses covered profile setup, starting a 7-day personal challenge, checking in, surrendering, and seeing the result in history. The creator dashboard opened with and without an active event.
 
 ## Open items
 
