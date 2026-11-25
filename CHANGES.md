@@ -8,6 +8,8 @@
 - Reworked the app shell to Today · Board · Crew · Me. The board scopes to the active challenge, the viewer's crew, and Tunisia for official challenges. Personal boards remain private.
 - Calmed the new challenge surfaces, normalized the high-traffic card typography, removed decorative tilt from progress labels, and raised the touched controls to 44px targets.
 - Added unit coverage for six-habit selection and post-auth auto-join, plus the transaction-only database verifier at `scripts/verify_v2.sql`.
+- Refreshed the homepage and Start on mobile and desktop. The homepage features a challenge from the live catalog. Start renders open and upcoming dates on the server, explains the crew choices, and takes personal challenges straight from habit selection to sign-in.
+- Added an admin sign-in path from the homepage and `/admin`. The dashboard uses its existing server authorization and can open before an admin completes a player profile. Player profile setup is a single form.
 
 ## Migration order
 
@@ -35,14 +37,14 @@ The Supabase migration history now confirms `0063`–`0071` are applied to `yjkn
 
 - `bun run build`: passed. Existing warnings remain for deprecated `inputValidator`, chunk size, and the PWA glob that finds no files in `dist`.
 - `npx tsc --noEmit -p .`: passed.
-- `bunx vitest run`: 52 passed, 109 skipped, with one known failing suite: `src/test/app-routing.test.tsx` cannot resolve `virtual:pwa-register` in Vitest. The remaining tests pass.
+- Vitest passed 55 tests and skipped 109 database-dependent tests. Routing coverage isolates the service worker and checks the admin sign-in destination and challenge date boundaries.
+- Browser checks covered the desktop and mobile public screens, Arabic right-to-left layout, 7-day personal and official crew sign-in handoffs, and admin versus player routing with mocked Supabase sessions.
 - `scripts/verify_v2.sql` ran against the migrated Supabase project. It reported `ALL V2 CHECKS PASS`; all fixture users and rows were rolled back. A local alias typo in the personal-checkin fixture was corrected before the successful run.
 - Local UI smoke test: the 7-day personal picker and the official “Find me a crew” path both reach the sign-in handoff. Authenticated UI actions were not attempted without a staging account; the SQL verifier covers their database rules.
 
 ## Open items
 
 - Personal challenges remain solo-only and use existing library templates. Custom-named personal habits and personal crews need a separate snapshot contract and game-rule decision.
-- The existing `virtual:pwa-register` resolution issue remains in the Vitest routing suite.
 - `roadmap.md` still marks `joinlezgo.com` as a domain-ownership/DNS task, `DEPLOY.md` gives only a Worker URL placeholder, and the domain did not resolve from this environment.
 
 ## Applied to Supabase (2026-11-24, by Claude)

@@ -1,86 +1,110 @@
-import { ClientOnly, createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
-import { useTranslation } from "react-i18next";
-import { ArrowRight } from "lucide-react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { ArrowRight, CalendarDays, ListChecks, Target, Users } from "lucide-react";
 import { ExploreAsGuest } from "@/components/lezgo/guest";
-import { Brand } from "@/components/lezgo/brand";
-import { DesignLanguage } from "@/components/lezgo/design-language";
-import { BottomSheet, StickerButton, inputCls } from "@/components/lezgo/ui";
-import { pad, splitMs, useNow, winterArcEndLocal } from "@/lib/time";
-import { saveStartFlow } from "@/lib/start-flow";
-import { featuredCreatorChallenges } from "@/lib/challenge-preview.functions";
+import { HabitIcon } from "@/components/lezgo/habit-icon";
+import { InviteCodeButton, PublicHeader } from "@/components/lezgo/public-entry";
+import { publicChallengeCatalog } from "@/lib/challenge-preview.functions";
+import { groupCatalog, type CatalogCard } from "@/lib/challenge-catalog";
 import { pageHead } from "@/lib/page-head";
-import i18n from "@/lib/i18n";
-
-export const PENDING_CODE_KEY = "lezgo_pending_code";
+import i18n, { formatDayMonth, loc, selectLang, type Lang } from "@/lib/i18n";
 
 export const Route = createFileRoute("/")({
-  validateSearch: (search: Record<string, unknown>) =>
-    search["lang"] === "fr" || search["lang"] === "ar" ? { lang: search["lang"] } : {},
-  loader: async ({ location }) => {
-    const requestedLang = new URLSearchParams(location.searchStr).get("lang");
-    const lang: "en" | "fr" | "ar" = requestedLang === "fr" || requestedLang === "ar" ? requestedLang : "en";
-    const challenges = await featuredCreatorChallenges().catch(() => []);
-    return { challenges, lang };
-  },
-  head: ({ loaderData }) => {
-    const t = i18n.getFixedT(loaderData?.lang ?? "en");
+  validateSearch: (search: Record<string, unknown>): { lang?: Lang | undefined } => ({ lang: selectLang(search["lang"]) }),
+  loader: async () => groupCatalog(await publicChallengeCatalog().catch(() => [])),
+  head: ({ match }) => {
+    const lang = match.search.lang ?? "en";
+    const t = i18n.getFixedT(lang);
     return pageHead(
       `lezgo — ${t("landing.hero").replace(/\n/g, " ")}`,
       t("landing.subtitle"),
-      { privatePage: false, canonicalPath: "/", imagePath: "/og-home.png", imageAlt: "Show up. Lezgo.", lang: loaderData?.lang ?? "en" },
+      { privatePage: false, canonicalPath: "/", imagePath: "/og-home.png", imageAlt: t("landing.hero").replace(/\n/g, " "), lang },
     );
   },
   component: Landing,
 });
 
 function Landing() {
-  const { lang, challenges: featured } = Route.useLoaderData();
+  const { lang = "en" } = Route.useSearch();
+  const { open, upcoming } = Route.useLoaderData();
   const t = i18n.getFixedT(lang);
   const nav = useNavigate();
-  const [codeOpen, setCodeOpen] = useState(false);
-  const [code, setCode] = useState("");
-  const steps = [t("landing.step1"), t("landing.step2"), t("landing.step3")];
+  const current = open.find((card) => card.kind === "official") ?? open[0];
+  const featured = current ?? upcoming[0];
+  const steps = [
+    { icon: Target, color: "bg-lime", label: t("landing.step1"), detail: t("landing.step1Detail") },
+    { icon: ListChecks, color: "bg-yellow", label: t("landing.step2"), detail: t("landing.step2Detail") },
+    { icon: Users, color: "bg-blue", label: t("landing.step3"), detail: t("landing.step3Detail") },
+  ];
 
   return (
-    <div className="design-screen join-screen">
-      <header className="join-header flex items-center justify-between gap-2">
-        <Brand size={38} />
-        <div className="flex items-center gap-2">
-          <DesignLanguage />
-          <Link to="/auth" className="inline-flex min-h-11 shrink-0 items-center rounded-xl bg-card px-3 text-sm font-extrabold sticker-border">{t("auth.signIn")}</Link>
+    <main className="mx-auto flex min-h-svh w-full max-w-[1120px] flex-col gap-9 px-5 pb-6 pt-4 sm:gap-12 sm:px-8">
+      <PublicHeader lang={lang} onLanguage={(next) => void nav({ to: "/", search: { lang: next }, replace: true })} />
+      <section className="grid items-center gap-7 sm:gap-10 md:grid-cols-[1.06fr_0.94fr] md:py-9" aria-labelledby="home-hero">
+        <div className="space-y-5">
+          <p className="inline-flex rounded-lg bg-yellow px-2.5 py-1 text-sm font-extrabold sticker-border">{t("landing.free")}</p>
+          <h1 id="home-hero" className="whitespace-pre-line text-[clamp(2.5rem,8vw,5.15rem)] font-extrabold leading-[0.94] tracking-tight">{t("landing.hero")}</h1>
+          <p className="max-w-[41ch] text-[17px] font-semibold leading-relaxed text-design-body sm:text-lg">{t("landing.subtitle")}</p>
+          <div className="flex flex-wrap items-center gap-3">
+            <Link to="/start" search={{ lang }} className="press inline-flex min-h-14 items-center justify-center gap-2 rounded-2xl bg-ink px-5 text-base font-extrabold text-lime sticker-border shadow-hard-orange press-orange">
+              {t("landing.browse")} <ArrowRight className="size-5 rtl:rotate-180" aria-hidden="true" />
+            </Link>
+            <InviteCodeButton lang={lang} onSubmit={(code) => void nav({ to: "/start", search: { code, lang } })} />
+          </div>
         </div>
-      </header>
-      <div className="flex flex-col gap-2.5"><h1 className="join-hero">{t("landing.hero")}</h1><p className="text-[17px] font-semibold leading-[1.5] text-design-body">{t("landing.subtitle")}</p></div>
-      <div className="join-season">
-        <div className="flex items-center justify-between gap-2"><span className="text-[16px] font-extrabold">{t("design.season")}</span><span className="rounded-lg bg-lime px-2 py-[3px] text-[12px] font-extrabold text-ink">{t("common.live")}</span></div>
-        <ClientOnly fallback={null}><SeasonCountdown /></ClientOnly>
-      </div>
-      <ol className="flex flex-col gap-3">{steps.map((step, i) => <li key={step} className="flex items-center gap-3"><span className={`num flex size-[34px] shrink-0 items-center justify-center rounded-[10px] text-[15px] font-bold sticker-border ${["bg-lime", "bg-yellow", "bg-blue"][i] ?? "bg-lime"}`}>{i + 1}</span><span className="text-[17px] font-bold leading-[1.35]">{step}</span></li>)}</ol>
-      {featured.map((challenge) => <StickerButton key={challenge.code} variant="secondary" onClick={() => void nav({ to: "/c/$code", params: { code: challenge.code } })}>{challenge.name}<ArrowRight className="size-4 rtl:rotate-180" /></StickerButton>)}
-      <div className="join-actions">
-        <StickerButton block className="join-primary" onClick={() => nav({ to: "/start" })}>{t("common.cta")}</StickerButton>
-        <StickerButton block variant="secondary" className="join-code" onClick={() => setCodeOpen(true)}>{t("landing.haveCode")}</StickerButton>
-        <ClientOnly fallback={null}><ExploreAsGuest /></ClientOnly>
-        <p className="text-center text-[13px] font-semibold text-design-muted">{t("landing.footer")} · <bdi>EN · FR · عربي · تونسي</bdi></p>
-      </div>
-      <BottomSheet open={codeOpen} onClose={() => setCodeOpen(false)} title={t("landing.codeTitle")}>
-        <p className="mb-3 text-[15px] text-muted-foreground">{t("landing.codeHint")}</p>
-        <input dir="ltr" value={code} maxLength={6} autoCapitalize="characters" placeholder="ABC123"
-          onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))}
-          className={`${inputCls} num text-center text-[26px] tracking-[0.3em]`} />
-        <StickerButton block className="mt-4" disabled={code.length !== 6}
-          onClick={() => { saveStartFlow({ challenge: { kind: "crew_invite", code } }); void nav({ to: "/auth" }); }}>
-          {t("common.cta")}
-        </StickerButton>
-      </BottomSheet>
-    </div>
+        {featured ? <FeaturedChallenge card={featured} isOpen={!!current} lang={lang} /> : (
+          <div className="rounded-3xl bg-lime p-5 text-ink sticker-border shadow-hard sm:p-7">
+            <Target className="size-9" aria-hidden="true" />
+            <h2 className="mt-4 text-3xl font-extrabold">{t("startFlow.personal")}</h2>
+            <p className="mt-2 text-base font-semibold">{t("startFlow.personalHint")}</p>
+            <Link to="/start" search={{ lang }} className="mt-5 inline-flex min-h-11 items-center gap-2 font-extrabold underline underline-offset-4">
+              {t("landing.browse")} <ArrowRight className="size-4 rtl:rotate-180" aria-hidden="true" />
+            </Link>
+          </div>
+        )}
+      </section>
+      <section aria-labelledby="how-to-play" className="space-y-4">
+        <h2 id="how-to-play" className="text-[28px] font-extrabold">{t("landing.how")}</h2>
+        <ol className="grid gap-3 md:grid-cols-3">
+          {steps.map(({ icon: Icon, color, label, detail }) => (
+            <li key={label} className="flex gap-3 rounded-2xl bg-card p-4 sticker-border">
+              <span className={`grid size-11 shrink-0 place-items-center rounded-xl sticker-border ${color}`}><Icon className="size-5" aria-hidden="true" /></span>
+              <div><h3 className="font-extrabold">{label}</h3><p className="mt-1 text-sm font-semibold text-design-body">{detail}</p></div>
+            </li>
+          ))}
+        </ol>
+      </section>
+      <footer className="mt-auto flex flex-wrap items-center justify-between gap-3 border-t-2 border-ink pt-4">
+        <div className="w-full max-w-[245px]"><ExploreAsGuest lang={lang} /></div>
+        <Link to="/admin" className="inline-flex min-h-11 items-center text-sm font-bold text-design-muted underline underline-offset-4">{t("auth.adminSignIn")}</Link>
+      </footer>
+    </main>
   );
 }
 
-function SeasonCountdown() {
-  const { t } = useTranslation();
-  const now = useNow();
-  const left = splitMs(now ? winterArcEndLocal() - now.getTime() : 0);
-  return <div className="grid grid-cols-4 gap-2" dir="ltr">{([ ["d", left.d, t("landing.days")], ["h", left.h, t("landing.hrs")], ["m", left.m, t("landing.min")], ["s", left.s, t("landing.sec")] ] as const).map(([key, value, label]) => <div key={key} className="flex flex-col items-center"><span className={`num text-[28px] font-bold leading-none ${key === "s" ? "text-orange" : ""}`}>{pad(value)}</span><span className="mt-1 text-[11px] font-bold text-countdown-muted">{label}</span></div>)}</div>;
+function FeaturedChallenge({ card, isOpen, lang }: { card: CatalogCard; isOpen: boolean; lang: Lang }) {
+  const t = i18n.getFixedT(lang);
+  return (
+    <article className="relative rounded-3xl bg-lime p-5 text-ink sticker-border shadow-hard sm:p-7">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <span className="rounded-lg bg-ink px-2.5 py-1 text-sm font-extrabold text-lime">{t(isOpen ? "startFlow.openNow" : "socialDesign.upcoming")}</span>
+        <span className="rounded-lg bg-yellow px-2.5 py-1 text-sm font-extrabold sticker-border">{t("batch6.days", { n: card.days })}</span>
+      </div>
+      <h2 className="mt-4 break-words text-[clamp(1.9rem,5vw,3.25rem)] font-extrabold leading-tight">{loc(card.name, lang)}</h2>
+      <p className="mt-2 flex items-center gap-2 text-sm font-bold">
+        <CalendarDays className="size-4 shrink-0" aria-hidden="true" />
+        <span><time dateTime={card.starts_on}>{formatDayMonth(card.starts_on, lang)}</time> – <time dateTime={card.ends_on}>{formatDayMonth(card.ends_on, lang)}</time></span>
+      </p>
+      {card.habits.length > 0 && <ul className="mt-5 grid gap-2">
+        {card.habits.map((habit) => (
+          <li key={habit.key} className="flex items-center gap-3 rounded-xl bg-card px-3 py-2.5 text-sm font-extrabold sticker-border">
+            <span className="grid size-8 shrink-0 place-items-center rounded-md bg-yellow sticker-border" aria-hidden="true"><HabitIcon name={habit.key} className="size-5" /></span>
+            {loc(habit.name, lang)}
+          </li>
+        ))}
+      </ul>}
+      {isOpen && <Link to="/start" search={{ lang, season: card.season_id }} className="mt-4 inline-flex min-h-11 items-center gap-2 font-extrabold underline underline-offset-4">
+        {t("landing.viewChallenge")} <ArrowRight className="size-4 rtl:rotate-180" aria-hidden="true" />
+      </Link>}
+    </article>
+  );
 }

@@ -10,7 +10,7 @@ import { Toaster } from "sonner";
 import { StickerButton } from "@/components/lezgo/ui";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import i18n, { applyLang, isRtl, LANG_KEY } from "@/lib/i18n";
+import i18n, { applyLang, isRtl, LANG_KEY, selectLang } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 
 function NotFoundComponent() {
@@ -85,7 +85,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 function RootShell({ children }: { children: ReactNode }) {
   const search = useRouterState({ select: (state) => state.location.searchStr });
   const requestedLang = new URLSearchParams(search).get("lang");
-  const lang = requestedLang === "fr" || requestedLang === "ar" ? requestedLang : "en";
+  const lang = selectLang(requestedLang) ?? "en";
   return (
     <html lang={lang} dir={isRtl(lang) ? "rtl" : "ltr"}>
       <head><HeadContent /></head>
@@ -101,7 +101,7 @@ function RootComponent() {
     try {
       const requested = new URLSearchParams(window.location.search).get("lang");
       const stored = localStorage.getItem(LANG_KEY);
-      const lang = requested && ["en", "fr", "ar"].includes(requested) ? requested : stored;
+      const lang = selectLang(requested) ?? selectLang(stored);
       if (lang) applyLang(lang);
     } catch { /* ignore */ }
     const { data } = supabase.auth.onAuthStateChange((event) => {

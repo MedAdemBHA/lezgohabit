@@ -4,12 +4,12 @@ export const START_FLOW_KEY = "lezgo_start_flow";
 export const MAX_CHALLENGE_HABITS = 6;
 type PersonalPick = { key: string; target: number };
 export type StartFlow =
-  | { challenge: { kind: "official"; seasonId: string }; play: { mode: "solo" | "find" | "create" } }
-  | { challenge: { kind: "creator"; code: string }; play: { mode: "solo" | "find" | "create" } }
+  | {
+      challenge: { kind: "official"; seasonId: string } | { kind: "creator"; code: string };
+      play: { mode: "solo" | "find" | "create" } | { mode: "code"; code: string };
+    }
   | { challenge: { kind: "personal"; name: string; days: number; habits: PersonalPick[] }; play: { mode: "solo" } }
-  | { challenge: { kind: "crew_invite"; code: string } }
-  | { challenge: { kind: "creator"; code: string }; play: { mode: "code"; code: string } }
-  | { challenge: { kind: "official"; seasonId: string }; play: { mode: "code"; code: string } };
+  | { challenge: { kind: "crew_invite"; code: string } };
 
 export function toggleStartHabit(current: string[], key: string): string[] {
   if (current.includes(key)) return current.filter((item) => item !== key);

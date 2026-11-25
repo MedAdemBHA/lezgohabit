@@ -10,7 +10,7 @@ export const challengePreview = createServerFn({ method: "GET" })
     return getPublicChallengePreview(code);
   });
 
-export const featuredCreatorChallenges = createServerFn({ method: "GET" }).handler(async () => {
-  const { getFeaturedCreatorChallenges } = await import("@/lib/public-challenges.server");
-  return getFeaturedCreatorChallenges();
+export const publicChallengeCatalog = createServerFn({ method: "GET" }).handler(async () => {
+  const { getPublicChallengeCatalog } = await import("@/lib/public-challenges.server");
+  return getPublicChallengeCatalog();
 });

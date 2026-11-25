@@ -74,6 +74,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
 const str = (r: AdminRow, k: string) => String(r[k] ?? "");
 function AdminPage() {
   const { t, i18n } = useTranslation();
+  const { user } = Route.useRouteContext();
   const section = Route.useSearch().section ?? "overview";
   const nav = useNavigate();
   const qc = useQueryClient();
@@ -95,11 +96,11 @@ function AdminPage() {
   const [word, setWord] = useState("");
   const [wordLang, setWordLang] = useState("en");
   const [showDemo, setShowDemo] = useState(false);
-  const q = useQuery(adminQuery(section, search, page, target, showDemo));
-  const guests = useQuery({ queryKey: ["admin-guest-sessions"], refetchInterval: 60_000, queryFn: async () => { const { data, error } = await supabase.rpc("admin_guest_sessions"); if (error) throw error; return data as unknown as { today: number; week: number }; } });
+  const q = useQuery(adminQuery(user.id, section, search, page, target, showDemo));
+  const guests = useQuery({ queryKey: ["admin-guest-sessions", user.id], enabled: !!q.data, refetchInterval: 60_000, queryFn: async () => { const { data, error } = await supabase.rpc("admin_guest_sessions"); if (error) throw error; return data as unknown as { today: number; week: number }; } });
   const creatorRequests = useQuery({
-    queryKey: ["creator-requests"],
-    enabled: section === "creators",
+    queryKey: ["creator-requests", user.id],
+    enabled: section === "creators" && !!q.data,
     queryFn: async () => {
       const { data, error } = await supabase.rpc("creator_requests_admin");
       if (error) throw error;
@@ -185,12 +186,10 @@ function AdminPage() {
     return (
       <div className="admin-loading">
         <ShieldAlert className="size-12" />
-        <h1>{a("noAccess")}</h1>
-        <Link to="/today">
-          <StickerButton>
-            <ArrowLeft />
-            {a("back")}
-          </StickerButton>
+        <h1>{q.error?.message === "forbidden" || (q.error as { code?: string })?.code === "42501" ? a("noAccess") : t("common.error")}</h1>
+        <Link to="/" className="inline-flex min-h-12 items-center gap-2 rounded-2xl bg-ink px-5 font-extrabold text-lime sticker-border">
+          <ArrowLeft className="rtl:rotate-180" />
+          {a("back")}
         </Link>
       </div>
     );
