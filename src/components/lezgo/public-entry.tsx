@@ -1,10 +1,16 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, Ticket } from "lucide-react";
 import { useState } from "react";
-import i18n, { type Lang } from "@/lib/i18n";
+import { useTranslation } from "react-i18next";
+import i18n, { selectLang, type Lang } from "@/lib/i18n";
 import { Brand } from "./brand";
 import { DesignLanguage } from "./design-language";
 import { BottomSheet, Field, StickerButton, inputCls } from "./ui";
+
+export function usePublicLanguage(requested?: Lang) {
+  const { i18n: locale } = useTranslation();
+  return requested ?? selectLang(locale.language) ?? "en";
+}
 
 export function PublicHeader({ lang, onLanguage }: { lang: Lang; onLanguage: (lang: Lang) => void }) {
   const t = i18n.getFixedT(lang);

@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowRight, CalendarDays, ListChecks, Target, Users } from "lucide-react";
 import { ExploreAsGuest } from "@/components/lezgo/guest";
 import { HabitIcon } from "@/components/lezgo/habit-icon";
-import { InviteCodeButton, PublicHeader } from "@/components/lezgo/public-entry";
+import { InviteCodeButton, PublicHeader, usePublicLanguage } from "@/components/lezgo/public-entry";
 import { publicChallengeCatalog } from "@/lib/challenge-preview.functions";
 import { groupCatalog, type CatalogCard } from "@/lib/challenge-catalog";
 import { pageHead } from "@/lib/page-head";
@@ -24,7 +24,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Landing() {
-  const { lang = "en" } = Route.useSearch();
+  const lang = usePublicLanguage(Route.useSearch().lang);
   const { open, upcoming } = Route.useLoaderData();
   const t = i18n.getFixedT(lang);
   const nav = useNavigate();

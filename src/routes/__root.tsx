@@ -4,7 +4,7 @@ import {
   Outlet, Link, createRootRouteWithContext, useRouter, useRouterState, HeadContent, Scripts, type ErrorComponentProps,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
-import { I18nextProvider } from "react-i18next";
+import { I18nextProvider, useTranslation } from "react-i18next";
 import { Toaster } from "sonner";
 
 import { StickerButton } from "@/components/lezgo/ui";
@@ -83,9 +83,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 function RootShell({ children }: { children: ReactNode }) {
+  const { i18n: locale } = useTranslation();
   const search = useRouterState({ select: (state) => state.location.searchStr });
   const requestedLang = new URLSearchParams(search).get("lang");
-  const lang = selectLang(requestedLang) ?? "en";
+  const lang = selectLang(requestedLang) ?? selectLang(locale.language) ?? "en";
   return (
     <html lang={lang} dir={isRtl(lang) ? "rtl" : "ltr"}>
       <head><HeadContent /></head>

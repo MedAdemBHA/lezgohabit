@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router"
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, CalendarDays, Check, Lock, Plus, Ticket, User, Users } from "lucide-react";
-import { PublicHeader, InviteCodeButton } from "@/components/lezgo/public-entry";
+import { PublicHeader, InviteCodeButton, usePublicLanguage } from "@/components/lezgo/public-entry";
 import { HabitIcon } from "@/components/lezgo/habit-icon";
 import { Field, Num, StickerButton, Tile, inputCls } from "@/components/lezgo/ui";
 import { challengePreview, publicChallengeCatalog } from "@/lib/challenge-preview.functions";
@@ -46,7 +46,8 @@ export const Route = createFileRoute("/start")({
 });
 
 function StartPage() {
-  const { lang = "en", code = "", season } = Route.useSearch();
+  const { lang: requestedLang, code = "", season } = Route.useSearch();
+  const lang = usePublicLanguage(requestedLang);
   const { open, upcoming, catalogError } = Route.useLoaderData();
   const t = i18n.getFixedT(lang);
   const nav = useNavigate();
