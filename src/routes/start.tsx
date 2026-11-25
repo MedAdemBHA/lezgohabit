@@ -153,7 +153,13 @@ function StartPage() {
 
   return (
     <main className="design-screen mx-auto flex min-h-screen w-full max-w-[480px] flex-col gap-4 px-5 pb-8 pt-4">
-      <header className="flex items-center justify-between"><Brand size={36} /><DesignLanguage /></header>
+      <header className="flex items-center justify-between gap-2">
+        <Brand size={36} />
+        <div className="flex items-center gap-2">
+          <DesignLanguage />
+          <Link to="/auth" className="inline-flex min-h-11 shrink-0 items-center rounded-xl bg-card px-3 text-sm font-extrabold sticker-border">{t("auth.signIn")}</Link>
+        </div>
+      </header>
 
       {step === "invite" ? (
         <section className="my-auto space-y-4 rounded-[22px] bg-yellow p-5 sticker-border shadow-hard-lg">

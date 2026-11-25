@@ -194,6 +194,9 @@ export const en = {
     codeTitle: "Got a crew code?", codeHint: "6 letters or numbers. We'll drop you in after sign in.",
   },
   auth: {
+    signIn: "Sign in", existingEmail: "We’ll email you a sign-in link. If you already have an account, use the same email.",
+    emailNotAllowed: "This email can’t receive a sign-in link yet. Contact the Lezgo team.",
+    emailRateLimited: "Too many sign-in links requested. Wait a bit and try again.",
     title: "Sign in to start your season", google: "Continue with Google", or: "or",
     email: "Email", emailPh: "you@example.com", sendLink: "Email me a magic link",
     linkSent: "Check your inbox — tap the link to sign in.", privacy: "We only use your email to sign you in. No spam, ever.",
