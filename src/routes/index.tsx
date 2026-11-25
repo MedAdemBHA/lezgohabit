@@ -11,6 +11,7 @@ import {
   usePublicLanguage,
 } from "@/components/lezgo/public-entry";
 import { publicChallengeCatalog } from "@/lib/challenge-preview.functions";
+import { guestDemoAvailable } from "@/lib/admin.functions";
 import { groupCatalog, type CatalogCard } from "@/lib/challenge-catalog";
 import { pageHead } from "@/lib/page-head";
 import i18n, { isRtl, loc, selectLang, type Lang } from "@/lib/i18n";
@@ -19,7 +20,13 @@ export const Route = createFileRoute("/")({
   validateSearch: (search: Record<string, unknown>): { lang?: Lang | undefined } => ({
     lang: selectLang(search["lang"]),
   }),
-  loader: async () => groupCatalog(await publicChallengeCatalog().catch(() => [])),
+  loader: async () => {
+    const [cards, demoAvailable] = await Promise.all([
+      publicChallengeCatalog().catch(() => []),
+      guestDemoAvailable().catch(() => false),
+    ]);
+    return { ...groupCatalog(cards), demoAvailable };
+  },
   head: ({ match }) => {
     const lang = match.search.lang ?? "en";
     const t = i18n.getFixedT(lang);
@@ -36,7 +43,7 @@ export const Route = createFileRoute("/")({
 
 function Landing() {
   const lang = usePublicLanguage(Route.useSearch().lang);
-  const { open, upcoming } = Route.useLoaderData();
+  const { open, upcoming, demoAvailable } = Route.useLoaderData();
   const t = i18n.getFixedT(lang);
   const nav = useNavigate();
   const hash = useLocation({ select: (location) => location.hash });
@@ -126,19 +133,39 @@ function Landing() {
             </ol>
           </section>
 
-          <div className="home-demo">
-            <div>
-              <h2 className="text-2xl font-extrabold">{t("landing.demoTitle")}</h2>
-              <p className="mt-1 text-sm font-medium">{t("landing.demoDetail")}</p>
+          {demoAvailable && (
+            <div className="home-demo">
+              <div>
+                <h2 className="text-2xl font-extrabold">{t("landing.demoTitle")}</h2>
+                <p className="mt-1 text-sm font-medium">{t("landing.demoDetail")}</p>
+              </div>
+              <ExploreAsGuest lang={lang} className="home-demo-button" />
             </div>
-            <ExploreAsGuest lang={lang} className="home-demo-button" />
-          </div>
+          )}
         </main>
 
         <footer className="public-footer">
           <Link to="/" search={{ lang }} aria-label={t("landing.home")}>
             <Brand size={28} />
           </Link>
+          <div className="flex flex-wrap items-center gap-x-3">
+            <Link
+              to="/legal/$document"
+              params={{ document: "terms" }}
+              search={{ lang }}
+              className="public-footer-link"
+            >
+              {t("design.terms")}
+            </Link>
+            <Link
+              to="/legal/$document"
+              params={{ document: "privacy" }}
+              search={{ lang }}
+              className="public-footer-link"
+            >
+              {t("design.privacy")}
+            </Link>
+          </div>
           <Link to="/admin" className="public-footer-link">
             {t("auth.adminSignIn")}
           </Link>

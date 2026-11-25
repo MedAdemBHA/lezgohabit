@@ -20,7 +20,7 @@ export function HabitTile({ habit, value, completion, points, pop, onTap, onStep
  const done = completion >= 1; const color = habit.template?.color ?? habitColor(habit.template?.key ?? '', habit.template?.category ?? '');
  const key = habit.template?.key;
  const ruleData = habit.rule as { window_start?: string; window_end?: string } | null;
- const rule = key === 'train' ? t('todayDesign.trainRule') : key === 'learn15' ? t('todayDesign.learnRule') : key === 'sleep7' ? t('todayDesign.sleepRule') : key === 'no_sugar' ? t('todayDesign.sugarRule')
+ const rule = key === 'train' ? (loc(habit.what_counts, i18n.language) || loc(habit.template?.what_counts, i18n.language) || t('todayDesign.trainRule')) : key === 'learn15' ? t('todayDesign.learnRule') : key === 'sleep7' ? t('todayDesign.sleepRule') : key === 'no_sugar' ? t('todayDesign.sugarRule')
   : habit.kind === 'time_window' ? t('habitRules.outsideWindow', { start: ruleData?.window_start ?? '—', end: ruleData?.window_end ?? '—' })
   : habit.kind === 'quit' ? t('habitRules.quitRule')
   : habit.kind === 'timer' ? t('habitRules.timerVisible')

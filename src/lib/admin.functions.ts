@@ -99,21 +99,38 @@ async function digest(value: string) {
   const bytes = await crypto.subtle.sign("HMAC", key, enc.encode(value));
   return Array.from(new Uint8Array(bytes), (b) => b.toString(16).padStart(2, "0")).join("");
 }
-export const enterDemo = createServerFn({ method: "POST" }).handler(async () => {
+
+async function readyDemoProfile() {
+  if (!process.env["SUPABASE_URL"] || !process.env["SUPABASE_PUBLISHABLE_KEY"]
+    || !process.env["SUPABASE_SERVICE_ROLE_KEY"] || !process.env["DEMO_PASSWORD"]
+    || !process.env["DEVICE_HASH_SECRET"]) return null;
+
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const key = await digest(getRequestHeader("cf-connecting-ip") ?? "shared");
-  const { data: allowed, error: rateError } = await supabaseAdmin.rpc("claim_demo_login", {
-    _key: key,
-  });
-  if (rateError || !allowed) throw new Error("demo_rate_limit");
-  const { data: ready } = await supabaseAdmin
+  const { data, error } = await supabaseAdmin
     .from("profiles")
     .select("id")
     .eq("is_demo", true)
     .eq("handle", "demo_you")
     .eq("onboarded", true)
     .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+export const guestDemoAvailable = createServerFn({ method: "GET" }).handler(async () => {
+  return !!(await readyDemoProfile().catch(() => null));
+});
+
+export const enterDemo = createServerFn({ method: "POST" }).handler(async () => {
+  const ready = await readyDemoProfile();
   if (!ready) throw new Error("demo_not_ready");
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const ipHeader = process.env["VERCEL"] === "1" ? "x-vercel-forwarded-for" : "cf-connecting-ip";
+  const key = await digest(getRequestHeader(ipHeader) ?? "shared");
+  const { data: allowed, error: rateError } = await supabaseAdmin.rpc("claim_demo_login", {
+    _key: key,
+  });
+  if (rateError || !allowed) throw new Error("demo_rate_limit");
   const url = process.env["SUPABASE_URL"];
   const publicKey = process.env["SUPABASE_PUBLISHABLE_KEY"];
   const password = process.env["DEMO_PASSWORD"];

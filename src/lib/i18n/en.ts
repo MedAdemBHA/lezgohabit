@@ -209,7 +209,8 @@ export const en = {
     step3Detail: "Keep it personal or show up alongside friends.",
   },
   auth: {
-    signIn: "Sign in", existingEmail: "We’ll email you a sign-in link. If you already have an account, use the same email.",
+    googleSignInHint: "Continue with Google. If you already have an account, use the same Google account.",
+    signIn: "Sign in", existingEmail: "Continue with Google or request a sign-in link. Use the same account or email you used before.",
     emailNotAllowed: "This email can’t receive a sign-in link yet. Contact the Lezgo team.",
     emailRateLimited: "Too many sign-in links requested. Wait a bit and try again.",
     title: "Sign in to start your season", google: "Continue with Google", or: "or",
@@ -218,6 +219,15 @@ export const en = {
     adminSignIn: "Admin sign-in",
     adminSignInHint: "Use the account that has access to the Lezgo dashboard.",
     playerSignIn: "Player sign-in",
+  },
+  accountPolicies: {
+    googleData: "When you sign in with Google, Lezgo receives your name, email address, and profile photo if available. Supabase handles authentication.",
+    use: "Lezgo is a free habit challenge app for people aged 18 and over. You can have one active challenge at a time.",
+    conduct: "Respect other players. Do not harass anyone, impersonate others, or share another person’s private information or photos without their permission.",
+    moderation: "Use the report button for harmful content. Lezgo may remove content or suspend accounts that break these rules.",
+    accountData: "Lezgo uses your sign-in details, profile, check-ins, and challenge or crew activity to run the app and show your progress.",
+    visibility: "Personal challenges stay private. Your public board setting controls whether your progress appears on shared boards. A post is visible to the audience you choose when you share it.",
+    preferences: "In Settings you can change your visibility and notification preferences or delete your account.",
   },
   onb: {
     step: "Step {{n}} of 2", youTitle: "You", displayName: "Display name", handle: "Handle",

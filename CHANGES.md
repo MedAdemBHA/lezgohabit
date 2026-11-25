@@ -12,6 +12,8 @@
 - Reworked the public design around a photo-led homepage and detailed challenge cards. The cards show each habit and what counts before players choose a mode. Upcoming challenges show their opening date and duration as information.
 - Kept the homepage and Start in one phone-width column at every screen size. Both show the How it works link on mobile, and the homepage preserves that section when the language changes.
 - Added an admin sign-in path from the homepage and `/admin`. The dashboard uses its existing server authorization and can open before an admin completes a player profile. Player profile setup is a single form.
+- Matched Today’s workout rule to the saved challenge habit and kept the creator dashboard available before and between challenges.
+- Added public Terms and Privacy pages, kept email sign-in available for team testing, and made the guest button depend on the deployed demo configuration and seeded account.
 
 ## Migration order
 

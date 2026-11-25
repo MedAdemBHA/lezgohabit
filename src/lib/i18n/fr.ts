@@ -210,7 +210,8 @@ export const fr: Dict = {
     step3Detail: "Garde ton défi privé ou avance avec tes amis.",
   },
   auth: {
-    signIn: "Se connecter", existingEmail: "On t’enverra un lien de connexion. Si tu as déjà un compte, utilise la même adresse.",
+    googleSignInHint: "Continue avec Google. Si tu as déjà un compte, utilise le même compte Google.",
+    signIn: "Se connecter", existingEmail: "Continue avec Google ou demande un lien de connexion. Utilise le compte ou l’adresse habituels.",
     emailNotAllowed: "Cette adresse ne peut pas encore recevoir de lien. Contacte l’équipe Lezgo.",
     emailRateLimited: "Trop de liens demandés. Attends un peu et réessaie.",
     title: "Connecte-toi pour commencer ta saison", google: "Continuer avec Google", or: "ou",
@@ -219,6 +220,15 @@ export const fr: Dict = {
     adminSignIn: "Connexion admin",
     adminSignInHint: "Utilise le compte qui a accès au tableau de bord Lezgo.",
     playerSignIn: "Connexion joueur",
+  },
+  accountPolicies: {
+    googleData: "Si tu te connectes avec Google, Lezgo reçoit ton nom, ton adresse e-mail et ta photo de profil si elle est disponible. Supabase gère l’authentification.",
+    use: "Lezgo propose des défis d’habitudes gratuits aux personnes de 18 ans et plus. Un seul défi peut être actif à la fois.",
+    conduct: "Respecte les autres joueurs. Le harcèlement, l’usurpation d’identité et le partage de données privées ou de photos sans autorisation sont interdits.",
+    moderation: "Utilise le bouton de signalement pour les contenus nuisibles. Lezgo peut retirer des contenus ou suspendre des comptes qui enfreignent ces règles.",
+    accountData: "Lezgo utilise tes informations de connexion, ton profil, tes suivis et tes activités de défi ou d’équipe pour faire fonctionner l’appli et afficher tes progrès.",
+    visibility: "Tes défis personnels restent privés. Le réglage du classement public contrôle la visibilité de tes progrès dans les classements partagés. Tu choisis qui voit tes publications lorsque tu les partages.",
+    preferences: "Dans les paramètres, tu peux modifier ta visibilité, gérer tes notifications ou supprimer ton compte.",
   },
   onb: {
     step: "Étape {{n}} sur 2", youTitle: "Toi", displayName: "Nom affiché", handle: "Pseudo",
