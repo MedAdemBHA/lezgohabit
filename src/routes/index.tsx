@@ -59,10 +59,9 @@ function Landing() {
   ];
 
   return (
-    <div className="public-site public-home">
+    <div className="public-site">
       <div className="public-wrap">
         <PublicHeader
-          home
           lang={lang}
           onLanguage={(next) => void nav({ to: "/", search: { lang: next }, hash, replace: true })}
         />

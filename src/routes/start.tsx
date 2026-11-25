@@ -189,8 +189,8 @@ function StartPage() {
     <div className="public-site">
       <div className="public-wrap">
         <PublicHeader
-          start
           lang={lang}
+          onBrowse={() => setStep("challenge")}
           onLanguage={(next) =>
             void nav({
               to: "/start",
@@ -370,7 +370,7 @@ function StartPage() {
                   </button>
                 </div>
               )}
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              <div className="grid grid-cols-2 gap-3">
                 {templatesList.map((item) => {
                   const on = picked.includes(item.key);
                   return (
