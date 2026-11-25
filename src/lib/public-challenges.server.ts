@@ -19,8 +19,10 @@ export type PublicChallengePreview = {
 };
 
 function publicSupabase() {
-  const url = process.env["SUPABASE_URL"];
-  const key = process.env["SUPABASE_PUBLISHABLE_KEY"];
+  const runtimeUrl = process.env["SUPABASE_URL"];
+  const runtimeKey = process.env["SUPABASE_PUBLISHABLE_KEY"];
+  const url = runtimeUrl && runtimeKey ? runtimeUrl : import.meta.env["VITE_SUPABASE_URL"];
+  const key = runtimeUrl && runtimeKey ? runtimeKey : import.meta.env["VITE_SUPABASE_PUBLISHABLE_KEY"];
   if (!url || !key) throw new Error("public_supabase_unavailable");
 
   return createClient<Database>(url, key, {

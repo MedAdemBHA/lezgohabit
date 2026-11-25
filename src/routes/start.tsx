@@ -10,7 +10,7 @@ import { Num, StickerButton, Tile, inputCls } from "@/components/lezgo/ui";
 import { challengePreview } from "@/lib/challenge-preview.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { templatesQuery, type Template } from "@/lib/data";
-import { loc } from "@/lib/i18n";
+import { formatDayMonth, loc } from "@/lib/i18n";
 import { pageHead } from "@/lib/page-head";
 import { saveStartFlow, toggleStartHabit, type StartFlow } from "@/lib/start-flow";
 import { localDate } from "@/lib/time";
@@ -73,6 +73,9 @@ function StartPage() {
   );
   const longerOfficial = allOfficial.filter((card) => card.days > 14);
   const shortOfficial = allOfficial.filter((card) => card.days <= 14);
+  const upcomingOfficial = (catalog.data ?? [])
+    .filter((card) => card.kind === "official" && card.starts_on > today)
+    .sort((a, b) => a.starts_on.localeCompare(b.starts_on));
   const creators = (catalog.data ?? []).filter((card) => card.kind === "creator");
   const templatesList = (templates.data ?? []).filter((tpl) => !tpl.is_faith && tpl.key !== "custom");
   const pickedTemplates = picked.map((key) => templatesList.find((tpl) => tpl.key === key)).filter((tpl): tpl is Template => !!tpl);
@@ -176,6 +179,21 @@ function StartPage() {
           </button>
           <StickerButton block size="lg" disabled={!selected} onClick={continueToPlay}>{t("common.next")}<ArrowRight className="rtl:-scale-x-100" /></StickerButton>
           <p className="text-center text-[12px] font-semibold text-design-muted">{t("startFlow.noCatalog")}</p>
+          {upcomingOfficial.length > 0 && (
+            <section aria-labelledby="upcoming-events" className="space-y-2">
+              <h2 id="upcoming-events" className="text-[13px] font-extrabold uppercase tracking-wide">{t("socialDesign.upcoming")}</h2>
+              <ul className="space-y-2">
+                {upcomingOfficial.map((card) => (
+                  <li key={card.id} className="flex items-center justify-between gap-3 rounded-[18px] bg-card p-3 sticker-border">
+                    <span className="font-extrabold">{loc(card.name, i18n.language)}</span>
+                    <time dateTime={card.starts_on} className="shrink-0 text-sm font-semibold">
+                      {formatDayMonth(card.starts_on, i18n.language)}
+                    </time>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
         </>
       ) : step === "personal" ? (
         <>

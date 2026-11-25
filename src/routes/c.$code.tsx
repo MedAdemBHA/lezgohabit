@@ -27,10 +27,15 @@ export const Route = createFileRoute("/c/$code")({
   validateSearch: (search: Record<string, unknown>) =>
     search["lang"] === "fr" || search["lang"] === "ar" ? { lang: search["lang"] } : {},
   loader: async ({ context, params, location }) => {
-    const challenge = await context.queryClient.ensureQueryData(preview(params.code));
     const requestedLang = new URLSearchParams(location.searchStr).get("lang");
     const lang = requestedLang === "fr" || requestedLang === "ar" ? requestedLang : "en";
-    return { challenge, lang };
+    if (!/^[A-Z0-9]{6}$/i.test(params.code)) return { challenge: null, lang, issue: "batch6.notFound" } as const;
+    try {
+      const challenge = await context.queryClient.ensureQueryData(preview(params.code.toUpperCase()));
+      return { challenge, lang, issue: null };
+    } catch {
+      return { challenge: null, lang, issue: "common.error" } as const;
+    }
   },
   head: ({ params, loaderData }) => {
     const data = loaderData as { challenge: ChallengePreview | null; lang: "en" | "fr" | "ar" } | undefined;
@@ -39,7 +44,7 @@ export const Route = createFileRoute("/c/$code")({
     if (!challenge) return pageHead(
       lang === "fr" ? "Rejoignez votre crew sur lezgo" : lang === "ar" ? "انضم إلى فريقك على lezgo" : "Join a crew on lezgo",
       lang === "fr" ? "Rejoignez votre crew et soyez présents ensemble sur lezgo." : lang === "ar" ? "انضم إلى فريقك واظهروا معاً على lezgo." : "Join your crew and show up together on lezgo.",
-      { privatePage: false, canonicalPath: `/c/${params.code}`, imagePath: `/og/challenge/${params.code}`, imageAlt: "Join a crew on lezgo", lang },
+      { privatePage: !!loaderData?.issue, canonicalPath: `/c/${params.code}`, imagePath: `/og/challenge/${params.code}`, imageAlt: "Join a crew on lezgo", lang },
     );
     const creator = challenge.creator ? `@${challenge.creator.replace(/^@/, "")}` : "";
     const habits = challenge.habits.map((habit) => loc(habit.name, lang)).filter(Boolean);
@@ -80,14 +85,20 @@ export const Route = createFileRoute("/c/$code")({
 });
 
 function Invite() {
-  const { code } = Route.useParams();
-  const { lang, challenge } = Route.useLoaderData();
+  const { code: rawCode } = Route.useParams();
+  const code = rawCode.toUpperCase();
+  const { lang, challenge, issue } = Route.useLoaderData();
   const t = i18n.getFixedT(lang);
 
   return (
     <main className="challenge-public">
       <LezgoMark size={64} />
-      {challenge ? (
+      {issue ? (
+        <>
+          <h1>{t(issue)}</h1>
+          <Link to="/start" className="font-extrabold underline">{t("challengeHistory.pickNext")}</Link>
+        </>
+      ) : challenge ? (
         <>
           <h1>{challenge.name}</h1>
           <p>{t("batch6.days", { n: challenge.days })} · {challenge.starts_on} — {challenge.ends_on}</p>
