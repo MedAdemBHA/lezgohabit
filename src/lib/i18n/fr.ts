@@ -195,6 +195,9 @@ export const fr: Dict = {
     codeTitle: "Tu as un code crew ?", codeHint: "6 lettres ou chiffres. On t'ajoute après la connexion.",
   },
   auth: {
+    signIn: "Se connecter", existingEmail: "On t’enverra un lien de connexion. Si tu as déjà un compte, utilise la même adresse.",
+    emailNotAllowed: "Cette adresse ne peut pas encore recevoir de lien. Contacte l’équipe Lezgo.",
+    emailRateLimited: "Trop de liens demandés. Attends un peu et réessaie.",
     title: "Connecte-toi pour commencer ta saison", google: "Continuer avec Google", or: "ou",
     email: "E-mail", emailPh: "toi@exemple.com", sendLink: "Recevoir un lien magique",
     linkSent: "Regarde ta boîte mail — clique le lien pour te connecter.", privacy: "Ton e-mail sert uniquement à te connecter. Zéro spam.",

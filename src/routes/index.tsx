@@ -1,4 +1,4 @@
-import { ClientOnly, createFileRoute, useNavigate } from "@tanstack/react-router";
+import { ClientOnly, createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ArrowRight } from "lucide-react";
@@ -45,7 +45,13 @@ function Landing() {
 
   return (
     <div className="design-screen join-screen">
-      <header className="join-header flex items-center justify-between"><Brand size={38} /><DesignLanguage /></header>
+      <header className="join-header flex items-center justify-between gap-2">
+        <Brand size={38} />
+        <div className="flex items-center gap-2">
+          <DesignLanguage />
+          <Link to="/auth" className="inline-flex min-h-11 shrink-0 items-center rounded-xl bg-card px-3 text-sm font-extrabold sticker-border">{t("auth.signIn")}</Link>
+        </div>
+      </header>
       <div className="flex flex-col gap-2.5"><h1 className="join-hero">{t("landing.hero")}</h1><p className="text-[17px] font-semibold leading-[1.5] text-design-body">{t("landing.subtitle")}</p></div>
       {event && <div className="join-season" style={{ borderInlineStart: `6px solid ${eventColor(event.color)}` }}>
         <div className="flex items-center justify-between gap-2"><span className="text-[16px] font-extrabold">{loc(event.name, lang)}</span><span className="rounded-lg bg-lime px-2 py-[3px] text-[12px] font-extrabold text-ink">{t("common.live")}</span></div>
