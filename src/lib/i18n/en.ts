@@ -186,6 +186,13 @@ export const en = {
   },
   nav: { today: "Today", board: "Board", crew: "Crew", me: "Me", pulse: "Pulse" },
   landing: {
+    headline: "Small habits.\nReal progress.",
+    freeChallenges: "Free habit challenges",
+    navigation: "Main navigation",
+    dailyHabits: "Daily habits",
+    trackPhoto: "A runner tying her shoes at an outdoor track",
+    demoTitle: "Take a look around",
+    demoDetail: "Try the sample challenge and see what a daily check-in feels like.",
     hero: "Show up.\nLezgo.",
     subtitle: "Pick a free habit challenge, check in each day, and track your progress. Go solo or join a crew.",
     endsIn: "Ends in", days: "days", hrs: "hrs", min: "min", sec: "sec",
@@ -285,6 +292,8 @@ export const en = {
     nudge: "Nudge {{name}}",
   },
   startFlow: {
+    personalAction: "Start a private challenge",
+    chooseNamed: "Choose how to play {{name}}",
     step: "STEP {{n}}", pickTitle: "Pick a challenge", pickSub: "Join a free challenge with shared habits, or build a private one around your own routine.",
     official: "Official", short: "Short challenges", creator: "Creator challenges", personal: "Create a personal challenge", personalPrivate: "Choose your own habits and duration. Only you can see it.", personalHint: "Choose a few habits and how long you want to keep them.",
     personalName: "My {{n}}-day challenge", pickHabits: "Pick 1–6 habits", personalSoloHint: "Personal challenges stay private and solo.",

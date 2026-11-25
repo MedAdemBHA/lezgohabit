@@ -187,6 +187,13 @@ export const fr: Dict = {
   },
   nav: { today: "Aujourd’hui", board: "Classement", crew: "Crew", me: "Moi", pulse: "Pulse" },
   landing: {
+    headline: "De petites habitudes.\nDe vrais progrès.",
+    freeChallenges: "Défis d’habitudes gratuits",
+    navigation: "Navigation principale",
+    dailyHabits: "Habitudes quotidiennes",
+    trackPhoto: "Une coureuse lace ses chaussures sur une piste d’athlétisme",
+    demoTitle: "Découvre l’application",
+    demoDetail: "Essaie le défi de démonstration et découvre comment se passe un suivi quotidien.",
     hero: "Sois là.\nLezgo.",
     subtitle: "Choisis un défi d’habitudes gratuit, fais le point chaque jour et suis tes progrès, en solo ou en équipe.",
     endsIn: "Fin dans", days: "jours", hrs: "h", min: "min", sec: "s",
@@ -286,6 +293,8 @@ export const fr: Dict = {
     nudge: "Relancer {{name}}",
   },
   startFlow: {
+    personalAction: "Créer mon défi privé",
+    chooseNamed: "Choisir comment jouer à {{name}}",
     step: "ÉTAPE {{n}}", pickTitle: "Choisis un challenge", pickSub: "Rejoins un défi gratuit aux habitudes communes ou crée un défi privé à ton rythme.",
     official: "Officiels", short: "Challenges courts", creator: "Challenges de créateurs", personal: "Créer un défi personnel", personalPrivate: "Choisis tes habitudes et la durée. Toi seul peux le voir.", personalHint: "Choisis quelques habitudes et leur durée.",
     personalName: "Mon challenge de {{n}} jours", pickHabits: "Choisis 1 à 6 habitudes", personalSoloHint: "Les challenges personnels restent privés et en solo.",

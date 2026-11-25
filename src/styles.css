@@ -1,5 +1,6 @@
 @import "tailwindcss" source(none);
 @import "tw-animate-css";
+@import "./public-entry.css";
 @source "../src";
 
 /* Lezgo "Sticker" design system — LIGHT ONLY. */

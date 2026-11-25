@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { publicUrl } from "@/lib/public-url";
 import {
-  Outlet, Link, createRootRouteWithContext, useRouter, useRouterState, HeadContent, Scripts, type ErrorComponentProps,
+  Outlet, Link, createRootRouteWithContext, useHydrated, useRouter, useRouterState, HeadContent, Scripts, type ErrorComponentProps,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 import { I18nextProvider, useTranslation } from "react-i18next";
@@ -85,8 +85,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 function RootShell({ children }: { children: ReactNode }) {
   const { i18n: locale } = useTranslation();
   const search = useRouterState({ select: (state) => state.location.searchStr });
-  const requestedLang = new URLSearchParams(search).get("lang");
-  const lang = selectLang(requestedLang) ?? selectLang(locale.language) ?? "en";
+  const requestedLang = selectLang(new URLSearchParams(search).get("lang"));
+  const hydrated = useHydrated();
+  const lang = requestedLang ?? (hydrated ? selectLang(locale.language) : undefined) ?? "en";
   return (
     <html lang={lang} dir={isRtl(lang) ? "rtl" : "ltr"}>
       <head><HeadContent /></head>
