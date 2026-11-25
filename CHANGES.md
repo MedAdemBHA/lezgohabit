@@ -35,14 +35,13 @@ The Supabase migration history now confirms `0063`–`0071` are applied to `yjkn
 
 - `bun run build`: passed. Existing warnings remain for deprecated `inputValidator`, chunk size, and the PWA glob that finds no files in `dist`.
 - `npx tsc --noEmit -p .`: passed.
-- `bunx vitest run`: 52 passed, 109 skipped, with one known failing suite: `src/test/app-routing.test.tsx` cannot resolve `virtual:pwa-register` in Vitest. The remaining tests pass.
+- `bunx vitest run`: 54 passed, 109 skipped. The `virtual:pwa-register` routing-suite mock now resolves in Vitest.
 - `scripts/verify_v2.sql` ran against the migrated Supabase project. It reported `ALL V2 CHECKS PASS`; all fixture users and rows were rolled back. A local alias typo in the personal-checkin fixture was corrected before the successful run.
 - Local UI smoke test: the 7-day personal picker and the official “Find me a crew” path both reach the sign-in handoff. Authenticated UI actions were not attempted without a staging account; the SQL verifier covers their database rules.
 
 ## Open items
 
 - Personal challenges remain solo-only and use existing library templates. Custom-named personal habits and personal crews need a separate snapshot contract and game-rule decision.
-- The existing `virtual:pwa-register` resolution issue remains in the Vitest routing suite.
 - `roadmap.md` still marks `joinlezgo.com` as a domain-ownership/DNS task, `DEPLOY.md` gives only a Worker URL placeholder, and the domain did not resolve from this environment.
 
 ## Applied to Supabase (2026-11-24, by Claude)
@@ -65,4 +64,4 @@ Fixes made while applying (already in the files above):
 - Crew removal preserves event progress. Event removal closes that participation and preserves its history. Lifting an event ban clears the restriction while leaving the ended entry intact. Players receive private notices and can appeal to Lezgo admins. Platform account suspension remains in the admin dashboard.
 - Migration order: `0072_official_event_dashboard.sql`, `0073_scoped_moderation.sql`, `0074_moderation_reports_and_appeals.sql`. Apply in order to a test Supabase project, then run `scripts/verify_v2.sql` and `scripts/verify_event_controls.sql`. Both scripts roll back their fixtures. Apply the schema before releasing the frontend.
 - For hosted acceptance, sign in with a real admin, creator, crew owner, and member. Check that an invite opens in the intended browser, complete a check-in, exercise both moderation scopes, then reply to a player appeal. Production sign-in and guest seeding remain separate setup tasks.
-- Local verification passed both production builds, TypeScript, 54 Vitest tests, and 50 SQL checks in a temporary PGlite database. The local SQL run omits the hosted Vault/cron setup, and seven hosted test suites remained skipped. The public browser smoke check covered the event picker at 390 px and the crew sign-in handoff.
+- Local verification passed both production builds, TypeScript, 54 Vitest tests, and 53 SQL checks in a temporary PGlite database. The local SQL run omits the hosted Vault/cron setup, and seven hosted test suites remained skipped. The public browser smoke check covered the event picker at 390 px and the crew sign-in handoff.

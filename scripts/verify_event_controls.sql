@@ -23,6 +23,12 @@ BEGIN
   s:=public.admin_save_official_event(NULL,payload,'[{"key":"train","target":1}]');
   INSERT INTO event_checks VALUES('draft stays out of public catalog',NOT EXISTS(
     SELECT FROM jsonb_array_elements(public.public_challenge_catalog()) j WHERE j->>'id'=s::text));
+  PERFORM set_config('request.jwt.claims','{}',true);
+  EXECUTE 'SET LOCAL ROLE anon';
+  SELECT EXISTS(SELECT 1 FROM public.seasons WHERE id=s) INTO check_ok;
+  EXECUTE 'RESET ROLE';
+  INSERT INTO event_checks VALUES('draft event is hidden from direct public reads',NOT check_ok);
+  PERFORM set_config('request.jwt.claims',jsonb_build_object('sub',admin,'role','authenticated')::text,true);
   INSERT INTO event_checks VALUES('admin sees draft and canonical rules',EXISTS(
     SELECT FROM jsonb_array_elements(public.admin_official_events()) j WHERE j->>'id'=s::text AND j->>'state'='draft' AND j->'habits'->0->>'key'='train'));
   PERFORM public.admin_save_official_event(s,payload||'{"published":true}','[{"key":"train","target":1}]');
@@ -121,6 +127,14 @@ BEGIN
   PERFORM set_config('request.jwt.claims',jsonb_build_object('sub',creator,'role','authenticated')::text,true);
   payload:=public.create_creator_challenge('Creator fixture',7,d,'[{"key":"train"}]');
   creator_event:=(payload->>'season_id')::uuid; creator_code:=payload->>'code';
+  PERFORM set_config('request.jwt.claims','{}',true);
+  EXECUTE 'SET LOCAL ROLE anon';
+  SELECT EXISTS(SELECT 1 FROM public.seasons WHERE id=creator_event) INTO check_ok;
+  EXECUTE 'RESET ROLE';
+  INSERT INTO event_checks VALUES('private creator season is hidden from direct public reads',NOT check_ok);
+  PERFORM set_config('request.jwt.claims',jsonb_build_object('sub',creator,'role','authenticated')::text,true);
+  SELECT EXISTS(SELECT 1 FROM public.seasons WHERE id=creator_event) INTO check_ok;
+  INSERT INTO event_checks VALUES('creator can read own private season',check_ok);
   INSERT INTO event_checks VALUES('creator scope only covers own event',public.community_moderation_access(creator_event)
     AND NOT public.community_moderation_access(s));
 

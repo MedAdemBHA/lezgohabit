@@ -3,9 +3,23 @@ ALTER TABLE public.seasons
   ADD COLUMN IF NOT EXISTS published boolean NOT NULL DEFAULT true,
   ADD COLUMN IF NOT EXISTS event_goal jsonb NOT NULL DEFAULT '{}'::jsonb;
 
+CREATE OR REPLACE FUNCTION public._can_read_private_season(_season uuid) RETURNS boolean
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path=public AS $$
+  SELECT auth.uid() IS NOT NULL AND (
+    EXISTS (SELECT 1 FROM public.season_entries e WHERE e.season_id=_season AND e.user_id=auth.uid())
+    OR EXISTS (SELECT 1 FROM public.challenges c WHERE c.season_id=_season AND c.owner_id=auth.uid())
+    OR EXISTS (SELECT 1 FROM public.profiles p WHERE p.id=auth.uid() AND p.is_admin)
+  )
+$$;
+REVOKE ALL ON FUNCTION public._can_read_private_season(uuid) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public._can_read_private_season(uuid) TO anon,authenticated;
+
 DROP POLICY IF EXISTS "seasons public" ON public.seasons;
 CREATE POLICY "seasons public" ON public.seasons FOR SELECT TO anon, authenticated
-  USING (published);
+  USING (
+    (published AND NOT archived AND NOT is_demo AND NOT challenge_owned)
+    OR public._can_read_private_season(id)
+  );
 
 CREATE OR REPLACE FUNCTION public._event_today() RETURNS date
 LANGUAGE sql STABLE SET search_path = '' AS $$
