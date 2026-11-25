@@ -13,14 +13,19 @@ export function habitName(h: UserHabit, t: (key: string) => string, lang: string
  if (key === 'learn' || key === 'learn15') return t('todayDesign.learn');
  if (key === 'sleep' || key === 'sleep7') return t('todayDesign.sleep');
  if (key === 'no_sugar') return t('todayDesign.noSugar');
- return loc(h.template?.name,lang);
+ const title = loc(h.template?.name,lang);
+ const base = Number(h.template?.default_target);
+ return (h.kind === 'count' || h.kind === 'timer') && base > 0 && base !== Number(h.target)
+  ? title.replace(/\d+(?:[.,]\d+)?/g, part => Number(part.replace(',', '.')) === base
+    ? fmtVal(Number(h.target)).replace('.', lang === 'fr' ? ',' : '.') : part)
+  : title;
 }
 export function HabitTile({ habit, value, completion, points, pop, onTap, onStepper, disabled }: { habit: UserHabit; value: number; completion: number; points: HabitPoints | undefined; pop: boolean; onTap: () => void; onStepper: () => void; disabled: boolean }) {
  const { t, i18n } = useTranslation(); const timer = useRef<ReturnType<typeof setTimeout> | null>(null); const held = useRef(false);
  const done = completion >= 1; const color = habit.template?.color ?? habitColor(habit.template?.key ?? '', habit.template?.category ?? '');
  const key = habit.template?.key;
  const ruleData = habit.rule as { window_start?: string; window_end?: string } | null;
- const rule = key === 'train' ? t('todayDesign.trainRule') : key === 'learn15' ? t('todayDesign.learnRule') : key === 'sleep7' ? t('todayDesign.sleepRule') : key === 'no_sugar' ? t('todayDesign.sugarRule')
+ const rule = key === 'train' ? t('todayDesign.trainRule') : key === 'learn15' ? t('todayDesign.learnRule') : key === 'sleep7' && Number(habit.target) === 7 ? t('todayDesign.sleepRule') : key === 'no_sugar' ? t('todayDesign.sugarRule')
   : habit.kind === 'time_window' ? t('habitRules.outsideWindow', { start: ruleData?.window_start ?? '—', end: ruleData?.window_end ?? '—' })
   : habit.kind === 'quit' ? t('habitRules.quitRule')
   : habit.kind === 'timer' ? t('habitRules.timerVisible')

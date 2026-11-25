@@ -64,7 +64,7 @@ function ChallengesPage() {
                 <h1 className="mt-1 break-words text-[24px] font-extrabold leading-tight">{selected.name}</h1>
               </div>
               <span className="shrink-0 rounded-full bg-card px-3 py-1 text-[13px] font-extrabold sticker-border">
-                {t(`challengeHistory.status_${selected.status}`)}
+                {t(selected.end_reason === "moderation" ? "events.removed" : `challengeHistory.status_${selected.status}`)}
               </span>
             </div>
             <div className="mt-4 flex items-center gap-2 text-[13px] font-bold">
@@ -135,7 +135,7 @@ function HistoryCard({ entry }: { entry: ChallengeHistoryEntry }) {
           <h2 className="truncate text-[18px] font-extrabold">{entry.name}</h2>
           <p className="mt-1 text-[13px] font-semibold">{formatDayMonth(entry.start_date, i18n.language)} — {formatDayMonth(entry.end_date, i18n.language)} · {entry.length} {t("challengeHistory.dayUnit")}</p>
         </div>
-        <span className="shrink-0 rounded-full bg-yellow px-3 py-1 text-[13px] font-extrabold">{t(`challengeHistory.status_${entry.status}`)}</span>
+        <span className="shrink-0 rounded-full bg-yellow px-3 py-1 text-[13px] font-extrabold">{t(entry.end_reason === "moderation" ? "events.removed" : `challengeHistory.status_${entry.status}`)}</span>
       </div>
       <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[13px] font-bold">
         <span>{t("challengeHistory.days", { done: entry.completed_days, total: entry.length })}</span>

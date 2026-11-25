@@ -3253,6 +3253,23 @@ export type Database = {
         }
         Returns: Json
       }
+      crew_invite_preview: { Args: { _code: string }; Returns: Json }
+      admin_official_events: { Args: never; Returns: Json }
+      admin_save_official_event: { Args: { _id: string | null; _event: Json; _habits: Json }; Returns: string }
+      community_moderation_access: { Args: { _season: string; _crew?: string }; Returns: boolean }
+      community_moderation_queue: { Args: { _season: string; _crew?: string; _search?: string }; Returns: Json }
+      moderate_community: { Args: { _season: string; _crew: string | null; _action: string; _target: string; _reason: string }; Returns: undefined }
+      report_community_post: { Args: { _post: string; _reason: string; _crew?: string }; Returns: undefined }
+      my_moderation_notices: { Args: never; Returns: Json }
+      report_community_member: { Args: { _season: string; _target: string; _reason: string; _crew?: string }; Returns: undefined }
+      community_member_reports_queue: { Args: { _season: string; _crew?: string }; Returns: Json }
+      resolve_community_member_report: { Args: { _report: string; _reason: string }; Returns: undefined }
+      submit_moderation_appeal: { Args: { _notice: string; _body: string }; Returns: undefined }
+      mark_moderation_notice_read: { Args: { _notice: string }; Returns: undefined }
+      admin_moderation_appeals: { Args: never; Returns: Json }
+      admin_resolve_moderation_appeal: { Args: { _notice: string; _response: string }; Returns: undefined }
+      publish_event_announcement: { Args: { _season: string; _body: string }; Returns: undefined }
+      rotate_crew_invite: { Args: { _season: string; _crew: string }; Returns: string }
       public_challenge_catalog: { Args: never; Returns: Json }
       react_post: {
         Args: { _kind: string; _post_id: string }

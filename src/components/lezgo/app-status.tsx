@@ -1,3 +1,5 @@
+import { ModerationNotices } from "./community/moderation-notices";
+import { moderationNotices } from "@/lib/event-data";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -45,6 +47,7 @@ export function AppStatus({ profile, compact=false, hideBell=false }: { profile:
       return {announcements:(announcements.data ?? []).map((r) => ({ ...r, read: read.has(r.id) })),events:events.data??[]};
     },
   });
+  const notices = useQuery({ ...moderationNotices(uid), enabled: !!uid && !profile?.is_demo, refetchInterval: 60_000 });
   async function reset() {
     setBusy(true);
     const { error } = await supabase.rpc("demo_reset_day");
@@ -53,7 +56,7 @@ export function AppStatus({ profile, compact=false, hideBell=false }: { profile:
     setBusy(false);
   }
   if (!profile) return null;
-  const unread = (inbox.data?.announcements ?? []).filter((r) => !r.read).length + (inbox.data?.events??[]).filter(r=>!r.read_at).length;
+  const unread = (inbox.data?.announcements ?? []).filter((r) => !r.read).length + (inbox.data?.events??[]).filter(r=>!r.read_at).length + (notices.data ?? []).filter(notice => !notice.seen).length;
   return (
     <>
       <div className={compact ? "app-status-compact" : "app-status-strip"}>
@@ -84,6 +87,7 @@ export function AppStatus({ profile, compact=false, hideBell=false }: { profile:
       </div>
       <BottomSheet open={open} onClose={() => setOpen(false)} title={t("batch7.inbox")}>
         <div className="space-y-4">
+          {open && !profile.is_demo && <ModerationNotices uid={uid} />}
           {(inbox.data?.events??[]).filter(row=>row.type!=="broadcast").map(row=><article className="border-b-2 border-ink py-4" key={row.id}><a href={row.url} className="block min-h-11 text-[18px] font-extrabold">{t(`batch9.${row.type}`)}</a>{!row.read_at&&<StickerButton size="sm" variant="lime" onClick={async()=>{const {error}=await supabase.from("notifications").update({read_at:new Date().toISOString()}).eq("id",row.id).eq("user_id",uid);if(error)toast.error(t("common.error"));else await qc.invalidateQueries({queryKey:["inbox"]});}}><Check className="size-4"/>{t("batch7.read")}</StickerButton>}</article>)}
           {(inbox.data?.announcements ?? []).map((row) => (
             <article className="border-b-2 border-ink py-4" key={row.id}>
@@ -108,7 +112,7 @@ export function AppStatus({ profile, compact=false, hideBell=false }: { profile:
               )}
             </article>
           ))}
-          {inbox.data?.announcements.length === 0 && inbox.data.events.length===0 && <p>{t("batch7.noNotifications")}</p>}
+          {inbox.data?.announcements.length === 0 && inbox.data.events.length===0 && !notices.data?.length && <p>{t("batch7.noNotifications")}</p>}
         </div>
       </BottomSheet>
     </>

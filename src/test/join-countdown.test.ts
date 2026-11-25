@@ -1,9 +1,8 @@
-import { expect, it } from 'vitest';
-import { splitMs, winterArcEndLocal } from '@/lib/time';
-it('ends the Join countdown on January 1, 2027 at local midnight', () => {
- const end = new Date(winterArcEndLocal());
- expect(end.getFullYear()).toBe(2027); expect(end.getMonth()).toBe(0);
- expect(end.getDate()).toBe(1); expect(end.getHours()).toBe(0);
- expect(end.getMinutes()).toBe(0); expect(end.getSeconds()).toBe(0);
- expect(splitMs(winterArcEndLocal() - new Date(2026, 11, 31, 23, 59, 59).getTime())).toEqual({ d: 0, h: 0, m: 0, s: 1 });
+import { expect, it } from "vitest";
+import { officialEventEndsAt, splitMs } from "@/lib/time";
+
+it("counts down through the configured last day in Tunis", () => {
+  const end = officialEventEndsAt("2027-03-09");
+  expect(new Date(end).toISOString()).toBe("2027-03-09T23:00:00.000Z");
+  expect(splitMs(end - Date.parse("2027-03-09T22:59:59Z"))).toEqual({ d: 0, h: 0, m: 0, s: 1 });
 });

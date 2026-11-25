@@ -1,3 +1,4 @@
+import { ManageCommunity } from "@/components/lezgo/community/moderation";
 import { pageHead } from "@/lib/page-head";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
@@ -82,6 +83,22 @@ function ProfilePage() {
         <p>{t("common.loading")}</p>
       </AppShell>
     );
+  const creatorPanel = roles.data?.includes("creator") && <section className="sticker mt-3 rounded-[20px] bg-card p-4">
+        <div className="mb-3 flex items-center justify-between gap-3"><h2 className="text-[18px] font-extrabold">{t("batch6.creatorDashboard")}</h2><Link to="/create-challenge"><StickerButton size="sm" variant="lime">{t("batch6.create")}</StickerButton></Link></div>
+        {creatorDashboard.data?.map((challenge) => <article key={challenge.id} className="mb-3 rounded-[16px] bg-background p-3 sticker-border">
+          <h3 className="truncate font-extrabold">{challenge.name}</h3>
+          <p className="text-[13px] font-semibold">{t("batch6.days", { n: challenge.days })} · {challenge.starts_on} — {challenge.ends_on}</p>
+          <div className="mt-2 grid grid-cols-3 gap-2 text-center">
+            <span><Num>{challenge.participants}</Num><small className="block">{t("batch6.participants")}</small></span>
+            <span><Num>{challenge.checkin_percent}%</Num><small className="block">{t("batch6.checkedInToday")}</small></span>
+            <span><Num>{challenge.surrenders}</Num><small className="block">{t("batch6.surrenders")}</small></span>
+          </div>
+          <StickerButton size="sm" variant="secondary" className="mt-2 w-full" onClick={() => void navigator.clipboard.writeText(challengeLink(challenge.code)).then(() => toast(t("crew.copied")))}>{t("batch6.copy")}: <bdi dir="ltr">{challenge.code}</bdi></StickerButton>
+          <div className="mt-2"><ManageCommunity season={challenge.season_id} /></div>
+        </article>)}
+        {!creatorDashboard.data?.length && <p className="text-[14px] font-semibold text-muted-foreground">{t("batch6.noCreatorChallenges")}</p>}
+      </section>;
+
   if (!season)
     return (
       <AppShell todayLayout>
@@ -98,6 +115,7 @@ function ProfilePage() {
         <Link to="/challenges" search={{ season: "" }} className="mt-3 block"><StickerButton block variant="lime">{t("challengeHistory.openHistory")}</StickerButton></Link>
         <Link to="/start" className="mt-3 block"><StickerButton block variant="secondary">{t("challengeHistory.pickNext")}</StickerButton></Link>
         <Link to="/create-challenge" className="mt-3 block"><StickerButton block variant="secondary">{t("batch6.create")}</StickerButton></Link>
+        {creatorPanel}
         <div className="mt-3 grid grid-cols-2 gap-3"><Link to="/lift"><StickerButton block variant="secondary">{t("design.lift")}</StickerButton></Link><Link to="/boss"><StickerButton block variant="secondary">{t("design.boss")}</StickerButton></Link></div>
       </AppShell>
     );
@@ -312,20 +330,7 @@ function ProfilePage() {
         <ChevronRight className="shrink-0 rtl:-scale-x-100" />
       </Link>
       <Link to="/create-challenge"><StickerButton block variant="lime">{t("batch6.create")}</StickerButton></Link>
-      {roles.data?.includes("creator") && <section className="sticker mt-3 rounded-[20px] bg-card p-4">
-        <div className="mb-3 flex items-center justify-between gap-3"><h2 className="text-[18px] font-extrabold">{t("batch6.creatorDashboard")}</h2><Link to="/create-challenge"><StickerButton size="sm" variant="lime">{t("batch6.create")}</StickerButton></Link></div>
-        {creatorDashboard.data?.map((challenge) => <article key={challenge.id} className="mb-3 rounded-[16px] bg-background p-3 sticker-border">
-          <h3 className="truncate font-extrabold">{challenge.name}</h3>
-          <p className="text-[13px] font-semibold">{t("batch6.days", { n: challenge.days })} · {challenge.starts_on} — {challenge.ends_on}</p>
-          <div className="mt-2 grid grid-cols-3 gap-2 text-center">
-            <span><Num>{challenge.participants}</Num><small className="block">{t("batch6.participants")}</small></span>
-            <span><Num>{challenge.checkin_percent}%</Num><small className="block">{t("batch6.checkedInToday")}</small></span>
-            <span><Num>{challenge.surrenders}</Num><small className="block">{t("batch6.surrenders")}</small></span>
-          </div>
-          <StickerButton size="sm" variant="secondary" className="mt-2 w-full" onClick={() => void navigator.clipboard.writeText(challengeLink(challenge.code)).then(() => toast(t("crew.copied")))}>{t("batch6.copy")}: <bdi dir="ltr">{challenge.code}</bdi></StickerButton>
-        </article>)}
-        {!creatorDashboard.data?.length && <p className="text-[14px] font-semibold text-muted-foreground">{t("batch6.noCreatorChallenges")}</p>}
-      </section>}
+      {creatorPanel}
       <Link to="/small-wins"><StickerButton block variant="secondary">{t("batch6.winTitle")}</StickerButton></Link>
       <Link to="/wrapped" search={{season:season.id}}><StickerButton block variant="secondary">{t("batch6.wrapped")}</StickerButton></Link>
       {profile.is_admin && (

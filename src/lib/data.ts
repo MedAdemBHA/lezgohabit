@@ -121,6 +121,6 @@ export function useInvalidateAll() {
 export function errKey(e: unknown): string {
   const m = (e as { message?: string })?.message ?? "";
   if (m.includes("guest_read_only")) return "guest_read_only";
-  for (const k of ["crew_not_found", "crew_full", "already_in_crew", "active_challenge_exists", "challenge_surrendered", "challenge_complete", "challenge_not_active", "challenge_not_ready", "day_final", "day_closed", "max_habits", "forbidden", "habit_locked", "outside_time_window", "timer_too_short", "timer_required", "prayer_not_yet"]) if (m.includes(k)) return k;
+  for (const k of ["event_moderation_ban", "crew_moderation_ban", "challenge_not_started", "challenge_not_found", "challenge_ended", "challenge_full", "crew_setup_pending", "crew_not_found", "crew_full", "already_in_crew", "active_challenge_exists", "challenge_surrendered", "challenge_complete", "challenge_not_active", "challenge_not_ready", "day_final", "day_closed", "max_habits", "forbidden", "habit_locked", "outside_time_window", "timer_too_short", "timer_required", "prayer_not_yet"]) if (m.includes(k)) return k;
   return "";
 }

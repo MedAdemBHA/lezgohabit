@@ -1,3 +1,4 @@
+import { moderationAccess } from "@/lib/event-data";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { infiniteQueryOptions, useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -60,6 +61,11 @@ function Community() {
       if (error) throw error;
       return data;
     },
+  });
+  const crewScope = scope === "crew" ? pulse.data?.crew_id ?? undefined : undefined;
+  const modScope = { season: sid, crew: crewScope };
+  const modAccess = useQuery({
+    ...moderationAccess(modScope, uid), enabled: !!uid && !!sid && (scope !== "crew" || !!crewScope),
   });
   const rows = posts.data?.pages.flat() ?? [];
   const momentRows = events.data ?? [];
@@ -148,10 +154,11 @@ function Community() {
       {!momentRows.length && <p className="rounded-[18px] bg-card p-3 text-[14px] font-semibold sticker-border">{t("challengePulse.emptyMoments")}</p>}
 
       <h2 className="text-[18px] font-extrabold">{t(scope === "crew" ? "challengePulse.crewPosts" : "challengePulse.challengePosts")}</h2>
-      {rows.map((post) => <PostCard key={post.id} post={post} uid={uid} start={season.starts_on} canPin={canPin} />)}
+      {rows.map((post) => <PostCard key={post.id} post={post} uid={uid} start={season.starts_on} season={sid} canPin={canPin && scope === "challenge" && post.visibility === "everyone"}
+        reportCrew={crewScope} moderation={modAccess.data && (scope !== "crew" || crewScope) ? modScope : undefined} />)}
       {!rows.length && <div className="rounded-[18px] bg-card p-4 text-center text-[14px] font-semibold sticker-border">{t("challengePulse.emptyPosts")}</div>}
       {posts.hasNextPage && <StickerButton block variant="secondary" disabled={posts.isFetchingNextPage} onClick={() => void posts.fetchNextPage()}>{t(posts.isFetchingNextPage ? "common.loading" : "batch4.loadMore")}</StickerButton>}
-      <Compose open={compose} onClose={() => setCompose(false)} />
+      <Compose open={compose} onClose={() => setCompose(false)} initialAudience={crewScope ? "crew" : "everyone"} />
     </AppShell>
   );
 }

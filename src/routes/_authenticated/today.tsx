@@ -394,6 +394,7 @@ function Today() {
     return (
       <AppShell todayLayout>
         <FitHeading requestedSize={40} className="page-title" text={t("challengeHistory.noActive")} />
+        <AppStatus profile={profile} compact />
         <p className="font-semibold">{t("challengeHistory.noActiveBody")}</p>
         <Link to="/challenges" search={{ season: "" }}><StickerButton block variant="lime">{t("challengeHistory.openHistory")}</StickerButton></Link>
         <Link to="/start"><StickerButton block variant="secondary">{t("challengeHistory.pickNext")}</StickerButton></Link>

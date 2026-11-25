@@ -29,5 +29,13 @@ export function splitMs(ms: number) {
 }
 export const pad = (n: number) => String(n).padStart(2, "0");
 
-/** Join artwork counts down to New Year midnight in the viewer's local timezone. */
-export function winterArcEndLocal() { return new Date(2027, 0, 1).getTime(); }
+/** The final date is inclusive. Find the following midnight in the event timezone. */
+export function officialEventEndsAt(endsOn: string): number {
+  const midnightUtc = Date.parse(`${addDays(endsOn, 1)}T00:00:00Z`);
+  const offset = new Intl.DateTimeFormat("en", { timeZone: "Africa/Tunis", timeZoneName: "shortOffset" })
+    .formatToParts(midnightUtc).find(part => part.type === "timeZoneName")?.value;
+  const match = offset?.match(/^GMT([+-])(\d{1,2})(?::(\d{2}))?$/);
+  if (!match) return midnightUtc;
+  const minutes = Number(match[2]) * 60 + Number(match[3] ?? 0);
+  return midnightUtc - (match[1] === "-" ? -1 : 1) * minutes * 60_000;
+}

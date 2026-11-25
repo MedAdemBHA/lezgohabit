@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ExploreAsGuest } from "@/components/lezgo/guest";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -11,8 +11,10 @@ import { DesignLanguage } from "@/components/lezgo/design-language";
 import { useQuery } from "@tanstack/react-query";
 import { Mail } from "lucide-react";
 import { BottomSheet, Field, StickerButton, inputCls } from "@/components/lezgo/ui";
-import { finishStartFlow, readStartFlow } from "@/lib/start-flow";
-import { errKey } from "@/lib/data";
+import { clearStartFlow, finishStartFlow, readStartFlow, resumeStartFlow, startFlowResumeToken } from "@/lib/start-flow";
+import { joinErrorKey, myActiveEventQuery } from "@/lib/event-data";
+import { loc } from "@/lib/i18n";
+import { errKey, useUser } from "@/lib/data";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -36,7 +38,10 @@ function AuthPage() {
   const [busy, setBusy] = useState(false);
   const [emailOpen, setEmailOpen] = useState(false);
   const [legal, setLegal] = useState<"terms" | "privacy" | null>(null);
-  const [flowError, setFlowError] = useState("");
+  const [flowError, setFlowError] = useState<string | null>(null);
+  const user = useUser();
+  const active = useQuery({ ...myActiveEventQuery(user?.id ?? ""), enabled: !!user && flowError === "active_challenge_exists" });
+  const activeName = loc(active.data?.seasons?.name, i18n.language);
   const completing = useRef(false);
   const countries = useQuery({ queryKey: ["participating-countries"], queryFn: async () => { const { data, error } = await supabase.rpc("participating_countries"); if (error) throw error; return data; }, staleTime: 60_000 });
 
@@ -44,15 +49,13 @@ function AuthPage() {
     if (completing.current) return;
     completing.current = true;
     setBusy(true);
-    setFlowError("");
+    setFlowError(null);
     try {
       await finishStartFlow();
       await nav({ to: "/today", replace: true });
     } catch (error) {
       const key = errKey(error);
-      const message = key === "active_challenge_exists" ? t("batch6.activeChallengeExists") : t("common.error");
-      setFlowError(message);
-      toast(message);
+      setFlowError(key);
       completing.current = false;
     } finally {
       setBusy(false);
@@ -60,31 +63,50 @@ function AuthPage() {
   }
 
   useEffect(() => {
-    const fromLink=new URLSearchParams(window.location.search).get("code");
+    const params = new URLSearchParams(window.location.search);
+    const fromLink = params.get("code");
+    const resume = params.get("resume");
+    const missingFlow = !!resume && !resumeStartFlow(resume);
     if(fromLink&&/^[A-Z0-9]{6}$/.test(fromLink))sessionStorage.setItem("lezgo_challenge_invite",fromLink);
     const go=()=>{
+      if (missingFlow && !fromLink) { void nav({ to: "/start", replace: true }); return; }
       if (readStartFlow()) { void continueAfterAuth(); return; }
       const code=sessionStorage.getItem('lezgo_challenge_invite');
       if(code&&/^[A-Z0-9]{6}$/.test(code)){void nav({to:'/c/$code',params:{code},replace:true});}
       else void nav({to:'/today',replace:true});
     };
     void supabase.auth.getUser().then(({ data }) => { if (data.user) go(); });
-    const { data } = supabase.auth.onAuthStateChange((_e, s) => { if (s) go(); });
-    return () => data.subscription.unsubscribe();
+    let pending: number | undefined;
+    const { data } = supabase.auth.onAuthStateChange((_e, session) => {
+      if (session) {
+        window.clearTimeout(pending);
+        pending = window.setTimeout(go, 0);
+      }
+    });
+    return () => { window.clearTimeout(pending); data.subscription.unsubscribe(); };
   }, [nav, t]);
+
+  function callbackUrl() {
+    const url = new URL("/auth", window.location.origin);
+    const resume = startFlowResumeToken();
+    const code = sessionStorage.getItem("lezgo_challenge_invite");
+    if (resume) url.searchParams.set("resume", resume);
+    if (code) url.searchParams.set("code", code);
+    return url.href;
+  }
 
   async function google() {
     if (!adult) return;
     setBusy(true);
     // Supabase redirects to Google and back to /auth; the auth listener above then routes to Today or the invite.
-    const { error } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: window.location.origin + "/auth" } });
+    const { error } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: callbackUrl() } });
     if (error) { toast(t("common.error")); setBusy(false); }
   }
   async function magic(e: React.FormEvent) {
     e.preventDefault();
     if (!email || !adult) return;
     setBusy(true);
-    const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.origin + "/auth" + (sessionStorage.getItem("lezgo_challenge_invite") ? "?code=" + encodeURIComponent(sessionStorage.getItem("lezgo_challenge_invite") ?? "") : "") } });
+    const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: callbackUrl() } });
     setBusy(false);
     if (error) { toast(t("common.error")); return; }
     setSent(true);
@@ -93,18 +115,33 @@ function AuthPage() {
   return (
     <div className="design-screen login-screen">
       <header className="flex h-10 shrink-0 items-center justify-between gap-2"><div className="login-brand flex items-center gap-2" dir="ltr"><Brand size={34} /></div><DesignLanguage segmented /></header>
-      <span className="login-season">{t("design.loginSeason")}</span>
+
       <FitHeading className="login-hero" text={t("design.hero")} requestedSize={isRtl(i18n.language) ? 60 : 64} />
       <p className="text-[16px] font-semibold leading-[1.5] text-design-body">{t("design.sub")}</p>
-      {flowError && <div role="alert" className="space-y-2 rounded-[14px] bg-card p-3 text-[14px] font-bold text-destructive sticker-border"><p>{flowError}</p><StickerButton block variant="secondary" onClick={() => void continueAfterAuth()}>{t("common.retry")}</StickerButton></div>}
+      {user && busy && <p role="status">{t("common.loading")}</p>}
+      {flowError !== null && <div role="alert" className="space-y-2 rounded-[14px] bg-card p-3 text-[14px] font-bold sticker-border">
+        <p>{flowError === "active_challenge_exists" && activeName ? t("events.current", { name: activeName }) : t(joinErrorKey(flowError))}</p>
+        {flowError === "active_challenge_exists" && <p>{t("events.keepPlaying")}</p>}
+        <div className="flex flex-wrap gap-2">
+          <Link to="/today" onClick={clearStartFlow}><StickerButton size="sm" variant="lime">{t("events.goToday")}</StickerButton></Link>
+          {active.data && <Link to="/challenges" search={{ season: active.data.season_id }} onClick={clearStartFlow}>
+            <StickerButton size="sm" variant="secondary">{t("events.viewEvent")}</StickerButton>
+          </Link>}
+          {flowError === "crew_setup_pending" || !flowError ? <StickerButton size="sm" variant="secondary"
+            onClick={() => void continueAfterAuth()}>{t("common.retry")}</StickerButton>
+            : flowError !== "active_challenge_exists" && <Link to="/start" onClick={clearStartFlow}>
+              <StickerButton size="sm" variant="secondary">{t("challengeHistory.pickNext")}</StickerButton>
+            </Link>}
+        </div>
+      </div>}
       <div className="flex items-center gap-3"><div className="flex shrink-0" aria-hidden="true">{([ ["bg-lime", "NR"], ["bg-pink", "SK"], ["bg-yellow", "YB"], ["bg-teal", "AK"] ] as const).map(([color, initials],i) => <span key={color} className={`grid size-[34px] place-items-center rounded-full text-[11px] font-extrabold sticker-border ${color} ${i ? "-ms-2.5" : ""}`}>{initials}</span>)}</div><p className="text-[13px] font-bold">{countries.data !== undefined ? t("design.proof", { n: countries.data }) : t("common.loading")}</p></div>
-      <div className="login-actions">
+      {!user && <div className="login-actions">
         <label className="flex min-h-11 items-center gap-3 text-[14px] font-bold"><input type="checkbox" checked={adult} onChange={e=>setAdult(e.target.checked)} className="size-5 accent-ink"/>{t("batch9.adult")}</label>
         <StickerButton block variant="secondary" className="google-button" onClick={google} disabled={busy || !adult}><GoogleG />{t("auth.google")}</StickerButton>
         <StickerButton block variant="ghost" className="email-button" onClick={() => setEmailOpen(true)} disabled={busy || !adult}><Mail size={20} strokeWidth={2.5} />{t("design.email")}</StickerButton>
         <ExploreAsGuest />
         <p className="text-center text-[12px] font-semibold leading-[1.5] text-design-muted">{t("design.legal")} <StickerButton variant="ghost" className="legal-link" onClick={() => setLegal("terms")}>{t("design.terms")}</StickerButton> {t("design.andWord")} <StickerButton variant="ghost" className="legal-link" onClick={() => setLegal("privacy")}>{t("design.privacy")}</StickerButton></p>
-      </div>
+      </div>}
       <BottomSheet open={emailOpen} onClose={() => setEmailOpen(false)} title={t("design.email")}>{sent ? <p className="sticker bg-lime p-4 font-bold">{t("auth.linkSent")}</p> : <form onSubmit={magic} className="space-y-4"><Field label={t("auth.email")}><input dir="ltr" type="email" autoComplete="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder={t("auth.emailPh")} className={inputCls} /></Field><StickerButton block type="submit" disabled={busy}>{t("design.email")}</StickerButton></form>}</BottomSheet>
       <BottomSheet open={legal !== null} onClose={() => setLegal(null)} title={legal ? t(`design.${legal}`) : ""}><p>{t("design.soon")}</p></BottomSheet>
     </div>
