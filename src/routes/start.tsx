@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, ArrowRight, Lock } from "lucide-react";
 import { Brand } from "@/components/lezgo/brand";
@@ -13,6 +13,7 @@ import { templatesQuery, type Template } from "@/lib/data";
 import { loc } from "@/lib/i18n";
 import { pageHead } from "@/lib/page-head";
 import { saveStartFlow, toggleStartHabit, type StartFlow } from "@/lib/start-flow";
+import { localDate } from "@/lib/time";
 
 type CatalogHabit = { key: string; name: unknown; what_counts: unknown; kind: string; target: number; unit: string | null; is_faith: boolean };
 type CatalogCard = { id: string; season_id: string; challenge_id: string | null; kind: "official" | "creator"; name: unknown; creator: string; code: string | null; days: number; starts_on: string; ends_on: string; status: string; members: number; habits: CatalogHabit[] };
@@ -66,7 +67,10 @@ function StartPage() {
   const [crewCode, setCrewCode] = useState("");
   const [busy, setBusy] = useState(false);
   const processedInvite = useRef("");
-  const allOfficial = useMemo(() => (catalog.data ?? []).filter((card) => card.kind === "official"), [catalog.data]);
+  const today = localDate("Africa/Tunis");
+  const allOfficial = (catalog.data ?? []).filter(
+    (card) => card.kind === "official" && card.starts_on <= today && today <= card.ends_on,
+  );
   const longerOfficial = allOfficial.filter((card) => card.days > 14);
   const shortOfficial = allOfficial.filter((card) => card.days <= 14);
   const creators = (catalog.data ?? []).filter((card) => card.kind === "creator");
