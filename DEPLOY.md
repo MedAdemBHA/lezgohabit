@@ -32,11 +32,11 @@ For local SEO checks, run `APP_URL=http://localhost:5173 bun run dev` (adjust th
 
 Tested: the app builds for Vercel with `NITRO_PRESET=vercel` (Node 22 function + static assets in `.vercel/output`).
 
-1. https://vercel.com/new → import `lezgohabit` from GitHub, branch `own-hosting` (or `lezgo-v2` until merged).
-   - Framework preset: **Other**. Install: `bun install`. Build: `bun run build`. Leave Output Directory empty
-     (Vercel picks up `.vercel/output` automatically).
+1. https://vercel.com/new → import `lezgohabit` from GitHub and set `main` as the production branch.
+   - `vercel.json` selects the **TanStack Start** framework and runs `NITRO_PRESET=vercel bun run build`.
+     Leave Output Directory empty; Nitro writes the Vercel Build Output API files to `.vercel/output`.
 2. **Settings → Environment Variables** (Production + Preview):
-   `NITRO_PRESET=vercel`, `APP_URL=https://<name>.vercel.app`, plus every variable from the Cloudflare table above
+   `APP_URL=https://<name>.vercel.app`, plus every variable from the Cloudflare table above
    (`SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `DEMO_PASSWORD`, `DEVICE_HASH_SECRET`,
    `LOVABLE_CRON_SECRET`, and VAPID keys when push is on).
 3. **Settings → Functions → Region: Paris (cdg1)** — next to the Supabase project (eu-west-3, Paris).
