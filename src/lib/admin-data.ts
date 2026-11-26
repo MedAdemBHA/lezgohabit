@@ -28,7 +28,26 @@ export type AdminDashboard = {
   sponsored?: number;
   boss_count?: number;
 };
+export async function readAdminDashboard(
+  section: AdminSection,
+  search = "",
+  page = 0,
+  target: string | null = null,
+  demo = false,
+) {
+  const { data, error } = await supabase.rpc("admin_dashboard", {
+    _section: section,
+    _search: search,
+    _page: page,
+    _demo: demo,
+    ...(target ? { _target: target } : {}),
+  });
+  if (error) throw error;
+  return data as unknown as AdminDashboard;
+}
+
 export const adminQuery = (
+  userId: string,
   section: AdminSection,
   search = "",
   page = 0,
@@ -36,19 +55,9 @@ export const adminQuery = (
   demo = false,
 ) =>
   queryOptions({
-    queryKey: ["admin", section, search, page, target, demo],
+    queryKey: ["admin", userId, section, search, page, target, demo],
     retry: false,
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc("admin_dashboard", {
-        _section: section,
-        _search: search,
-        _page: page,
-        _demo: demo,
-        ...(target ? { _target: target } : {}),
-      });
-      if (error) throw error;
-      return data as unknown as AdminDashboard;
-    },
+    queryFn: () => readAdminDashboard(section, search, page, target, demo),
   });
 export async function adminWrite(
   action: string,

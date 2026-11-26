@@ -52,7 +52,9 @@ export function HabitTile({
   const ruleData = habit.rule as { window_start?: string; window_end?: string } | null;
   const rule =
     key === "train"
-      ? t("todayDesign.trainRule")
+      ? loc(habit.what_counts, i18n.language) ||
+        loc(habit.template?.what_counts, i18n.language) ||
+        t("todayDesign.trainRule")
       : key === "learn15"
         ? t("todayDesign.learnRule")
         : isSleepHabit(key)

@@ -8,6 +8,12 @@
 - Reworked the app shell to Today · Board · Crew · Me. The board scopes to the active challenge, the viewer's crew, and Tunisia for official challenges. Personal boards remain private.
 - Calmed the new challenge surfaces, normalized the high-traffic card typography, removed decorative tilt from progress labels, and raised the touched controls to 44px targets.
 - Added unit coverage for six-habit selection and post-auth auto-join, plus the transaction-only database verifier at `scripts/verify_v2.sql`.
+- Refreshed the homepage and Start on mobile and desktop. The homepage features a challenge from the live catalog. Start renders open and upcoming dates on the server, explains the crew choices, and takes personal challenges straight from habit selection to sign-in.
+- Reworked the public design around a photo-led homepage and detailed challenge cards. The cards show each habit and what counts before players choose a mode. Upcoming challenges show their opening date and duration as information.
+- Kept the homepage and Start in one phone-width column at every screen size. Both show the How it works link on mobile, and the homepage preserves that section when the language changes.
+- Added an admin sign-in path from the homepage and `/admin`. The dashboard uses its existing server authorization and can open before an admin completes a player profile. Player profile setup is a single form.
+- Matched Today’s workout rule to the saved challenge habit and kept the creator dashboard available before and between challenges.
+- Added public Terms and Privacy pages, kept email sign-in available for team testing, and made the guest button depend on the deployed demo configuration and seeded account.
 
 ## Migration order
 
@@ -27,17 +33,19 @@ The Supabase migration history now confirms `0063`–`0071` are applied to `yjkn
 
 ## Manual steps
 
-1. Provide the real app base URL if `joinlezgo.com` is not owned/configured, so every invite link can use the deployed address.
-2. Complete Google sign-in once with a throwaway/staging account to exercise the post-auth start and surrender screens end to end.
-3. Deploy the frontend through the existing Cloudflare Workers flow.
+1. The Vercel production deployment uses `APP_URL=https://lezgohabit.vercel.app` for share links and public metadata. Update it when the custom domain goes live.
+2. Complete a fresh Google sign-in on production to check the callback and onboarding with a real account.
+3. Set `SUPABASE_SERVICE_ROLE_KEY`, `DEMO_PASSWORD`, and `DEVICE_HASH_SECRET` in the Vercel production environment, redeploy, then run **Admin → Demo data → Seed demo** to enable the guest walkthrough.
+4. Add the operator name and privacy contact to the published Terms and Privacy pages. Configure and test custom SMTP before enabling public email sign-in.
 
 ## Verification
 
 - `bun run build`: passed. Existing warnings remain for deprecated `inputValidator`, chunk size, and the PWA glob that finds no files in `dist`.
 - `npx tsc --noEmit -p .`: passed.
-- `bunx vitest run`: 54 passed, 109 skipped. The `virtual:pwa-register` routing-suite mock now resolves in Vitest.
+- Vitest passed 55 tests and skipped 109 database-dependent tests. Routing coverage isolates the service worker and checks the admin sign-in destination and challenge date boundaries.
+- Browser checks covered the desktop and mobile public screens, Arabic right-to-left layout, 7-day personal and official crew sign-in handoffs, and admin versus player routing with mocked Supabase sessions.
 - `scripts/verify_v2.sql` ran against the migrated Supabase project. It reported `ALL V2 CHECKS PASS`; all fixture users and rows were rolled back. A local alias typo in the personal-checkin fixture was corrected before the successful run.
-- Local UI smoke test: the 7-day personal picker and the official “Find me a crew” path both reach the sign-in handoff. Authenticated UI actions were not attempted without a staging account; the SQL verifier covers their database rules.
+- The deployed build reached Google OAuth and the admin sign-in form. A browser run with mocked Supabase responses covered profile setup, starting a 7-day personal challenge, checking in, surrendering, and seeing the result in history. The creator dashboard opened with and without an active event.
 
 ## Open items
 
