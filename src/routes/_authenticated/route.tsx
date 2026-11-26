@@ -39,7 +39,10 @@ export const Route = createFileRoute("/_authenticated")({
           const dashboard = await readAdminDashboard("demo").catch(() => null);
           if (dashboard?.me?.id === user.id) throw redirect({ to: "/admin" });
         }
-        throw redirect({ to: "/onboarding" });
+        const next = location.pathname === "/today" && !location.searchStr && !location.hash
+          ? undefined
+          : safeNext(location.href);
+        throw redirect({ to: "/onboarding", search: next ? { next } : {} });
       }
       onboardedUsers.add(user.id);
     }

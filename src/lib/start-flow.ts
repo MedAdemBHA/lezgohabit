@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export const START_FLOW_KEY = "lezgo_start_flow";
+export const PROFILE_SETUP_REQUIRED = "profile_setup_required";
 const RESUME_TOKEN_KEY = "lezgo_start_resume_token";
 const RESUME_FLOW_KEY = "lezgo_start_resume";
 const RESUME_TTL_MS = 60 * 60 * 1000;
@@ -80,54 +81,14 @@ export async function finishStartFlow() {
   const uid = auth.user.id;
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
-    .select("handle,display_name,country_code,language,onboarded,is_demo")
+    .select("display_name,onboarded,is_demo")
     .eq("id", uid)
     .single();
   if (profileError) throw profileError;
   if (profile.is_demo || auth.user.email === "demo@lezgo.app") {
     throw new Error("guest_read_only");
   }
-
-  let handle = profile.handle;
-  let displayName = profile.display_name.trim();
-  const metadata = auth.user.user_metadata;
-  const suppliedName = typeof metadata["full_name"] === "string"
-    ? metadata["full_name"]
-    : typeof metadata["name"] === "string"
-      ? metadata["name"]
-      : "";
-  if (!profile.onboarded) displayName = suppliedName.trim() || displayName || auth.user.email?.split("@")[0] || "Lezgo player";
-
-  if (!profile.onboarded) {
-    const available = await supabase.rpc("handle_available", { _handle: handle });
-    if (available.error) throw available.error;
-    if (!available.data) {
-      const seed = handle.replace(/[^a-z0-9_]/g, "").slice(0, 14) || "player";
-      let found = false;
-      for (let n = 2; n < 10000; n += 1) {
-        const suffix = String(n);
-        const candidate = `${seed.slice(0, 20 - suffix.length)}${suffix}`;
-        const check = await supabase.rpc("handle_available", { _handle: candidate });
-        if (check.error) throw check.error;
-        if (check.data) {
-          handle = candidate;
-          found = true;
-          break;
-        }
-      }
-      if (!found) throw new Error("handle_unavailable");
-    }
-    const savedLanguage = typeof localStorage !== "undefined" ? localStorage.getItem("lezgo_lang") : null;
-    const language = ["en", "fr", "ar", "aeb"].includes(savedLanguage ?? "") ? savedLanguage! : profile.language;
-    const { error } = await supabase.from("profiles").update({
-      display_name: displayName,
-      handle,
-      country_code: profile.country_code || "TN",
-      language,
-      onboarded: true,
-    }).eq("id", uid);
-    if (error) throw error;
-  }
+  if (!profile.onboarded) throw new Error(PROFILE_SETUP_REQUIRED);
 
   if (!("play" in flow)) {
     const { error } = await supabase.rpc("join_crew", { _code: flow.challenge.code });
@@ -162,7 +123,7 @@ export async function finishStartFlow() {
     const { error } = await supabase.rpc("find_challenge_crew");
     if (error) throw new Error("crew_setup_pending", { cause: error });
   } else if (mode === "create") {
-    const firstName = displayName.split(/\s+/)[0] || "My";
+    const firstName = profile.display_name.trim().split(/\s+/)[0] || "My";
     const { error } = await supabase.rpc("create_crew", { _name: `${firstName}'s crew`, _kind: "squad", _max_members: 6 });
     if (error && !error.message.includes("already_in_crew")) throw new Error("crew_setup_pending", { cause: error });
   }

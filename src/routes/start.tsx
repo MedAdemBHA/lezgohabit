@@ -43,6 +43,7 @@ import {
   MAX_CHALLENGE_HABITS,
   clearStartFlow,
   finishStartFlow,
+  PROFILE_SETUP_REQUIRED,
   saveStartFlow,
   toggleStartHabit,
   type StartFlow,
@@ -237,6 +238,10 @@ function StartPage() {
       setConfirm(null);
       await nav({ to: "/today" });
     } catch (error) {
+      if (error instanceof Error && error.message === PROFILE_SETUP_REQUIRED) {
+        await nav({ to: "/onboarding" });
+        return;
+      }
       const key = errKey(error) || (error as { message?: string })?.message || "";
       clearStartFlow();
       // crew_setup_pending: the challenge was joined; only the crew step failed.
@@ -634,7 +639,12 @@ function StartPage() {
           title={upcomingCard ? loc(upcomingCard.name, lang) : ""}
         >
           {upcomingCard && (
-            <UpcomingDetail card={upcomingCard} uid={user === null ? null : user?.id} lang={lang} />
+            <UpcomingDetail
+              card={upcomingCard}
+              uid={user === null ? null : profile?.onboarded ? user?.id : undefined}
+              needsProfile={!!user && profile?.onboarded === false}
+              lang={lang}
+            />
           )}
         </BottomSheet>
         <BottomSheet
@@ -786,10 +796,12 @@ function ChallengeChoice({
 function UpcomingDetail({
   card,
   uid,
+  needsProfile,
   lang,
 }: {
   card: CatalogCard;
   uid: string | null | undefined;
+  needsProfile: boolean;
   lang: Lang;
 }) {
   const t = i18n.getFixedT(lang);
@@ -843,7 +855,11 @@ function UpcomingDetail({
           </li>
         ))}
       </ul>
-      {uid === undefined ? (
+      {needsProfile ? (
+        <Link to="/onboarding" search={{ next }} className="public-action public-action-primary">
+          {t("startFlow.finishSetup")}
+        </Link>
+      ) : uid === undefined ? (
         <p role="status">{t("common.loading")}</p>
       ) : uid && reminders.isError ? (
         <div className="space-y-2">

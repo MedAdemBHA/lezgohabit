@@ -177,7 +177,7 @@ function InviteActions({ code, challenge, blocked, lang }: { code: string; chall
   const [joinIssue, setJoinIssue] = useState<string | null>(null);
 
   async function join() {
-    if (!user || userProfile.data?.onboarded === false) {
+    if (!user || !userProfile.data?.onboarded) {
       void nav({ to: "/start", search: { code, lang } });
       return;
     }

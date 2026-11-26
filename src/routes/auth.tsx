@@ -12,6 +12,7 @@ import { BottomSheet, Field, StickerButton, inputCls } from "@/components/lezgo/
 import {
   clearStartFlow,
   finishStartFlow,
+  PROFILE_SETUP_REQUIRED,
   readStartFlow,
   resumeStartFlow,
   startFlowResumeToken,
@@ -84,11 +85,11 @@ function AuthPage() {
   const { t, i18n } = useTranslation();
   const nav = useNavigate();
   const { next } = Route.useSearch();
-  const toWrapped = next?.startsWith("/wrapped") ?? false;
-  const toAdmin = next?.startsWith("/admin") ?? false;
+  const nextPath = next?.split(/[?#]/, 1)[0];
+  const toWrapped = nextPath === "/wrapped";
+  const toAdmin = nextPath === "/admin";
   // Email links are off for players unless enabled; the admin sign-in always offers them.
   const emailEnabled = publicEmailSignIn || toAdmin;
-  const [adult, setAdult] = useState(false);
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [emailError, setEmailError] = useState<
@@ -131,6 +132,10 @@ function AuthPage() {
       await finishStartFlow();
       await nav({ to: "/today", replace: true });
     } catch (error) {
+      if (error instanceof Error && error.message === PROFILE_SETUP_REQUIRED) {
+        await nav({ to: "/onboarding", replace: true });
+        return;
+      }
       const key = errKey(error);
       setFlowError(key);
       completing.current = false;
@@ -210,7 +215,7 @@ function AuthPage() {
   }
 
   async function google() {
-    if (!adult || busy) return;
+    if (busy) return;
     setBusy(true);
     setReturnError(null);
     sessionStorage.removeItem(LEGACY_WRAPPED_SIGN_IN);
@@ -233,7 +238,7 @@ function AuthPage() {
   async function magic(e: React.FormEvent) {
     e.preventDefault();
     const address = email.trim();
-    if (!address || !adult || busy) return;
+    if (!address || !emailEnabled || busy) return;
     setEmailError(null);
     setReturnError(null);
     setBusy(true);
@@ -241,7 +246,7 @@ function AuthPage() {
     try {
       ({ error } = await supabase.auth.signInWithOtp({
         email: address,
-        options: { emailRedirectTo: callbackUrl() },
+        options: { emailRedirectTo: callbackUrl(), shouldCreateUser: !toAdmin },
       }));
     } catch {
       error = {};
@@ -394,29 +399,14 @@ function AuthPage() {
           <p className="text-[13px] font-bold">{t("design.proof", { n: countries.data })}</p>
         </div>
       )}
-      {!user && (
+      {user === null && (
         <div className="login-actions">
-          <label className="flex min-h-11 items-center gap-3 text-[14px] font-bold">
-            <input
-              type="checkbox"
-              checked={adult}
-              onChange={(e) => setAdult(e.target.checked)}
-              className="size-5 accent-ink"
-            />
-            {t("batch9.adult")}
-          </label>
-          {!adult && (
-            <p id="adult-hint" className="text-[13px] font-semibold text-design-muted">
-              {t("flows.adultRequired")}
-            </p>
-          )}
           <StickerButton
             block
             variant="secondary"
             className="google-button"
             onClick={() => void google()}
-            disabled={busy || !adult}
-            aria-describedby={adult ? undefined : "adult-hint"}
+            disabled={busy}
           >
             <GoogleG />
             {t("auth.google")}
@@ -427,8 +417,7 @@ function AuthPage() {
               variant="ghost"
               className="email-button"
               onClick={() => setEmailOpen(true)}
-              disabled={busy || !adult}
-              aria-describedby={adult ? undefined : "adult-hint"}
+              disabled={busy}
             >
               <Mail size={20} strokeWidth={2.5} />
               {t("design.email")}
@@ -455,7 +444,11 @@ function AuthPage() {
           </div>
         </div>
       )}
-      <BottomSheet open={emailOpen} onClose={() => setEmailOpen(false)} title={t("design.email")}>
+      <BottomSheet
+        open={emailEnabled && emailOpen && user === null}
+        onClose={() => setEmailOpen(false)}
+        title={t("design.email")}
+      >
         {sent ? (
           <div className="space-y-3">
             <p role="status" className="sticker bg-lime p-4 font-bold">
@@ -482,6 +475,7 @@ function AuthPage() {
                 dir="ltr"
                 type="email"
                 autoComplete="email"
+                data-sheet-focus
                 required
                 value={email}
                 onChange={(e) => {
@@ -497,7 +491,7 @@ function AuthPage() {
                 {t(emailError)}
               </p>
             )}
-            <StickerButton block type="submit" disabled={busy || !adult}>
+            <StickerButton block type="submit" disabled={busy}>
               {t(busy ? "common.loading" : "design.email")}
             </StickerButton>
           </form>

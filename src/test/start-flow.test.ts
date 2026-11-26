@@ -110,6 +110,19 @@ describe("challenge start flow", () => {
     expect(sessionStorage.getItem(START_FLOW_KEY)).toBeNull();
   });
 
+  it("keeps the pending challenge for a new player to resume after profile setup", async () => {
+    api.from().single.mockResolvedValue({
+      data: { display_name: "New Player", onboarded: false, is_demo: false },
+      error: null,
+    });
+    const flow: StartFlow = { challenge: { kind: "crew_invite", code: "ABC123" } };
+    saveStartFlow(flow);
+
+    await expect(finishStartFlow()).rejects.toThrow("profile_setup_required");
+    expect(readStartFlow()).toEqual(flow);
+    expect(api.rpc).not.toHaveBeenCalled();
+  });
+
   it("reports a read-only guest join attempt without pretending it succeeded", async () => {
     api.getUser.mockResolvedValue({
       data: { user: { id: "sample-user", email: "demo@lezgo.app" } },
