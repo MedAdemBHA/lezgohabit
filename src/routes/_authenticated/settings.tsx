@@ -5,22 +5,20 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { ArrowLeft, ArrowRight, LogOut, Trash2, MapPin } from "lucide-react";
+import { ArrowLeft, ChevronRight, LogOut, Trash2, MapPin, ListChecks } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/lezgo/app-shell";
-import { FitHeading } from "@/components/lezgo/fit-heading";
 import {
   Segmented,
   StickerButton,
   Switch,
   BottomSheet,
   Field,
-  Num,
   inputCls,
 } from "@/components/lezgo/ui";
 import { profileQuery, useBase, type Profile } from "@/lib/data";
 import { defaultPreferences, preferencesQuery, type Preferences } from "@/lib/feed-data";
-import { applyLang, LANGS } from "@/lib/i18n";
+import { applyLang, LANGS, numberLocale } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () =>
@@ -38,7 +36,9 @@ function SettingsPage() {
   const { uid, profile } = useBase();
   const prefs = useQuery({ ...preferencesQuery(uid), enabled: !!uid });
   const p = prefs.data ?? defaultPreferences(uid);
-  const [sheet, setSheet] = useState<"method" | "city" | "max" | "time" | "birthday" | "delete" | null>(null);
+  const [sheet, setSheet] = useState<
+    "method" | "city" | "max" | "time" | "birthday" | "delete" | null
+  >(null);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const preferenceQueue = useRef<Promise<void>>(Promise.resolve());
@@ -101,10 +101,10 @@ function SettingsPage() {
     setSheet(kind);
   }
   async function saveSheet() {
-    if (sheet === 'birthday') {
+    if (sheet === "birthday") {
       if (!/^\d{4}-\d{2}-\d{2}$/.test(input)) return;
       await update({ birth_date: input });
-      await qc.invalidateQueries({ queryKey: ['buddies'] });
+      await qc.invalidateQueries({ queryKey: ["buddies"] });
     } else if (sheet === "city") {
       if (!input.trim()) return;
       await update({ city: input.trim() });
@@ -125,18 +125,16 @@ function SettingsPage() {
     profile.units === "lb" ? Math.round(p.max_dumbbell * 2.2046226218 * 10) / 10 : p.max_dumbbell;
   return (
     <AppShell todayLayout hideTabs>
-      <Link to="/profile" className="self-start">
-        <StickerButton variant="secondary" className="icon-control" aria-label={t("common.back")}>
-          <ArrowLeft className="rtl:-scale-x-100" />
-        </StickerButton>
-      </Link>
-      <FitHeading
-        className="font-extrabold leading-none"
-        text={t("settings.title").toLocaleUpperCase(i18n.language === "aeb" ? "ar" : i18n.language)}
-        requestedSize={52}
-      />
+      <header className="settings-head">
+        <Link to="/profile">
+          <StickerButton variant="secondary" className="icon-control" aria-label={t("common.back")}>
+            <ArrowLeft className="rtl:-scale-x-100" />
+          </StickerButton>
+        </Link>
+        <h1 className="settings-title">{t("settings.title")}</h1>
+      </header>
       <h2 className="section-label">{t("batch4.language")}</h2>
-      <div className="settings-languages">
+      <div className="settings-card settings-languages">
         {LANGS.map((lang, i) => (
           <StickerButton
             variant="secondary"
@@ -173,92 +171,73 @@ function SettingsPage() {
         </div>
       </div>
       <h2 className="section-label mt-2">{t("batch4.prayer")}</h2>
-      <div className="settings-card">
+      <div className="settings-card divided">
         <Switch
           label={t("batch4.prayerHabits")}
           checked={p.prayer_enabled}
           onChange={(v) => void savePrefs({ prayer_enabled: v })}
         />
-        <div className="settings-row">
-          <span>{t("batch4.method")}</span>
-          <StickerButton
-            variant="secondary"
-            size="sm"
-            className="method-chip"
-            onClick={() => setSheet("method")}
-          >
-            {t(`batch4.method${p.prayer_method}`)}
-          </StickerButton>
-        </div>
-        <div className="settings-row">
-          <span>{t("batch4.location")}</span>
-          <StickerButton
-            variant="ghost"
-            className="location-button"
-            onClick={() => edit("city", profile.city ?? "")}
-          >
-            <MapPin size={16} />
-            <Num>
-              {profile.city ?? "—"} · {t("batch4.auto")}
-            </Num>
-          </StickerButton>
-        </div>
+        {p.prayer_enabled && (
+          <>
+            <NavRow
+              label={t("batch4.method")}
+              value={t(`batch4.method${p.prayer_method}`)}
+              onClick={() => setSheet("method")}
+            />
+            <NavRow
+              label={t("batch4.location")}
+              icon={<MapPin size={18} aria-hidden="true" />}
+              value={profile.city || t("ux.setCity")}
+              muted={!profile.city}
+              onClick={() => edit("city", profile.city ?? "")}
+            />
+          </>
+        )}
       </div>
       <h2 className="section-label mt-2">{t("batch4.equipment")}</h2>
-      <div className="flex flex-wrap gap-2">
-        {(["dumbbells", "pullup", "barbell", "bodyweight"] as const).map((e) => (
-          <StickerButton
-            size="sm"
-            variant="secondary"
-            disabled={busy}
-            className={cn(
-              "feed-chip",
-              p.equipment.includes(e) ? "bg-lime shadow-hard-sm" : "shadow-none",
-            )}
-            aria-pressed={p.equipment.includes(e)}
+      <div className="settings-card divided">
+        {(["dumbbells", "pullup", "barbell"] as const).map((e) => (
+          <Switch
             key={e}
-            onClick={() =>
+            label={t(`batch4.${e}`)}
+            checked={p.equipment.includes(e)}
+            onChange={(on) =>
               void savePrefs({
-                equipment: p.equipment.includes(e)
-                  ? p.equipment.filter((v) => v !== e)
-                  : [...p.equipment, e],
+                // Bodyweight moves are always available, so "bodyweight" stays in the kit.
+                equipment: [
+                  "bodyweight",
+                  ...p.equipment.filter((v) => v !== "bodyweight" && v !== e),
+                  ...(on ? [e] : []),
+                ],
               })
             }
-          >
-            {t(`batch4.${e}`)}
-          </StickerButton>
+          />
         ))}
-        <StickerButton
-          size="sm"
-          variant="ghost"
-          className="feed-chip dashed-ink"
-          onClick={() => edit("max", String(maxWeight))}
-        >
-          {t("batch4.maxDumbbell", { n: maxWeight, unit: t(`batch4.${profile.units}`) })}
-        </StickerButton>
+        {p.equipment.includes("dumbbells") && (
+          <NavRow
+            label={t("ux.maxDumbbell")}
+            value={`${new Intl.NumberFormat(numberLocale(i18n.language)).format(maxWeight)} ${t(`batch4.${profile.units}`)}`}
+            onClick={() => edit("max", String(maxWeight))}
+          />
+        )}
+        <p className="settings-note">{t("ux.bodyweightIncluded")}</p>
       </div>
       <NotificationSettings uid={uid} />
       <h2 className="section-label mt-2">{t("batch4.reminders")}</h2>
       <div className="settings-card divided">
         <Switch
-          label={t("batch4.prayerReminder")}
-          checked={p.prayer_reminder}
-          onChange={(v) => void savePrefs({ prayer_reminder: v })}
+          label={t("ux.dailyReminder")}
+          checked={profile.notif_daily}
+          onChange={(v) => void update({ notif_daily: v })}
         />
-        <div>
-          <Switch
-            label={t("batch4.dailyReminder", { time: p.daily_time.slice(0, 5) })}
-            checked={profile.notif_daily}
-            onChange={(v) => void update({ notif_daily: v })}
-          />
-          <StickerButton
-            variant="ghost"
-            className="reminder-time"
+        {profile.notif_daily && (
+          <NavRow
+            label={t("ux.reminderTime")}
+            value={p.daily_time.slice(0, 5)}
+            ltrValue
             onClick={() => edit("time", p.daily_time.slice(0, 5))}
-          >
-            <Num>{p.daily_time.slice(0, 5)}</Num>
-          </StickerButton>
-        </div>
+          />
+        )}
         <Switch
           label={t("settings.notifCrew")}
           checked={profile.notif_crew}
@@ -272,16 +251,36 @@ function SettingsPage() {
       </div>
       <h2 className="section-label mt-2">{t("batch4.privacy")}</h2>
       <div className="settings-card divided">
-        <div className="settings-row">
-          <span>{t('batch5.birthDate')}</span>
-          <StickerButton variant="ghost" size="sm" onClick={()=>edit('birthday',profile.birth_date??'')}>
-            <Num>{profile.birth_date??t('batch5.unset')}</Num>
-          </StickerButton>
-        </div>
+        <NavRow
+          label={t("batch5.birthDate")}
+          value={
+            profile.birth_date
+              ? new Intl.DateTimeFormat(numberLocale(i18n.language), {
+                  dateStyle: "medium",
+                  timeZone: "UTC",
+                }).format(new Date(`${profile.birth_date}T00:00:00Z`))
+              : t("batch5.unset")
+          }
+          muted={!profile.birth_date}
+          onClick={() => edit("birthday", profile.birth_date ?? "")}
+        />
         <div className="py-3">
-          <p className="mb-2 font-bold">{t('batch5.gender')}</p>
-          <div className="flex flex-wrap gap-2">
-            {['woman','man','other','unset'].map(g=><StickerButton key={g} variant="secondary" size="sm" className={profile.gender===g||!profile.gender&&g==='unset'?'bg-lime':'shadow-none'} aria-pressed={profile.gender===g||!profile.gender&&g==='unset'} onClick={()=>void update({gender:g==='unset'?null:g})}>{t(`batch5.${g}`)}</StickerButton>)}
+          <p className="mb-2 text-[16px] font-bold">{t("batch5.gender")}</p>
+          <div className="settings-choices" role="group" aria-label={t("batch5.gender")}>
+            {["woman", "man", "other", "unset"].map((g) => {
+              const on = profile.gender === g || (!profile.gender && g === "unset");
+              return (
+                <button
+                  key={g}
+                  type="button"
+                  aria-pressed={on}
+                  className={cn("settings-choice", on && "is-on")}
+                  onClick={() => void update({ gender: g === "unset" ? null : g })}
+                >
+                  {t(`batch5.${g}`)}
+                </button>
+              );
+            })}
           </div>
         </div>
         <Switch
@@ -298,23 +297,27 @@ function SettingsPage() {
           {t("settings.faithHint")}
         </p>
       </div>
-      <Link to="/habits">
-        <StickerButton block variant="secondary">
-          {t("settings.editHabits")}
-          <ArrowRight size={20} className="rtl:-scale-x-100" />
-        </StickerButton>
-      </Link>
-      <StickerButton block variant="secondary" onClick={() => void signOut()}>
-        <LogOut size={20} />
-        {t("settings.signOut")}
-      </StickerButton>
-      <StickerButton block variant="danger" disabled={profile.is_demo} onClick={() => setSheet("delete")}>
-        <Trash2 size={20} />
-        {t("settings.deleteAccount")}
-      </StickerButton>
-      <Link to="/today">
-        <StickerButton block>{t("profile.next")}</StickerButton>
-      </Link>
+      <h2 className="section-label mt-2">{t("ux.account")}</h2>
+      <div className="settings-card divided mb-8">
+        <NavRow
+          label={t("settings.editHabits")}
+          icon={<ListChecks size={18} aria-hidden="true" />}
+          onClick={() => void nav({ to: "/habits" })}
+        />
+        <NavRow
+          label={t("settings.signOut")}
+          icon={<LogOut size={18} aria-hidden="true" />}
+          onClick={() => void signOut()}
+        />
+        {!profile.is_demo && (
+          <NavRow
+            label={t("settings.deleteAccount")}
+            icon={<Trash2 size={18} aria-hidden="true" />}
+            danger
+            onClick={() => setSheet("delete")}
+          />
+        )}
+      </div>
       <BottomSheet
         open={sheet === "method"}
         onClose={() => setSheet(null)}
@@ -338,28 +341,40 @@ function SettingsPage() {
         </div>
       </BottomSheet>
       <BottomSheet
-        open={sheet === "city" || sheet === "max" || sheet === "time" || sheet === 'birthday'}
+        open={sheet === "city" || sheet === "max" || sheet === "time" || sheet === "birthday"}
         onClose={() => setSheet(null)}
         title={t(
-          sheet === 'birthday' ? 'batch5.birthDate' : sheet === "city"
-            ? "batch4.location"
-            : sheet === "max"
-              ? "batch4.equipment"
-              : "batch4.reminders",
+          sheet === "birthday"
+            ? "batch5.birthDate"
+            : sheet === "city"
+              ? "batch4.location"
+              : sheet === "max"
+                ? "batch4.equipment"
+                : "batch4.reminders",
         )}
       >
         <Field
           label={t(
-            sheet === 'birthday' ? 'batch5.birthDate' : sheet === "city"
-              ? "batch4.location"
-              : sheet === "max"
-                ? "batch4.weight"
-                : "batch4.reminders",
+            sheet === "birthday"
+              ? "batch5.birthDate"
+              : sheet === "city"
+                ? "batch4.location"
+                : sheet === "max"
+                  ? "batch4.weight"
+                  : "batch4.reminders",
           )}
         >
           <input
             className={inputCls}
-            type={sheet === 'birthday' ? 'date' : sheet === "max" ? "number" : sheet === "time" ? "time" : "text"}
+            type={
+              sheet === "birthday"
+                ? "date"
+                : sheet === "max"
+                  ? "number"
+                  : sheet === "time"
+                    ? "time"
+                    : "text"
+            }
             min={0}
             max={500}
             maxLength={80}
@@ -392,5 +407,46 @@ function SettingsPage() {
         </div>
       </BottomSheet>
     </AppShell>
+  );
+}
+
+/** A tappable settings row: label on the start side, current value and a chevron on the end side. */
+function NavRow({
+  label,
+  value,
+  icon,
+  onClick,
+  muted = false,
+  danger = false,
+  ltrValue = false,
+}: {
+  label: string;
+  value?: string;
+  icon?: React.ReactNode;
+  onClick: () => void;
+  muted?: boolean;
+  danger?: boolean;
+  ltrValue?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      className={cn("settings-nav-row", danger && "is-danger")}
+      onClick={onClick}
+    >
+      {icon}
+      <span className="settings-nav-label">{label}</span>
+      {value && (
+        <span
+          className={cn("settings-nav-value", muted && "is-muted")}
+          dir={ltrValue ? "ltr" : undefined}
+        >
+          {value}
+        </span>
+      )}
+      {!danger && (
+        <ChevronRight size={18} className="shrink-0 rtl:-scale-x-100" aria-hidden="true" />
+      )}
+    </button>
   );
 }
