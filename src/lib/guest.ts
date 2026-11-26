@@ -7,7 +7,7 @@ const WRITE_RPCS = new Set([
   "cancel_habit_timer","complete_habit_timer","create_creator_challenge","create_personal_challenge","delete_my_account","demo_reset_day","detox_action","detox_duel_action","find_challenge_crew","habit_timer_heartbeat","join_challenge","join_crew","join_season",
   "leave_crew","mark_prayer","log_lift","log_lift_session","log_screen_time","post_action","post_daily_proof","post_small_wins",
   "react_post","recompute_day","register_proof_fingerprint","register_push","report_buddy","request_creator","review_creator_request","seal_capsule","surrender_challenge","toggle_challenge_respect","admin_set_challenge_habits",
-  "admin_save_official_event","moderate_community","report_community_post","report_community_member","resolve_community_member_report","submit_moderation_appeal","mark_moderation_notice_read","admin_resolve_moderation_appeal","rotate_crew_invite","publish_event_announcement","send_nudge","set_challenge_pin","set_chaos_done","set_season_reminder","spin_daily_chaos","start_habit_timer","toggle_respect",
+  "admin_save_official_event","moderate_community","report_community_post","report_community_member","resolve_community_member_report","submit_moderation_appeal","mark_moderation_notice_read","admin_resolve_moderation_appeal","rotate_crew_invite","publish_event_announcement","send_nudge","set_challenge_pin","set_chaos_done","set_season_reminder","set_season_reminder_by_id","spin_daily_chaos","start_habit_timer","toggle_respect",
 ]);
 // Read receipts are harmless bookkeeping on the sample account's own inbox.
 const PASS_TABLES = new Set(["announcement_receipts", "notifications"]);

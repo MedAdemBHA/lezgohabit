@@ -1,5 +1,10 @@
 /** Copy for the "easy to use" pass (UX-01…UX-18). en is the typed source; fr/ar/aeb must match. */
 export const uxEn = {
+  remindMe: "Remind me when it starts",
+  reminderSet: "Reminder on · tap to cancel",
+  reminderOn: "We’ll remind you when it starts.",
+  reminderOff: "Reminder cancelled.",
+  signInToRemind: "Sign in to get a reminder",
   reviewWho: "Someone on the lezgo team reviews each request by hand.",
   reviewWhen: "It usually takes a few days.",
   reviewAfter: "Once approved, you can create public challenges and share their invite link.",
@@ -68,6 +73,11 @@ export const uxEn = {
 export type UxCopy = typeof uxEn;
 
 export const uxFr: UxCopy = {
+  remindMe: "Me prévenir au lancement",
+  reminderSet: "Rappel activé · touche pour annuler",
+  reminderOn: "On te préviendra au lancement.",
+  reminderOff: "Rappel annulé.",
+  signInToRemind: "Connecte-toi pour recevoir un rappel",
   reviewWho: "Une personne de l’équipe lezgo examine chaque demande.",
   reviewWhen: "Cela prend généralement quelques jours.",
   reviewAfter: "Une fois accepté·e, tu peux créer des challenges publics et partager leur lien d’invitation.",
@@ -135,6 +145,11 @@ export const uxFr: UxCopy = {
 };
 
 export const uxAr: UxCopy = {
+  remindMe: "ذكّرني عند البدء",
+  reminderSet: "التذكير مفعّل · اضغط للإلغاء",
+  reminderOn: "سنذكّرك عند البدء.",
+  reminderOff: "أُلغي التذكير.",
+  signInToRemind: "سجّل الدخول لتصلك تذكرة",
   reviewWho: "يراجع أحد أعضاء فريق lezgo كل طلب يدويًا.",
   reviewWhen: "يستغرق ذلك عادة بضعة أيام.",
   reviewAfter: "بعد القبول، يمكنك إنشاء تحديات عامة ومشاركة رابط الدعوة.",
@@ -200,6 +215,11 @@ export const uxAr: UxCopy = {
 };
 
 export const uxAeb: UxCopy = {
+  remindMe: "فكّرني كي يبدا",
+  reminderSet: "التذكير خدّام · انزل باش تبطّلو",
+  reminderOn: "باش نفكّروك كي يبدا.",
+  reminderOff: "التذكير تبطّل.",
+  signInToRemind: "ادخل باش يوصلك تذكير",
   reviewWho: "واحد من فريق lezgo يراجع كل طلب بيدو.",
   reviewWhen: "عادة ياخو كم من نهار.",
   reviewAfter: "كي يتقبل طلبك، تنجّم تعمل تحدّيات عامة وتشارك رابط الدعوة.",

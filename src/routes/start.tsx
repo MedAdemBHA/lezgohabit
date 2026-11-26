@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 import { ArrowLeft, ArrowRight, Lock } from "lucide-react";
 import { Brand } from "@/components/lezgo/brand";
 import { DesignLanguage } from "@/components/lezgo/design-language";
@@ -94,6 +95,7 @@ function StartPage() {
   const [busy, setBusy] = useState(false);
   const [confirm, setConfirm] = useState<StartFlow | null>(null);
   const [joinError, setJoinError] = useState<string | null>(null);
+  const [upcoming, setUpcoming] = useState<CatalogCard | null>(null);
   const qc = useQueryClient();
   const processedInvite = useRef("");
   const today = localDate("Africa/Tunis");
@@ -281,11 +283,14 @@ function StartPage() {
               <h2 id="upcoming-events" className="text-[13px] font-extrabold uppercase tracking-wide">{t("socialDesign.upcoming")}</h2>
               <ul className="space-y-2">
                 {upcomingOfficial.map((card) => (
-                  <li key={card.id} className="flex items-center justify-between gap-3 rounded-[18px] bg-card p-3 sticker-border">
-                    <span className="font-extrabold">{loc(card.name, i18n.language)}</span>
-                    <time dateTime={card.starts_on} className="shrink-0 text-sm font-semibold">
-                      {formatDayMonth(card.starts_on, i18n.language)}
-                    </time>
+                  <li key={card.id}>
+                    <button type="button" onClick={() => setUpcoming(card)} className="flex w-full items-center justify-between gap-3 rounded-[18px] bg-card p-3 text-start sticker-border press">
+                      <span className="font-extrabold">{loc(card.name, i18n.language)}</span>
+                      <span className="flex shrink-0 items-center gap-1 text-sm font-semibold">
+                        <time dateTime={card.starts_on}>{formatDayMonth(card.starts_on, i18n.language)}</time>
+                        <ArrowRight size={16} className="rtl:-scale-x-100" aria-hidden="true" />
+                      </span>
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -321,6 +326,9 @@ function StartPage() {
           <div className="mt-auto space-y-3"><StickerButton block size="lg" disabled={busy || (!!active.data && playMode !== "code") || (!personal && playMode === "code" && crewCode.length !== 6)} onClick={() => void continueToSignIn()}>{user ? t("ux.joinChallenge", { name: personal ? t("startFlow.personalName", { n: days }) : loc(selected?.name, i18n.language) }) : t("startFlow.continue")}<ArrowRight className="rtl:-scale-x-100" /></StickerButton>{!user && <p className="text-center text-[12px] font-semibold text-design-muted">{t("startFlow.signInNext")}</p>}</div>
         </>
       )}
+      <BottomSheet open={upcoming !== null} onClose={() => setUpcoming(null)} title={upcoming ? loc(upcoming.name, i18n.language) : ""}>
+        {upcoming && <UpcomingDetail card={upcoming} signedIn={!!user} />}
+      </BottomSheet>
       <BottomSheet open={confirm !== null} onClose={() => { if (!busy) setConfirm(null); }} title={t("ux.confirmTitle")}>
         {confirm && <JoinSummary
           name={inviteQuery.data?.type === "crew" && !("play" in confirm) ? inviteQuery.data.crew.name : personal ? t("startFlow.personalName", { n: days }) : loc(selected?.name, i18n.language)}
@@ -338,6 +346,55 @@ function StartPage() {
     </Wrapper>
   );
   return inApp ? <AppShell todayLayout>{page}</AppShell> : page;
+}
+
+/** Upcoming event detail: habits, dates and a reminder (signed-in only; the server keeps the record). */
+function UpcomingDetail({ card, signedIn }: { card: CatalogCard; signedIn: boolean }) {
+  const { t, i18n } = useTranslation();
+  const qc = useQueryClient();
+  const [busy, setBusy] = useState(false);
+  const reminders = useQuery({
+    queryKey: ["myReminderIds"],
+    enabled: signedIn,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("my_season_reminder_ids");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  const on = !!reminders.data?.includes(card.season_id);
+  const goal = loc(card.goal, i18n.language);
+  async function toggle() {
+    setBusy(true);
+    const { error } = await supabase.rpc("set_season_reminder_by_id", { _season_id: card.season_id, _on: !on });
+    setBusy(false);
+    if (error) { toast(t(errKey(error) === "guest_read_only" ? "guest.readOnly" : "common.error")); return; }
+    await qc.invalidateQueries({ queryKey: ["myReminderIds"] });
+    toast(t(on ? "ux.reminderOff" : "ux.reminderOn"));
+  }
+  return (
+    <div className="space-y-3">
+      <p className="font-semibold">{formatDayMonth(card.starts_on, i18n.language)} – {formatDayMonth(card.ends_on, i18n.language)} · {t("batch6.days", { n: card.days })}</p>
+      {goal && <p className="font-semibold">{goal}</p>}
+      <ul className="space-y-2">
+        {card.habits.map((habit) => (
+          <li key={habit.key} className="rounded-[14px] bg-card p-3 sticker-border">
+            <strong className="block">{loc(habit.name, i18n.language)}</strong>
+            <span className="text-[13px] font-semibold">{loc(habit.what_counts, i18n.language)}</span>
+          </li>
+        ))}
+      </ul>
+      {signedIn ? (
+        <StickerButton block size="lg" variant={on ? "secondary" : "lime"} disabled={busy || reminders.isPending} aria-pressed={on} onClick={() => void toggle()}>
+          {t(on ? "ux.reminderSet" : "ux.remindMe")}
+        </StickerButton>
+      ) : (
+        <Link to="/auth" search={{ next: "/start" }} className="block">
+          <StickerButton block size="lg" variant="lime">{t("ux.signInToRemind")}</StickerButton>
+        </Link>
+      )}
+    </div>
+  );
 }
 
 function addDaysIso(iso: string, n: number) {

@@ -3353,6 +3353,11 @@ export type Database = {
         Args: { _on: boolean; _slug: string }
         Returns: undefined
       }
+      set_season_reminder_by_id: {
+        Args: { _on: boolean; _season_id: string }
+        Returns: undefined
+      }
+      my_season_reminder_ids: { Args: never; Returns: string[] }
       signature_overview: { Args: { _season_id: string }; Returns: Json }
       solo_ghost: { Args: { _season_id: string }; Returns: Json }
       spin_daily_chaos: { Args: { _season_id: string }; Returns: Json }
