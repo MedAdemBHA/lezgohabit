@@ -48,7 +48,7 @@ import {
   type HabitPoints,
   type UserHabit,
 } from "@/lib/data";
-import { completion, fmtVal, isSleepHabit, stepFor, type PrayerState } from "@/lib/habits";
+import { completion, fmtVal, isSleepHabit, stepFor, unitLabel, type PrayerState } from "@/lib/habits";
 import { canSpin, habitColor, DAILY_DARE_COUNT, streakAtRisk } from "@/lib/today-rules";
 import { daysBetween, localHour, useNow } from "@/lib/time";
 import { FitHeading } from "@/components/lezgo/fit-heading";
@@ -949,7 +949,7 @@ function Today() {
                   ? t("ux.sleptEnough", { n: fmtVal(Number(stepper.target)) })
                   : t("ux.doneTarget", {
                       target: fmtVal(Number(stepper.target)),
-                      unit: stepper.unit ?? "",
+                      unit: unitLabel(t, stepper.unit),
                     })}
               </StickerButton>
             )}

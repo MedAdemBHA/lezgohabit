@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import type { UserHabit, HabitPoints } from "@/lib/data";
 import { habitColor } from "@/lib/today-rules";
 import { loc } from "@/lib/i18n";
-import { fmtPts, fmtVal, isSleepHabit } from "@/lib/habits";
+import { fmtPts, fmtVal, isSleepHabit, unitLabel } from "@/lib/habits";
 import { HabitIcon } from "../habit-icon";
 import { StickerButton, Num } from "../ui";
 export function habitName(h: UserHabit, t: (key: string) => string, lang: string) {
@@ -51,39 +51,43 @@ export function HabitTile({
   const key = habit.template?.key;
   const ruleData = habit.rule as { window_start?: string; window_end?: string } | null;
   const rule =
-    key === "train"
-      ? loc(habit.what_counts, i18n.language) ||
-        loc(habit.template?.what_counts, i18n.language) ||
-        t("todayDesign.trainRule")
-      : key === "learn15"
-        ? t("todayDesign.learnRule")
-        : isSleepHabit(key)
-          ? t("ux.sleepRule", { n: fmtVal(Number(habit.target)) })
-          : key === "no_sugar"
-            ? t("todayDesign.sugarRule")
-            : habit.kind === "time_window"
-              ? t("habitRules.outsideWindow", {
-                  start: ruleData?.window_start ?? "—",
-                  end: ruleData?.window_end ?? "—",
-                })
-              : habit.kind === "quit"
-                ? t("habitRules.quitRule")
-                : habit.kind === "timer"
-                  ? t("habitRules.timerVisible")
-                  : key === "screen_limit"
-                    ? t("habitRules.screenLimitCount", {
-                        value: fmtVal(value),
-                        target: fmtVal(Number(habit.target)),
-                      })
-                    : habit.kind === "count"
-                      ? t("todayDesign.count", {
-                          value: fmtVal(value),
-                          target: fmtVal(Number(habit.target)),
-                          unit: habit.unit ?? "",
-                        })
-                      : loc(habit.what_counts, i18n.language) ||
-                        loc(habit.template?.what_counts, i18n.language) ||
-                        loc(habit.template?.description, i18n.language);
+    key === "train" ? (
+      loc(habit.what_counts, i18n.language) ||
+      loc(habit.template?.what_counts, i18n.language) ||
+      t("todayDesign.trainRule")
+    ) : key === "learn15" ? (
+      t("todayDesign.learnRule")
+    ) : isSleepHabit(key) ? (
+      t("ux.sleepRule", { n: fmtVal(Number(habit.target)) })
+    ) : key === "no_sugar" ? (
+      t("todayDesign.sugarRule")
+    ) : habit.kind === "time_window" ? (
+      t("habitRules.outsideWindow", {
+        start: ruleData?.window_start ?? "—",
+        end: ruleData?.window_end ?? "—",
+      })
+    ) : habit.kind === "quit" ? (
+      t("habitRules.quitRule")
+    ) : habit.kind === "timer" ? (
+      t("habitRules.timerVisible")
+    ) : key === "screen_limit" ? (
+      t("habitRules.screenLimitCount", {
+        value: fmtVal(value),
+        target: fmtVal(Number(habit.target)),
+      })
+    ) : habit.kind === "count" ? (
+      // Numbers stay left-to-right inside RTL text; the unit is translated.
+      <>
+        <Num>
+          {fmtVal(value)} / {fmtVal(Number(habit.target))}
+        </Num>{" "}
+        {unitLabel(t, habit.unit)}
+      </>
+    ) : (
+      loc(habit.what_counts, i18n.language) ||
+      loc(habit.template?.what_counts, i18n.language) ||
+      loc(habit.template?.description, i18n.language)
+    );
   // Long-press opens the habit sheet: the stepper for counts, the optional Lift log for Train.
   const hasSheet = habit.kind === "count" || key === "train";
   function release() {

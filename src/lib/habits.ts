@@ -1,3 +1,4 @@
+import type { TFunction } from "i18next";
 import type { Checkin, UserHabit } from "./data";
 
 export const PRAYERS = ["fajr", "dhuhr", "asr", "maghrib", "isha"] as const;
@@ -47,6 +48,12 @@ export const CHAOS_KEYS = [
 ] as const;
 export const chaosFor = (dayIndex: number) =>
   CHAOS_KEYS[((dayIndex % CHAOS_KEYS.length) + CHAOS_KEYS.length) % CHAOS_KEYS.length]!;
+
+/** A habit unit in the reader's language ("pages" → "صفحات"); unknown units are shown as stored. */
+export function unitLabel(t: TFunction, unit: string | null | undefined): string {
+  if (!unit) return "";
+  return t(`ux.units.${unit}`, { defaultValue: unit });
+}
 
 /** Points are whole numbers on screen; the server keeps the exact values (display rounding only). */
 export function fmtPts(v: number | null | undefined) {

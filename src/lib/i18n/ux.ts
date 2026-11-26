@@ -1,5 +1,18 @@
 /** Copy for the "easy to use" pass (UX-01…UX-18). en is the typed source; fr/ar/aeb must match. */
 export const uxEn = {
+  units: {
+    min: "min",
+    steps: "steps",
+    L: "L",
+    portions: "portions",
+    h: "h",
+    km: "km",
+    meals: "meals",
+    pages: "pages",
+    prayers: "prayers",
+    reps: "reps",
+  },
+  missed: "Missed",
   setCity: "Set your city",
   maxDumbbell: "Heaviest dumbbell",
   bodyweightIncluded: "Bodyweight moves are always included.",
@@ -86,6 +99,19 @@ export const uxEn = {
 export type UxCopy = typeof uxEn;
 
 export const uxFr: UxCopy = {
+  units: {
+    min: "min",
+    steps: "pas",
+    L: "L",
+    portions: "portions",
+    h: "h",
+    km: "km",
+    meals: "repas",
+    pages: "pages",
+    prayers: "prières",
+    reps: "rép.",
+  },
+  missed: "Manqué",
   setCity: "Choisir ta ville",
   maxDumbbell: "Haltère la plus lourde",
   bodyweightIncluded: "Les exercices au poids du corps sont toujours inclus.",
@@ -172,6 +198,19 @@ export const uxFr: UxCopy = {
 };
 
 export const uxAr: UxCopy = {
+  units: {
+    min: "د",
+    steps: "خطوة",
+    L: "ل",
+    portions: "حصص",
+    h: "س",
+    km: "كم",
+    meals: "وجبات",
+    pages: "صفحات",
+    prayers: "صلوات",
+    reps: "تكرار",
+  },
+  missed: "فائت",
   setCity: "حدّد مدينتك",
   maxDumbbell: "أثقل دمبل",
   bodyweightIncluded: "تمارين وزن الجسم متاحة دائمًا.",
@@ -255,6 +294,19 @@ export const uxAr: UxCopy = {
 };
 
 export const uxAeb: UxCopy = {
+  units: {
+    min: "د",
+    steps: "خطوة",
+    L: "ل",
+    portions: "حصص",
+    h: "س",
+    km: "كم",
+    meals: "ماكلات",
+    pages: "صفحات",
+    prayers: "صلوات",
+    reps: "مرّة",
+  },
+  missed: "فات",
   setCity: "اختار مدينتك",
   maxDumbbell: "أثقل دمبل",
   bodyweightIncluded: "تمارين وزن الجسم ديما موجودة.",
