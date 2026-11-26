@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/_authenticated/scoring")({
   head: () =>
     pageHead(
-      "How scoring works — lezgo",
+      "How scoring works · lezgo",
       "Habits, bonus stacks and streaks explained with a fair-play scoring calculator.",
     ),
   component: Scoring,

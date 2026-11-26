@@ -18,7 +18,7 @@ import { pageHead } from "@/lib/page-head";
 export const Route = createFileRoute("/_authenticated/lift")({
   head: () =>
     pageHead(
-      "Lift log — lezgo",
+      "Lift log · lezgo",
       "Save your lifting session and beat your previous results with your own kit.",
     ),
   loader: ({ context }) => context.queryClient.ensureQueryData(liftQuery(context.user.id)),

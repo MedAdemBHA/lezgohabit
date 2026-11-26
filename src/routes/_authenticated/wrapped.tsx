@@ -30,7 +30,7 @@ export const Route = createFileRoute("/_authenticated/wrapped")({
   validateSearch: (s: Record<string, unknown>) => ({ season: seasonSearch(s["season"]) }),
   head: () =>
     pageHead(
-      "Your Wrapped — lezgo",
+      "Your Wrapped · lezgo",
       "Your habit highlights, season stats and private time capsule.",
     ),
   component: WrappedPage,

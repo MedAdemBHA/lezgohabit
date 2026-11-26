@@ -44,9 +44,11 @@ export function TodayCrewStrip({ uid, seasonId }: { uid: string; seasonId: strin
   if (crew.length < 2)
     return (
       <section className="today-crew-strip">
-        <span>
-          <strong>{t("ux.aloneShort")}</strong>
-          <small>{t("ux.aloneHint")}</small>
+        <span className="today-crew-title">
+          <span>
+            <strong>{t("ux.aloneShort")}</strong>
+            <small>{t("ux.aloneHint")}</small>
+          </span>
         </span>
         <Link to="/crew">
           <StickerButton size="sm" variant="secondary">

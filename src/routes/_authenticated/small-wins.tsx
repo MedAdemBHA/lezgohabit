@@ -13,7 +13,7 @@ import {WIN_KEYS,prefilledWins,shareableWins,type WinKey} from '@/lib/batch6-rul
 import {daysBetween,pad} from '@/lib/time';
 import {pageHead} from '@/lib/page-head';
 import {supabase} from '@/integrations/supabase/client';
-export const Route=createFileRoute('/_authenticated/small-wins')({head:()=>pageHead('Small Wins — lezgo','Turn your daily wins into a lezgo share card or a community post.'),component:SmallWins});
+export const Route=createFileRoute('/_authenticated/small-wins')({head:()=>pageHead('Small Wins · lezgo','Turn your daily wins into a lezgo share card or a community post.'),component:SmallWins});
 const COLORS=['blue','lime','pink','yellow','purple','teal','orange','lime','pink'];
 function SmallWins(){const {t}=useTranslation();const {uid,profile,season,today}=useBase();const qc=useQueryClient();const sid=season?.id??'';const hs=useQuery({...habitsQuery(uid,sid),enabled:!!uid&&!!sid});const ds=useQuery({...dayQuery(uid,sid,today),enabled:!!uid&&!!sid});const [selected,setSelected]=useState<WinKey[]>([]);const initialized=useRef('');const touched=useRef(false);const [caption,setCaption]=useState(0);const [square,setSquare]=useState(false);const [busy,setBusy]=useState(false);const card=useRef<HTMLDivElement>(null);const labels=(k:WinKey)=>t(`batch6.${k==='steps'?'stepsWin':k}`);const captions=t('batch6.captions',{returnObjects:true}) as string[];const words=captions[caption%captions.length]??'';const safe=shareableWins(selected,profile?.faith_public??false);const day=season?Math.max(1,daysBetween(season.starts_on,today)+1):1;
 useEffect(()=>{if(!hs.data||!ds.data||initialized.current===sid)return;initialized.current=sid;if(!touched.current)setSelected(prefilledWins(hs.data,ds.data.checkins));},[hs.data,ds.data,sid]);

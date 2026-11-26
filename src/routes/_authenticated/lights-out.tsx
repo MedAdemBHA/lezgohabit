@@ -19,7 +19,7 @@ import { ConfirmSheet } from "@/components/lezgo/confirm-sheet";
 export const Route = createFileRoute("/_authenticated/lights-out")({
   head: () =>
     pageHead(
-      "Lights out — lezgo",
+      "Lights out · lezgo",
       "A private mood and intention to close your day without points.",
     ),
   component: LightsOut,

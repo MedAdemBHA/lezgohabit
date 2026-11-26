@@ -22,7 +22,12 @@ export function BadgeSignals() {
   const q = useQuery({ ...summaryQuery(uid, sid), enabled: !!uid && !!sid });
   const busy = useRef(false);
   const mounted = useRef(false);
-  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
   const qc = useQueryClient();
   useEffect(() => {
     if (!q.data || busy.current) return;
@@ -32,11 +37,11 @@ export function BadgeSignals() {
         const r = await supabase.rpc("claim_moment", { _season_id: sid, _key: `badge:${badge}` });
         if (r.data && mounted.current)
           toast.custom(() => (
-            <div className="badge-unlock sticker">
+            <div className="badge-unlock">
               <Star fill="currentColor" />
               <div>
                 <strong>{t("batch8.badge")}</strong>
-                <p>{t(badge === 'halfway' ? 'batch8.halfway' : `socialDesign.${badge}`)}</p>
+                <p>{t(badge === "halfway" ? "batch8.halfway" : `socialDesign.${badge}`)}</p>
               </div>
             </div>
           ));
@@ -65,7 +70,12 @@ export function TodayMoments({
   const [lights, setLights] = useState(false);
   const trying = useRef(false);
   const mounted = useRef(false);
-  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
   const now = useNow();
   const data = q.data;
   useEffect(() => {
@@ -260,7 +270,12 @@ export function TodayMoments({
             <footer>
               {moment === "first" ? (
                 <>
-                  <Link to="/small-wins" onClick={()=>void dismiss()}><StickerButton block variant="secondary"><Share2 />{t("batch8.share")}</StickerButton></Link>
+                  <Link to="/small-wins" onClick={() => void dismiss()}>
+                    <StickerButton block variant="secondary">
+                      <Share2 />
+                      {t("batch8.share")}
+                    </StickerButton>
+                  </Link>
                   <StickerButton block onClick={() => void dismiss()}>
                     {t("batch8.keepGoing")}
                   </StickerButton>

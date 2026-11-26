@@ -25,7 +25,7 @@ export const Route = createFileRoute("/_authenticated/ranks")({
       search["scope"] === "crew" || search["scope"] === "country" ? search["scope"] : "challenge",
   }),
   head: () =>
-    pageHead("Challenge board — lezgo", "Compare points and consistency within your challenge."),
+    pageHead("Challenge board · lezgo", "Compare points and consistency within your challenge."),
   component: Ranks,
 });
 type Scope = "crew" | "challenge" | "country";

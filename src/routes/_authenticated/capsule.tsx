@@ -19,7 +19,7 @@ export const Route = createFileRoute("/_authenticated/capsule")({
   validateSearch: (search: Record<string, unknown>): { season?: string } =>
     search["season"] === undefined ? {} : { season: seasonSearch(search["season"]) },
   head: () =>
-    pageHead("Time capsule — lezgo", "Seal a private note or recording for your season-end self."),
+    pageHead("Time capsule · lezgo", "Seal a private note or recording for your season-end self."),
   component: CapsulePage,
 });
 function CapsulePage() {

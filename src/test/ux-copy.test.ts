@@ -20,3 +20,13 @@ describe("formatNumber", () => {
     expect(formatNumber(Number.NaN, "fr")).toBe("0");
   });
 });
+
+describe("unitLabel", () => {
+  it("translates known units and keeps unknown ones", async () => {
+    const { unitLabel } = await import("@/lib/habits");
+    expect(unitLabel(i18n.getFixedT("aeb"), "pages")).toBe("صفحات");
+    expect(unitLabel(i18n.getFixedT("fr"), "steps")).toBe("pas");
+    expect(unitLabel(i18n.getFixedT("en"), "laps")).toBe("laps");
+    expect(unitLabel(i18n.getFixedT("en"), null)).toBe("");
+  });
+});

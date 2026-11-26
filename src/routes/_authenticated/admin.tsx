@@ -68,7 +68,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
   },
   head: ({ match }) =>
     pageHead(
-      `${match.search.section ?? "Overview"} — lezgo admin`,
+      `${match.search.section ?? "Overview"} · lezgo admin`,
       "Manage lezgo seasons, moderation, player safety and sample data.",
       true,
     ),

@@ -9,7 +9,7 @@ import { loc } from "@/lib/i18n";
 import { pageHead } from "@/lib/page-head";
 
 export const Route = createFileRoute("/_authenticated/habits")({
-  head: () => pageHead("Challenge habits — lezgo", "See the habits for your current challenge."),
+  head: () => pageHead("Challenge habits · lezgo", "See the habits for your current challenge."),
   component: HabitsPage,
 });
 

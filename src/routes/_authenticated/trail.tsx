@@ -18,7 +18,7 @@ export const Route = createFileRoute("/_authenticated/trail")({
     season: typeof s["season"] === "string" ? s["season"] : "",
   }),
   head: () =>
-    pageHead("Your Trail — lezgo", "Every go, shield and milestone on your personal season trail."),
+    pageHead("Your Trail · lezgo", "Every go, shield and milestone on your personal season trail."),
   component: Trail,
 });
 function Trail() {
@@ -44,7 +44,7 @@ function Trail() {
   const byDay = new Map(scores.data?.map((s) => [s.day, s]));
   return (
     <SignatureFrame>
-          <FitHeading className="signature-heading" requestedSize={48} text={t("batch8.trail")} />
+      <FitHeading className="signature-heading" requestedSize={48} text={t("batch8.trail")} />
       <p className="signature-sub">{t("batch8.trailSub")}</p>
       {season && data ? (
         <>
@@ -70,9 +70,13 @@ function Trail() {
                         data-milestone={n === Math.ceil(data.length / 2)}
                         key={n}
                         data-final={final}
-                        title={`${d} · ${t(`batch8.${state === "missed" ? "partial" : state === "future" ? "day" : state}`, { n })}${final ? ` · ${t("integrity.final")}` : ""}`}
+                        title={`${d} · ${state === "missed" ? t("ux.missed") : t(`batch8.${state === "future" ? "day" : state}`, { n })}${final ? ` · ${t("integrity.final")}` : ""}`}
                       >
-                        {final && <span className="final-lock" aria-label={t("integrity.final")}><Lock aria-hidden /></span>}
+                        {final && (
+                          <span className="final-lock" aria-label={t("integrity.final")}>
+                            <Lock aria-hidden />
+                          </span>
+                        )}
                         {state === "perfect" ? (
                           <Star fill="currentColor" />
                         ) : state === "shield" ? (
@@ -100,29 +104,39 @@ function Trail() {
               ))}
             </div>
             <div className="trail-legend">
-              {["perfect", "partial", "shield", "today"].map((s) => (
-                <span key={s}>
-                  <i data-state={s} />
-                  {t(`batch8.${s}`)}
-                </span>
-              ))}
+              {(["perfect", "partial", "missed", "shield", "today", "milestone"] as const).map(
+                (s) => (
+                  <span key={s}>
+                    <i data-state={s} />
+                    {t(
+                      s === "missed"
+                        ? "ux.missed"
+                        : s === "milestone"
+                          ? "batch8.halfway"
+                          : `batch8.${s}`,
+                    )}
+                  </span>
+                ),
+              )}
             </div>
           </section>
-            <div className="trail-milestone bg-yellow">
+          <div className="trail-milestone bg-yellow">
             <Star />
             <div>
               <strong>{t("batch8.halfway")}</strong>
-                <p>{t("batch8.away", { n: Math.max(0, Math.ceil(data.length / 2) - data.day) })}</p>
+              <p>{t("batch8.away", { n: Math.max(0, Math.ceil(data.length / 2) - data.day) })}</p>
             </div>
           </div>
-          {(!historyEntry || historyEntry.status === "active") && <Link to="/capsule" className="trail-milestone bg-ink text-lime">
-            <Lock />
-            <div>
+          {(!historyEntry || historyEntry.status === "active") && (
+            <Link to="/capsule" className="trail-milestone bg-ink text-lime">
+              <Lock />
+              <div>
                 <strong>{t("batch8.dayNote", { n: data.length })}</strong>
-              <p>{t("batch8.opens", { date: formatDayMonth(season.ends_on, i18n.language) })}</p>
-            </div>
-            <ArrowRight className="ms-auto rtl:-scale-x-100" />
-          </Link>}
+                <p>{t("batch8.opens", { date: formatDayMonth(season.ends_on, i18n.language) })}</p>
+              </div>
+              <ArrowRight className="ms-auto rtl:-scale-x-100" />
+            </Link>
+          )}
           <footer className="trail-footer">
             <div className="flex -space-x-2 rtl:space-x-reverse">
               {data.crew.slice(0, 4).map((c) => (
@@ -145,9 +159,15 @@ function Trail() {
           </footer>
           <div className="flex gap-3">
             <Link to="/challenges" search={{ season: "" }} className="flex-1">
-              <StickerButton block variant="secondary">{t("challengeHistory.title")}</StickerButton>
+              <StickerButton block variant="secondary">
+                {t("challengeHistory.title")}
+              </StickerButton>
             </Link>
-            {historyEntry?.status === "active" && <Link to="/today" className="flex-1"><StickerButton block>{t("batch8.keepGoing")}</StickerButton></Link>}
+            {historyEntry?.status === "active" && (
+              <Link to="/today" className="flex-1">
+                <StickerButton block>{t("batch8.keepGoing")}</StickerButton>
+              </Link>
+            )}
           </div>
         </>
       ) : (

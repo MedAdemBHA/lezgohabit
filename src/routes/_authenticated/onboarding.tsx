@@ -13,7 +13,7 @@ import { pageHead } from "@/lib/page-head";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/onboarding")({
-  head: () => pageHead("Finish your profile — lezgo", "Add the details on your lezgo profile."),
+  head: () => pageHead("Finish your profile · lezgo", "Add the details on your lezgo profile."),
   component: Onboarding,
 });
 
