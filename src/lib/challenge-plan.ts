@@ -21,10 +21,22 @@ export type ChallengePlan = {
  * Explains the challenge rules to a (late) joiner. Display only: the server awards trophies
  * from saved scores, this just tells the player what is still possible.
  */
-export function planFor(startsOn: string, endsOn: string, today: string, habits = 0): ChallengePlan & { goodHabits: number } {
+export function planFor(
+  startsOn: string,
+  endsOn: string,
+  today: string,
+  habits = 0,
+): ChallengePlan & { goodHabits: number } {
   const total = Math.max(1, daysBetween(startsOn, endsOn) + 1);
   const day = Math.min(total, Math.max(1, daysBetween(startsOn, today) + 1));
   const left = Math.max(0, total - day + 1);
   const need = Math.ceil(total * TROPHY_SHARE);
-  return { total, day, left, need, reachable: left >= need, goodHabits: Math.max(1, Math.ceil(habits * GOOD_DAY_SHARE)) };
+  return {
+    total,
+    day,
+    left,
+    need,
+    reachable: left >= need,
+    goodHabits: Math.max(1, Math.ceil(habits * GOOD_DAY_SHARE)),
+  };
 }

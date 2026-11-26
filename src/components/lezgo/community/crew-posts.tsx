@@ -18,10 +18,23 @@ const crewPostsOptions = (uid: string, sid: string) =>
   });
 
 /** Crew-only posts, shown under My crew so the crew feed lives with the rest of the crew. */
-export function CrewPosts({ uid, seasonId, startsOn, crewId }: { uid: string; seasonId: string; startsOn: string; crewId: string }) {
+export function CrewPosts({
+  uid,
+  seasonId,
+  startsOn,
+  crewId,
+}: {
+  uid: string;
+  seasonId: string;
+  startsOn: string;
+  crewId: string;
+}) {
   const { t } = useTranslation();
   const [compose, setCompose] = useState(false);
-  const posts = useInfiniteQuery({ ...crewPostsOptions(uid, seasonId), enabled: !!uid && !!seasonId });
+  const posts = useInfiniteQuery({
+    ...crewPostsOptions(uid, seasonId),
+    enabled: !!uid && !!seasonId,
+  });
   const scope = { season: seasonId, crew: crewId };
   const mod = useQuery({ ...moderationAccess(scope, uid), enabled: !!uid && !!seasonId });
   const rows = posts.data?.pages.flat() ?? [];
@@ -29,19 +42,39 @@ export function CrewPosts({ uid, seasonId, startsOn, crewId }: { uid: string; se
     <section className="mt-6 space-y-3">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-[20px] font-extrabold">{t("challengePulse.crewPosts")}</h2>
-        <StickerButton variant="lime" size="sm" aria-label={t("batch4.newPost")} onClick={() => setCompose(true)}>
+        <StickerButton
+          variant="lime"
+          size="sm"
+          aria-label={t("batch4.newPost")}
+          onClick={() => setCompose(true)}
+        >
           <Plus size={20} />
           {t("challengePulse.shareProof")}
         </StickerButton>
       </div>
       {rows.map((post) => (
-        <PostCard key={post.id} post={post} uid={uid} start={startsOn} season={seasonId} reportCrew={crewId} moderation={mod.data ? scope : undefined} />
+        <PostCard
+          key={post.id}
+          post={post}
+          uid={uid}
+          start={startsOn}
+          season={seasonId}
+          reportCrew={crewId}
+          moderation={mod.data ? scope : undefined}
+        />
       ))}
       {!rows.length && !posts.isPending && (
-        <p className="rounded-[18px] bg-card p-4 text-center text-[14px] font-semibold sticker-border">{t("challengePulse.emptyPosts")}</p>
+        <p className="rounded-[18px] bg-card p-4 text-center text-[14px] font-semibold sticker-border">
+          {t("challengePulse.emptyPosts")}
+        </p>
       )}
       {posts.hasNextPage && (
-        <StickerButton block variant="secondary" disabled={posts.isFetchingNextPage} onClick={() => void posts.fetchNextPage()}>
+        <StickerButton
+          block
+          variant="secondary"
+          disabled={posts.isFetchingNextPage}
+          onClick={() => void posts.fetchNextPage()}
+        >
           {t(posts.isFetchingNextPage ? "common.loading" : "batch4.loadMore")}
         </StickerButton>
       )}

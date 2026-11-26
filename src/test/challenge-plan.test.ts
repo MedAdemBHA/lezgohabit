@@ -4,7 +4,12 @@ import { planFor } from "@/lib/challenge-plan";
 describe("planFor", () => {
   it("explains a late join on day 5 of 40", () => {
     expect(planFor("2026-11-01", "2026-12-10", "2026-11-05", 3)).toEqual({
-      total: 40, day: 5, left: 36, need: 30, reachable: true, goodHabits: 2,
+      total: 40,
+      day: 5,
+      left: 36,
+      need: 30,
+      reachable: true,
+      goodHabits: 2,
     });
   });
 

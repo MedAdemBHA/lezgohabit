@@ -108,6 +108,7 @@ function ChallengesPage() {
           )}
           <ChallengeSurrenderSheet
             seasonId={selected.season_id}
+            name={selected.name}
             open={surrenderOpen}
             onClose={() => setSurrenderOpen(false)}
           />

@@ -50,6 +50,7 @@ import { daysBetween, localHour, useNow } from "@/lib/time";
 import { FitHeading } from "@/components/lezgo/fit-heading";
 import { TodayMoments } from "@/components/lezgo/signature/moments";
 import { ChallengeSurrenderSheet } from "@/components/lezgo/challenge-surrender-sheet";
+import { SurrenderRecapCard } from "@/components/lezgo/surrender-recap-card";
 import { loc } from "@/lib/i18n";
 import { bossQuery } from "@/lib/batch6-data";
 import { challengeHistoryQuery } from "@/lib/challenge-history";
@@ -401,8 +402,9 @@ function Today() {
         <FitHeading requestedSize={40} className="page-title" text={t("challengeHistory.noActive")} />
         <AppStatus profile={profile} compact />
         <p className="font-semibold">{t("challengeHistory.noActiveBody")}</p>
-        <Link to="/challenges" search={{ season: "" }}><StickerButton block variant="lime">{t("challengeHistory.openHistory")}</StickerButton></Link>
-        <Link to="/start"><StickerButton block variant="secondary">{t("challengeHistory.pickNext")}</StickerButton></Link>
+        <SurrenderRecapCard />
+        <Link to="/start"><StickerButton block variant="lime">{t("challengeHistory.pickNext")}</StickerButton></Link>
+        <Link to="/challenges" search={{ season: "" }}><StickerButton block variant="secondary">{t("challengeHistory.openHistory")}</StickerButton></Link>
       </AppShell>
     );
   return (
@@ -526,6 +528,7 @@ function Today() {
       </BottomSheet>
       <ChallengeSurrenderSheet
         seasonId={season.id}
+        name={loc(season.name, i18n.language)}
         open={surrenderOpen}
         onClose={() => setSurrenderOpen(false)}
       />

@@ -25,10 +25,13 @@ export function WelcomeCard({
       </div>
       <p className="font-semibold">
         {t("ux.welcomeLeft", { left: fmt.format(plan.left) })}{" "}
-        {habits > 0 && t("ux.welcomeGood", { x: fmt.format(plan.goodHabits), y: fmt.format(habits) })}
+        {habits > 0 &&
+          t("ux.welcomeGood", { x: fmt.format(plan.goodHabits), y: fmt.format(habits) })}
       </p>
       <p className="font-semibold">
-        {t(plan.reachable ? "ux.welcomeTrophy" : "ux.welcomeNoTrophy", { need: fmt.format(plan.need) })}
+        {t(plan.reachable ? "ux.welcomeTrophy" : "ux.welcomeNoTrophy", {
+          need: fmt.format(plan.need),
+        })}
       </p>
     </section>
   );

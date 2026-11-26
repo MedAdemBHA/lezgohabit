@@ -8,8 +8,16 @@ export function CommunitySwitch({ active }: { active: "challenge" | "crew" }) {
   return (
     <div className="community-switch" role="navigation" aria-label={t("nav.pulse")}>
       {(["challenge", "crew"] as const).map((view) => (
-        <Link key={view} to={view === "challenge" ? "/community" : "/crew"} aria-current={active === view ? "page" : undefined}>
-          <StickerButton variant="ghost" tabIndex={-1} className={active === view ? "bg-ink text-lime" : "text-ink"}>
+        <Link
+          key={view}
+          to={view === "challenge" ? "/community" : "/crew"}
+          aria-current={active === view ? "page" : undefined}
+        >
+          <StickerButton
+            variant="ghost"
+            tabIndex={-1}
+            className={active === view ? "bg-ink text-lime" : "text-ink"}
+          >
             {t(view === "challenge" ? "ux.pulseChallenge" : "ux.pulseCrew")}
           </StickerButton>
         </Link>

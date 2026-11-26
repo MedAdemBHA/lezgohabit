@@ -1,5 +1,9 @@
 /** Copy for the "easy to use" pass (UX-01…UX-18). en is the typed source; fr/ar/aeb must match. */
 export const uxEn = {
+  recapTitle: "Your {{name}} run",
+  recapBody: "You stepped away. Here’s what you built — it stays in your history.",
+  recapGoodDays: "Good days",
+  recapTrophy: "Trophy earned.",
   closeMyDay: "Close my day",
   currentChallenge: "Current challenge",
   more: "More",
@@ -30,7 +34,8 @@ export const uxEn = {
   welcomeLeft: "{{left}} days left.",
   welcomeGood: "A good day = {{x}} of {{y}} habits.",
   welcomeTrophy: "Trophy at {{need}} good days — you can still make it.",
-  welcomeNoTrophy: "The trophy needs {{need}} good days — out of reach this time, but every good day still scores.",
+  welcomeNoTrophy:
+    "The trophy needs {{need}} good days — out of reach this time, but every good day still scores.",
   backToToday: "Back to Today",
   youLeft: "You left this one",
   youFinished: "You finished this one",
@@ -41,7 +46,8 @@ export const uxEn = {
   joiningOn: "You’re joining on day {{day}} of {{total}} — {{left}} days left.",
   goodDay: "A good day = {{x}} of your {{y}} habits done.",
   trophyReachable: "Trophy at {{need}} good days — you can still make it.",
-  trophyOut: "Trophy needs {{need}} good days — too few days left, but every day still counts for points.",
+  trophyOut:
+    "Trophy needs {{need}} good days — too few days left, but every day still counts for points.",
   modeLine: "You play: {{mode}}",
   oneActive: "You can only have one active challenge at a time.",
   confirmJoin: "Confirm and join",
@@ -58,6 +64,10 @@ export const uxEn = {
 export type UxCopy = typeof uxEn;
 
 export const uxFr: UxCopy = {
+  recapTitle: "Ton parcours {{name}}",
+  recapBody: "Tu as fait une pause. Voici ce que tu as construit — ça reste dans ton historique.",
+  recapGoodDays: "Bonnes journées",
+  recapTrophy: "Trophée obtenu.",
   closeMyDay: "Clôturer ma journée",
   currentChallenge: "Challenge en cours",
   more: "Plus",
@@ -77,7 +87,8 @@ export const uxFr: UxCopy = {
   members_many: "{{count}} membres",
   members_other: "{{count}} membres",
   aloneTitle: "Tu es le premier de ce crew",
-  aloneBody: "On ajoute des joueurs qui rejoignent {{challenge}} — ou invite tes amis avec ce code :",
+  aloneBody:
+    "On ajoute des joueurs qui rejoignent {{challenge}} — ou invite tes amis avec ce code :",
   aloneShort: "Ton crew",
   aloneHint: "Tu es le premier — invite tes amis",
   trophyTarget: "Trophée à {{need}} bonnes journées",
@@ -88,7 +99,8 @@ export const uxFr: UxCopy = {
   welcomeLeft: "Il reste {{left}} jours.",
   welcomeGood: "Une bonne journée = {{x}} habitudes sur {{y}}.",
   welcomeTrophy: "Trophée à {{need}} bonnes journées — c’est encore possible.",
-  welcomeNoTrophy: "Le trophée demande {{need}} bonnes journées — hors de portée cette fois, mais chaque bonne journée compte.",
+  welcomeNoTrophy:
+    "Le trophée demande {{need}} bonnes journées — hors de portée cette fois, mais chaque bonne journée compte.",
   backToToday: "Retour à Aujourd’hui",
   youLeft: "Tu as quitté celui-ci",
   youFinished: "Tu l’as terminé",
@@ -99,7 +111,8 @@ export const uxFr: UxCopy = {
   joiningOn: "Tu rejoins au jour {{day}} sur {{total}} — il reste {{left}} jours.",
   goodDay: "Une bonne journée = {{x}} de tes {{y}} habitudes faites.",
   trophyReachable: "Trophée à {{need}} bonnes journées — c’est encore possible.",
-  trophyOut: "Le trophée demande {{need}} bonnes journées — il reste trop peu de jours, mais chaque jour rapporte des points.",
+  trophyOut:
+    "Le trophée demande {{need}} bonnes journées — il reste trop peu de jours, mais chaque jour rapporte des points.",
   modeLine: "Tu joues : {{mode}}",
   oneActive: "Tu ne peux avoir qu’un seul challenge actif à la fois.",
   confirmJoin: "Confirmer et rejoindre",
@@ -114,6 +127,10 @@ export const uxFr: UxCopy = {
 };
 
 export const uxAr: UxCopy = {
+  recapTitle: "مشوارك في {{name}}",
+  recapBody: "توقفت. هذا ما بنيته — يبقى محفوظًا في سجلك.",
+  recapGoodDays: "أيام جيدة",
+  recapTrophy: "حصلت على الكأس.",
   closeMyDay: "أغلق يومي",
   currentChallenge: "التحدي الحالي",
   more: "المزيد",
@@ -144,7 +161,8 @@ export const uxAr: UxCopy = {
   welcomeLeft: "بقي {{left}} يومًا.",
   welcomeGood: "اليوم الجيد = {{x}} من {{y}} عادات.",
   welcomeTrophy: "الكأس عند {{need}} يومًا جيدًا — ما زال بإمكانك تحقيقها.",
-  welcomeNoTrophy: "الكأس تتطلب {{need}} يومًا جيدًا — بعيدة هذه المرة، لكن كل يوم جيد يمنحك نقاطًا.",
+  welcomeNoTrophy:
+    "الكأس تتطلب {{need}} يومًا جيدًا — بعيدة هذه المرة، لكن كل يوم جيد يمنحك نقاطًا.",
   backToToday: "العودة إلى اليوم",
   youLeft: "غادرت هذا التحدي",
   youFinished: "أنهيت هذا التحدي",
@@ -170,6 +188,10 @@ export const uxAr: UxCopy = {
 };
 
 export const uxAeb: UxCopy = {
+  recapTitle: "مشوارك في {{name}}",
+  recapBody: "وقفت. هاذا اللي بنيتو — يقعد محفوظ في التاريخ متاعك.",
+  recapGoodDays: "نهارات باهين",
+  recapTrophy: "ربحت الكأس.",
   closeMyDay: "سكّر نهاري",
   currentChallenge: "التحدّي الحالي",
   more: "زيد",
