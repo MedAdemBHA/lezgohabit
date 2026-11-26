@@ -8,6 +8,7 @@ import {
   ArrowRight,
   CalendarDays,
   Check,
+  ChevronRight,
   CircleHelp,
   Lock,
   Plus,
@@ -25,14 +26,17 @@ import {
 import { HabitIcon } from "@/components/lezgo/habit-icon";
 import { AppShell } from "@/components/lezgo/app-shell";
 import { BottomSheet, Field, Num, StickerButton, Tile, inputCls } from "@/components/lezgo/ui";
-import { challengePreview, publicChallengeCatalog } from "@/lib/challenge-preview.functions";
-import { groupCatalog, type CatalogCard } from "@/lib/challenge-catalog";
+import {
+  challengePreview,
+  crewInvitePreview,
+  publicChallengeCatalog,
+} from "@/lib/challenge-preview.functions";
+import { groupCatalog, inviteBlock, type CatalogCard } from "@/lib/challenge-catalog";
 import { errKey, templatesQuery, useBase, type Template } from "@/lib/data";
 import { supabase } from "@/integrations/supabase/client";
 import { planFor } from "@/lib/challenge-plan";
 import { challengeHistoryQuery } from "@/lib/challenge-history";
 import { joinErrorKey } from "@/lib/event-data";
-import { localDate } from "@/lib/time";
 import i18n, { formatDayMonth, loc, numberLocale, selectLang, type Lang } from "@/lib/i18n";
 import { pageHead } from "@/lib/page-head";
 import {
@@ -44,7 +48,7 @@ import {
   type StartFlow,
 } from "@/lib/start-flow";
 
-type Step = "challenge" | "personal" | "play" | "invite";
+type Step = "challenge" | "personal" | "play";
 const PLAY_OPTIONS = { solo: User, find: Users, create: Plus, code: Ticket };
 type PlayMode = keyof typeof PLAY_OPTIONS;
 const INVITE_CODE = /^[A-Z0-9]{6}$/;
@@ -53,9 +57,15 @@ const DURATIONS = [7, 14, 21, 30, 40, 66, 90];
 export const Route = createFileRoute("/start")({
   validateSearch: (
     search: Record<string, unknown>,
-  ): { code?: string | undefined; season?: string | undefined; lang?: Lang | undefined } => ({
+  ): {
+    code?: string | undefined;
+    season?: string | undefined;
+    remind?: string | undefined;
+    lang?: Lang | undefined;
+  } => ({
     code: typeof search["code"] === "string" ? search["code"].trim().toUpperCase() : undefined,
     season: typeof search["season"] === "string" ? search["season"] : undefined,
+    remind: typeof search["remind"] === "string" ? search["remind"] : undefined,
     lang: selectLang(search["lang"]),
   }),
   loader: async () => {
@@ -80,7 +90,7 @@ export const Route = createFileRoute("/start")({
 });
 
 function StartPage() {
-  const { lang: requestedLang, code = "", season } = Route.useSearch();
+  const { lang: requestedLang, code = "", season, remind } = Route.useSearch();
   const lang = usePublicLanguage(requestedLang);
   const { open, upcoming, catalogError } = Route.useLoaderData();
   const t = i18n.getFixedT(lang);
@@ -96,9 +106,9 @@ function StartPage() {
   const [busy, setBusy] = useState(false);
   const [confirm, setConfirm] = useState<StartFlow | null>(null);
   const [joinError, setJoinError] = useState<string | null>(null);
-  const [upcomingCard, setUpcomingCard] = useState<CatalogCard | null>(null);
+  const upcomingCard = upcoming.find((card) => card.season_id === remind);
   const qc = useQueryClient();
-  const { user, profile } = useBase();
+  const { user, profile, today } = useBase();
   // Signed-in, onboarded players stay inside the app: bottom nav, no "Sign in" button.
   const inApp = !!user && !!profile?.onboarded;
   // The viewer's own status per challenge, so left/finished ones aren't offered again.
@@ -106,14 +116,24 @@ function StartPage() {
   const statusBySeason = new Map(
     (history.data ?? []).map((entry) => [entry.season_id, entry.status]),
   );
-  const today = localDate("Africa/Tunis");
   const heading = useRef<HTMLHeadingElement>(null);
   const previousStep = useRef(step);
   const templates = useQuery({ ...templatesQuery, enabled: step === "personal" });
   const invite = useQuery({
     queryKey: ["startInvite", code],
     enabled: INVITE_CODE.test(code),
-    queryFn: () => challengePreview({ data: code }),
+    queryFn: async () => {
+      const creator = await challengePreview({ data: code });
+      if (creator) return { kind: "creator" as const, preview: creator };
+      const crew = await crewInvitePreview({ data: code });
+      return crew ? { kind: "crew" as const, preview: crew } : null;
+    },
+    retry: false,
+  });
+  const crewInvite = useQuery({
+    queryKey: ["startCrewInvite", crewCode],
+    enabled: step === "play" && playMode === "code" && INVITE_CODE.test(crewCode),
+    queryFn: () => crewInvitePreview({ data: crewCode }),
     retry: false,
   });
 
@@ -123,15 +143,22 @@ function StartPage() {
     heading.current?.focus();
   }, [step]);
 
-  useEffect(() => {
-    if (code && invite.data === null) setStep("invite");
-  }, [code, invite.data]);
-
-  function enterCode(nextCode?: string) {
-    if (nextCode === code) return;
+  function enterCode(nextCode: string) {
+    if (nextCode === code) {
+      void invite.refetch();
+      return;
+    }
     setSelected(null);
     setStep("challenge");
     void nav({ to: "/start", search: { code: nextCode, lang } });
+  }
+
+  function selectUpcoming(next?: string) {
+    void nav({
+      to: "/start",
+      search: { code: code || undefined, lang, season, remind: next },
+      replace: !next,
+    });
   }
 
   function selectCard(card: CatalogCard) {
@@ -142,7 +169,7 @@ function StartPage() {
   }
 
   async function continueToAuth(flow: StartFlow) {
-    if (busy) return;
+    if (busy || user === undefined) return;
     // Signed-in players never go through /auth: they confirm a summary and join right here.
     if (user) {
       setJoinError(null);
@@ -164,9 +191,17 @@ function StartPage() {
   const pickedTemplates = picked
     .map((key) => templatesList.find((item) => item.key === key))
     .filter((item): item is Template => !!item);
-  const preview = invite.data;
+  const blocked = invite.data ? inviteBlock(invite.data.preview, invite.data.kind) : null;
+  const preview = invite.data?.kind === "creator" ? invite.data.preview : null;
+  const directCrew = !blocked && invite.data?.kind === "crew" ? invite.data.preview : null;
+  const crewCodeBlock = crewInvite.data ? inviteBlock(crewInvite.data, "crew") : null;
+  const crewCodeError = crewInvite.isError
+    ? "events.inviteUnavailable"
+    : crewInvite.data === null
+      ? "events.invalidCode"
+      : crewCodeBlock;
   const inviteCard: CatalogCard | null =
-    preview && !preview.full && !preview.ended
+    preview && !blocked
       ? (open.find((card) => card.code === code) ?? {
           ...preview,
           kind: "creator",
@@ -181,11 +216,11 @@ function StartPage() {
     code && !INVITE_CODE.test(code)
       ? t("landing.codeHint")
       : invite.isError
-        ? t("common.error")
-        : invite.data?.ended
-          ? t("batch6.challengeClosed")
-          : invite.data?.full
-            ? t("batch6.full")
+        ? t("events.inviteUnavailable")
+        : invite.data === null
+          ? t("events.invalidCode")
+          : blocked
+            ? t(blocked)
             : "";
 
   const joinLabel = (name: string) =>
@@ -213,11 +248,17 @@ function StartPage() {
   }
 
   const confirmCard = confirm && "play" in confirm ? selected : null;
+  const confirmCrew =
+    confirm?.challenge.kind === "crew_invite"
+      ? step === "play"
+        ? crewInvite.data
+        : directCrew
+      : null;
   const confirmName = confirm
     ? confirm.challenge.kind === "personal"
       ? t("startFlow.personalName", { n: days })
       : confirm.challenge.kind === "crew_invite"
-        ? code
+        ? (confirmCrew?.name ?? confirm.challenge.code)
         : loc(confirmCard?.name, lang)
     : "";
 
@@ -239,7 +280,12 @@ function StartPage() {
 
   function joinSelectedChallenge() {
     if (!selected) return;
-    const play = playMode === "code" ? { mode: playMode, code: crewCode } : { mode: playMode };
+    if (playMode === "code") {
+      if (!crewInvite.data || crewCodeError) return;
+      void continueToAuth({ challenge: { kind: "crew_invite", code: crewCode } });
+      return;
+    }
+    const play = { mode: playMode };
     if (selected.kind === "official") {
       void continueToAuth({ challenge: { kind: "official", seasonId: selected.season_id }, play });
     } else if (selected.code) {
@@ -257,7 +303,7 @@ function StartPage() {
           onLanguage={(next) =>
             void nav({
               to: "/start",
-              search: { lang: next, code: code || undefined, season },
+              search: { lang: next, code: code || undefined, season, remind },
               replace: true,
             })
           }
@@ -281,9 +327,37 @@ function StartPage() {
                 </p>
               )}
               {inviteError && (
-                <p role="alert" className="catalog-notice">
-                  {inviteError}
-                </p>
+                <div className="catalog-notice">
+                  <p role="alert">{inviteError}</p>
+                  {invite.isError && (
+                    <button
+                      type="button"
+                      className="min-h-11 font-extrabold underline"
+                      onClick={() => void invite.refetch()}
+                    >
+                      {t("common.retry")}
+                    </button>
+                  )}
+                </div>
+              )}
+              {directCrew && (
+                <section className="catalog-card space-y-3">
+                  <h2 className="text-xl font-extrabold">{directCrew.name}</h2>
+                  <p className="font-semibold">
+                    {loc(directCrew.event, lang)} · {formatDayMonth(directCrew.starts_on, lang)} –{" "}
+                    {formatDayMonth(directCrew.ends_on, lang)}
+                  </p>
+                  <button
+                    type="button"
+                    className="public-action public-action-primary"
+                    disabled={busy || user === undefined}
+                    onClick={() =>
+                      void continueToAuth({ challenge: { kind: "crew_invite", code } })
+                    }
+                  >
+                    {user ? t("crew.joinBtn") : t("startFlow.joinInvite")}
+                  </button>
+                </section>
               )}
               <div className="catalog-grid">
                 <section id="open-challenges" aria-labelledby="open-title" className="catalog-open">
@@ -352,9 +426,10 @@ function StartPage() {
                             <button
                               type="button"
                               className="catalog-upcoming-open"
-                              onClick={() => setUpcomingCard(card)}
+                              aria-haspopup="dialog"
+                              onClick={() => selectUpcoming(card.season_id)}
                             >
-                              <div>
+                              <div className="min-w-0 flex-1 break-words">
                                 <div className="font-extrabold leading-tight">
                                   {loc(card.name, lang)}
                                 </div>
@@ -364,9 +439,13 @@ function StartPage() {
                                   })}
                                 </time>
                               </div>
-                              <span className="catalog-upcoming-length">
+                              <span className="catalog-upcoming-length shrink-0">
                                 {t("batch6.days", { n: card.days })}
                               </span>
+                              <ChevronRight
+                                className="size-4 shrink-0 rtl:rotate-180"
+                                aria-hidden="true"
+                              />
                             </button>
                           </li>
                         ))}
@@ -376,26 +455,6 @@ function StartPage() {
                 </aside>
               </div>
             </>
-          ) : step === "invite" ? (
-            <section className="public-flow catalog-invite">
-              <StepHeading
-                heading={heading}
-                title={t("startFlow.inviteTitle")}
-                back={t("common.back")}
-                onBack={() => enterCode()}
-              />
-              <Num className="block text-center text-[32px] tracking-[0.25em]">{code}</Num>
-              <p className="font-semibold">{t("startFlow.inviteCrewBody")}</p>
-              <StickerButton
-                block
-                size="lg"
-                disabled={busy || !INVITE_CODE.test(code)}
-                onClick={() => void continueToAuth({ challenge: { kind: "crew_invite", code } })}
-              >
-                {joinLabel(code)}
-                <ArrowRight className="size-5 rtl:rotate-180" aria-hidden="true" />
-              </StickerButton>
-            </section>
           ) : step === "personal" ? (
             <section className="public-flow">
               <StepHeading
@@ -474,7 +533,7 @@ function StartPage() {
                 <button
                   type="button"
                   className="public-action public-action-primary"
-                  disabled={busy || !pickedTemplates.length}
+                  disabled={busy || user === undefined || !pickedTemplates.length}
                   onClick={startPersonalChallenge}
                 >
                   {joinLabel(t("startFlow.personalName", { n: days }))}
@@ -490,7 +549,7 @@ function StartPage() {
                 back={t("common.back")}
                 onBack={() => setStep("challenge")}
               />
-              {selected && (
+              {selected && playMode !== "code" && (
                 <div className="catalog-play-summary">
                   <p className="font-extrabold">{loc(selected.name, lang)}</p>
                   <div className="public-meta">
@@ -520,37 +579,63 @@ function StartPage() {
                 })}
               </div>
               {playMode === "code" && (
-                <Field label={t("startFlow.codeHint")}>
-                  <input
-                    dir="ltr"
-                    value={crewCode}
-                    maxLength={6}
-                    autoCapitalize="characters"
-                    onChange={(event) =>
-                      setCrewCode(event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))
-                    }
-                    className={`${inputCls} num text-center text-[24px] tracking-[0.25em]`}
-                  />
-                </Field>
+                <>
+                  <Field label={t("startFlow.codeHint")}>
+                    <input
+                      dir="ltr"
+                      value={crewCode}
+                      maxLength={6}
+                      autoCapitalize="characters"
+                      onChange={(event) =>
+                        setCrewCode(event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))
+                      }
+                      className={`${inputCls} num text-center text-[24px] tracking-[0.25em]`}
+                    />
+                  </Field>
+                  {crewInvite.isLoading && <p role="status">{t("common.loading")}</p>}
+                  {crewCodeError && (
+                    <p role="alert" className="catalog-notice">
+                      {t(crewCodeError)}
+                    </p>
+                  )}
+                  {crewInvite.data && !crewCodeError && (
+                    <div className="catalog-play-summary">
+                      <p className="font-extrabold">{crewInvite.data.name}</p>
+                      <p>
+                        {loc(crewInvite.data.event, lang)} ·{" "}
+                        {formatDayMonth(crewInvite.data.starts_on, lang)} –{" "}
+                        {formatDayMonth(crewInvite.data.ends_on, lang)}
+                      </p>
+                    </div>
+                  )}
+                </>
               )}
               <button
                 type="button"
                 className="public-action public-action-primary"
-                disabled={busy || (playMode === "code" && !INVITE_CODE.test(crewCode))}
+                disabled={
+                  busy ||
+                  user === undefined ||
+                  (playMode === "code" && (!crewInvite.data || !!crewCodeError))
+                }
                 onClick={joinSelectedChallenge}
               >
-                {joinLabel(loc(selected?.name, lang))}
+                {playMode === "code" && user
+                  ? t("crew.joinBtn")
+                  : joinLabel(loc(selected?.name, lang))}
                 <ArrowRight className="size-5 rtl:rotate-180" aria-hidden="true" />
               </button>
             </section>
           )}
         </main>
         <BottomSheet
-          open={upcomingCard !== null}
-          onClose={() => setUpcomingCard(null)}
+          open={!!upcomingCard}
+          onClose={() => selectUpcoming()}
           title={upcomingCard ? loc(upcomingCard.name, lang) : ""}
         >
-          {upcomingCard && <UpcomingDetail card={upcomingCard} signedIn={!!user} />}
+          {upcomingCard && (
+            <UpcomingDetail card={upcomingCard} uid={user === null ? null : user?.id} lang={lang} />
+          )}
         </BottomSheet>
         <BottomSheet
           open={confirm !== null}
@@ -563,12 +648,14 @@ function StartPage() {
             <JoinSummary
               name={confirmName}
               startsOn={
-                confirm.challenge.kind === "personal" ? today : (confirmCard?.starts_on ?? today)
+                confirm.challenge.kind === "personal"
+                  ? today
+                  : (confirmCrew?.starts_on ?? confirmCard?.starts_on ?? today)
               }
               endsOn={
                 confirm.challenge.kind === "personal"
                   ? addDaysIso(today, days - 1)
-                  : (confirmCard?.ends_on ?? today)
+                  : (confirmCrew?.ends_on ?? confirmCard?.ends_on ?? today)
               }
               today={today}
               habits={
@@ -696,13 +783,23 @@ function ChallengeChoice({
 }
 
 /** Upcoming event detail: habits, dates and a reminder (signed-in only; the server keeps the record). */
-function UpcomingDetail({ card, signedIn }: { card: CatalogCard; signedIn: boolean }) {
-  const { t, i18n } = useTranslation();
+function UpcomingDetail({
+  card,
+  uid,
+  lang,
+}: {
+  card: CatalogCard;
+  uid: string | null | undefined;
+  lang: Lang;
+}) {
+  const t = i18n.getFixedT(lang);
   const qc = useQueryClient();
   const [busy, setBusy] = useState(false);
+  const queryKey = ["myReminderIds", uid];
   const reminders = useQuery({
-    queryKey: ["myReminderIds"],
-    enabled: signedIn,
+    queryKey,
+    enabled: !!uid,
+    retry: false,
     queryFn: async () => {
       const { data, error } = await supabase.rpc("my_season_reminder_ids");
       if (error) throw error;
@@ -710,39 +807,52 @@ function UpcomingDetail({ card, signedIn }: { card: CatalogCard; signedIn: boole
     },
   });
   const on = !!reminders.data?.includes(card.season_id);
-  const goal = loc((card as CatalogCard & { goal?: unknown }).goal, i18n.language);
+  const goal = loc(card.goal, lang);
+  const next = `/start?${new URLSearchParams({ lang, remind: card.season_id })}`;
   async function toggle() {
+    if (busy || !reminders.isSuccess) return;
     setBusy(true);
-    const { error } = await supabase.rpc("set_season_reminder_by_id", {
-      _season_id: card.season_id,
-      _on: !on,
-    });
-    setBusy(false);
-    if (error) {
+    try {
+      const { error } = await supabase.rpc("set_season_reminder_by_id", {
+        _season_id: card.season_id,
+        _on: !on,
+      });
+      if (error) throw error;
+      qc.setQueryData<string[]>(queryKey, (ids = []) =>
+        on ? ids.filter((id) => id !== card.season_id) : [...new Set([...ids, card.season_id])],
+      );
+      toast(t(on ? "ux.reminderOff" : "ux.reminderOn"));
+    } catch (error) {
       toast(t(errKey(error) === "guest_read_only" ? "guest.readOnly" : "common.error"));
-      return;
+    } finally {
+      setBusy(false);
     }
-    await qc.invalidateQueries({ queryKey: ["myReminderIds"] });
-    toast(t(on ? "ux.reminderOff" : "ux.reminderOn"));
   }
   return (
     <div className="space-y-3">
       <p className="font-semibold">
-        {formatDayMonth(card.starts_on, i18n.language)} –{" "}
-        {formatDayMonth(card.ends_on, i18n.language)} · {t("batch6.days", { n: card.days })}
+        {formatDayMonth(card.starts_on, lang)} – {formatDayMonth(card.ends_on, lang)} ·{" "}
+        {t("batch6.days", { n: card.days })}
       </p>
       {goal && <p className="font-semibold">{goal}</p>}
       <ul className="space-y-2">
         {card.habits.map((habit) => (
           <li key={habit.key} className="rounded-[14px] bg-card p-3 sticker-border">
-            <strong className="block">{loc(habit.name, i18n.language)}</strong>
-            <span className="text-[13px] font-semibold">
-              {loc(habit.what_counts, i18n.language)}
-            </span>
+            <strong className="block">{loc(habit.name, lang)}</strong>
+            <span className="text-[13px] font-semibold">{loc(habit.what_counts, lang)}</span>
           </li>
         ))}
       </ul>
-      {signedIn ? (
+      {uid === undefined ? (
+        <p role="status">{t("common.loading")}</p>
+      ) : uid && reminders.isError ? (
+        <div className="space-y-2">
+          <p role="alert">{t("common.error")}</p>
+          <StickerButton onClick={() => void reminders.refetch()} variant="secondary">
+            {t("common.retry")}
+          </StickerButton>
+        </div>
+      ) : uid ? (
         <StickerButton
           block
           size="lg"
@@ -751,13 +861,13 @@ function UpcomingDetail({ card, signedIn }: { card: CatalogCard; signedIn: boole
           aria-pressed={on}
           onClick={() => void toggle()}
         >
-          {t(on ? "ux.reminderSet" : "ux.remindMe")}
+          {t(
+            busy || reminders.isPending ? "common.loading" : on ? "ux.reminderSet" : "ux.remindMe",
+          )}
         </StickerButton>
       ) : (
-        <Link to="/auth" search={{ next: "/start" }} className="block">
-          <StickerButton block size="lg" variant="lime">
-            {t("ux.signInToRemind")}
-          </StickerButton>
+        <Link to="/auth" search={{ next }} className="public-action public-action-primary w-full">
+          {t("ux.signInToRemind")}
         </Link>
       )}
     </div>
@@ -830,10 +940,8 @@ function JoinSummary({
         >
           <p>{t(joinErrorKey(error))}</p>
           {(error === "crew_setup_pending" || error === "active_challenge_exists") && (
-            <Link to="/today">
-              <StickerButton size="sm" variant="lime">
-                {t("events.goToday")}
-              </StickerButton>
+            <Link to="/today" className="public-action public-action-primary">
+              {t("events.goToday")}
             </Link>
           )}
         </div>
@@ -842,7 +950,12 @@ function JoinSummary({
         block
         size="lg"
         variant="lime"
-        disabled={busy || error === "crew_setup_pending"}
+        disabled={
+          busy ||
+          error === "crew_setup_pending" ||
+          error === "active_challenge_exists" ||
+          error === "guest_read_only"
+        }
         onClick={onConfirm}
       >
         {t(busy ? "common.loading" : "ux.confirmJoin")}

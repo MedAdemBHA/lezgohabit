@@ -217,6 +217,7 @@ export const moderationEn = {
   remove: "Remove member",
   transfer: "Transfer ownership",
   error: "This action couldn’t be saved. Refresh and try again.",
+  loadError: "Some moderation items couldn’t load. Try again.",
   mutedPost: "Posting is currently restricted in this community.",
   noCrew: "This challenge talks inside crews. Join or find a crew to post.",
 };
@@ -258,6 +259,7 @@ export const moderationFr: ModCopy = {
   remove: "Retirer le membre",
   transfer: "Transférer la gestion",
   error: "Impossible d’enregistrer. Actualise puis réessaie.",
+  loadError: "Certains éléments de modération n’ont pas chargé. Réessaie.",
   mutedPost: "Tu ne peux pas publier dans cette communauté pour le moment.",
   noCrew: "Dans ce défi, on échange en équipe. Rejoins ou trouve une équipe pour publier.",
 };
@@ -297,6 +299,7 @@ export const moderationAr: ModCopy = {
   remove: "إزالة العضو",
   transfer: "نقل ملكية الفريق",
   error: "تعذر حفظ الإجراء. حدّث الصفحة وحاول مجددًا.",
+  loadError: "تعذر تحميل بعض عناصر الإشراف. حاول مجددًا.",
   mutedPost: "النشر مقيّد حاليًا في هذا المجتمع.",
   noCrew: "النقاش في هذا التحدي داخل الفرق. انضم إلى فريق أو ابحث عن فريق لتنشر.",
 };
@@ -304,6 +307,7 @@ export const moderationAeb: ModCopy = {
   ...moderationAr,
   crewManage: "سيّر الفريق",
   empty: "ما فما شي للمراجعة.",
+  loadError: "ما نجّمش نحمّل بعض الحاجات متاع المراجعة. عاود جرّب.",
   appeal: "تنجم تطلب من دعم Lezgo يراجع القرار.",
   crewExit: "التقدّم متاعك يبقى محفوظ. تنجم تكمّل وحدك وإلا مع فريق آخر.",
   eventExit: "التقدّم متاعك يبقى في السجل. تنجم تدخل لفعالية أخرى.",

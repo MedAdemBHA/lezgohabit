@@ -43,8 +43,9 @@ import { AdminEditor, type EditorKind } from "@/components/lezgo/admin/editor";
 import { adminQuery, adminWrite, type AdminRow } from "@/lib/admin-data";
 import { adminDemo, adminAccount } from "@/lib/admin.functions";
 import { ADMIN_SECTIONS, type AdminSection, requiresReason } from "@/lib/admin-rules";
-import { applyLang, loc } from "@/lib/i18n";
+import { applyLang, loc, numberLocale } from "@/lib/i18n";
 import { pageHead } from "@/lib/page-head";
+import { planFor } from "@/lib/challenge-plan";
 const icons = [
   LayoutDashboard,
   CalendarDays,
@@ -185,26 +186,23 @@ function AdminPage() {
         <p>{t("common.loading")}</p>
       </div>
     );
-  if (q.error || !q.data)
+  if (q.error || !q.data) {
+    const forbidden = q.error?.message === "forbidden" || (q.error as { code?: string })?.code === "42501";
     return (
       <div className="admin-loading">
         <ShieldAlert className="size-12" />
-        <h1>{q.error?.message === "forbidden" || (q.error as { code?: string })?.code === "42501" ? a("noAccess") : t("common.error")}</h1>
+        <h1>{forbidden ? a("noAccess") : t("common.error")}</h1>
+        {!forbidden && <StickerButton disabled={q.isFetching} onClick={() => void q.refetch()}>{t("common.retry")}</StickerButton>}
         <Link to="/" className="inline-flex min-h-12 items-center gap-2 rounded-2xl bg-ink px-5 font-extrabold text-lime sticker-border">
           <ArrowLeft className="rtl:rotate-180" />
           {a("back")}
         </Link>
       </div>
     );
+  }
   const data = q.data;
-  const d = data.season
-    ? Math.max(
-        1,
-        Math.floor(
-          (new Date(data.day).getTime() - new Date(data.season.starts_on).getTime()) / 86400000,
-        ) + 1,
-      )
-    : 0;
+  const seasonPlan = data.season ? planFor(data.season.starts_on, data.season.ends_on, data.day) : null;
+  const number = new Intl.NumberFormat(numberLocale(i18n.language));
   const table = (
     columns: string[],
     rows: AdminRow[],
@@ -292,9 +290,9 @@ function AdminPage() {
             <h1>{a(section)}</h1>
           </div>
           <div className="admin-top-actions">
-            {data.season && (
+            {data.season && seasonPlan && (
               <span className="admin-season-pill">
-                <Num>S1</Num> · {loc(data.season.name, i18n.language)} · <Num>{d}/40</Num>
+                {loc(data.season.name, i18n.language)} · <Num>{number.format(seasonPlan.day)}/{number.format(seasonPlan.total)}</Num>
               </span>
             )}
             {data.sample && (

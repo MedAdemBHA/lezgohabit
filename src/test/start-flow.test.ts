@@ -62,7 +62,13 @@ describe("challenge start flow", () => {
   it("keeps six personal habit picks and toggles an existing pick off", () => {
     const six = ["train", "read", "sleep7", "steps", "water", "meditation"];
     expect(toggleStartHabit(six, "smoke_free")).toBe(six);
-    expect(toggleStartHabit(six, "read")).toEqual(["train", "sleep7", "steps", "water", "meditation"]);
+    expect(toggleStartHabit(six, "read")).toEqual([
+      "train",
+      "sleep7",
+      "steps",
+      "water",
+      "meditation",
+    ]);
     expect(toggleStartHabit([], "train")).toEqual(["train"]);
   });
 
@@ -102,5 +108,16 @@ describe("challenge start flow", () => {
 
     expect(api.rpc.mock.calls).toEqual([["join_crew", { _code: "ABC123" }]]);
     expect(sessionStorage.getItem(START_FLOW_KEY)).toBeNull();
+  });
+
+  it("reports a read-only guest join attempt without pretending it succeeded", async () => {
+    api.getUser.mockResolvedValue({
+      data: { user: { id: "sample-user", email: "demo@lezgo.app" } },
+      error: null,
+    });
+    saveStartFlow({ challenge: { kind: "crew_invite", code: "ABC123" } });
+
+    await expect(finishStartFlow()).rejects.toThrow("guest_read_only");
+    expect(api.rpc).not.toHaveBeenCalled();
   });
 });

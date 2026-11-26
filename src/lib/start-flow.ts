@@ -85,8 +85,7 @@ export async function finishStartFlow() {
     .single();
   if (profileError) throw profileError;
   if (profile.is_demo || auth.user.email === "demo@lezgo.app") {
-    clearStartFlow();
-    return;
+    throw new Error("guest_read_only");
   }
 
   let handle = profile.handle;

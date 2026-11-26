@@ -134,6 +134,7 @@ export const myActiveEventQuery = (uid: string) =>
   });
 
 export function joinErrorKey(key: string) {
+  if (key === "guest_read_only") return "guest.readOnly";
   if (key === "challenge_not_started") return "events.early";
   if (key === "challenge_surrendered") return "events.leftBefore";
   if (key === "challenge_ended" || key === "challenge_complete") return "events.closed";

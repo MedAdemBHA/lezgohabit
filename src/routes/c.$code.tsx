@@ -1,15 +1,14 @@
 import { ClientOnly, createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
 import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
 import { LezgoMark } from "@/components/lezgo/brand";
 import { StickerButton, Num } from "@/components/lezgo/ui";
 import { errKey, useUser } from "@/lib/data";
 import { pageHead } from "@/lib/page-head";
 import { challengePreview, crewInvitePreview } from "@/lib/challenge-preview.functions";
-import { formatDayMonth, isRtl, loc } from "@/lib/i18n";
+import { formatDayMonth, isRtl, loc, selectLang, type Lang } from "@/lib/i18n";
 import i18n from "@/lib/i18n";
-import { localDate } from "@/lib/time";
+import { inviteBlock } from "@/lib/challenge-catalog";
 import { joinErrorKey } from "@/lib/event-data";
 import { supabase } from "@/integrations/supabase/client";
 import { isGuestMode } from "@/lib/guest";
@@ -27,11 +26,12 @@ const preview = (code: string) => queryOptions({
 });
 
 export const Route = createFileRoute("/c/$code")({
-  validateSearch: (search: Record<string, unknown>) =>
-    search["lang"] === "fr" || search["lang"] === "ar" ? { lang: search["lang"] } : {},
-  loader: async ({ context, params, location }) => {
-    const requestedLang = new URLSearchParams(location.searchStr).get("lang");
-    const lang = requestedLang === "fr" || requestedLang === "ar" ? requestedLang : "en";
+  validateSearch: (search: Record<string, unknown>): { lang?: Lang } => {
+    const lang = selectLang(search["lang"]);
+    return lang ? { lang } : {};
+  },
+  loaderDeps: ({ search }) => ({ lang: search.lang ?? "en" }),
+  loader: async ({ context, params, deps: { lang } }) => {
     const code = params.code.toUpperCase();
     if (!/^[A-Z0-9]{6}$/.test(code)) return { challenge: null, crew: null, unavailable: false, lang };
     try {
@@ -43,18 +43,19 @@ export const Route = createFileRoute("/c/$code")({
     }
   },
   head: ({ params, loaderData }) => {
-    const data = loaderData as { challenge: ChallengePreview | null; lang: "en" | "fr" | "ar" } | undefined;
+    const data = loaderData;
     const challenge = data?.challenge;
     const lang = data?.lang ?? "en";
+    const copyLang = lang === "aeb" ? "ar" : lang;
     if (!challenge) return pageHead(
-      lang === "fr" ? "Rejoignez votre crew sur lezgo" : lang === "ar" ? "انضم إلى فريقك على lezgo" : "Join a crew on lezgo",
-      lang === "fr" ? "Rejoignez votre crew et soyez présents ensemble sur lezgo." : lang === "ar" ? "انضم إلى فريقك واظهروا معاً على lezgo." : "Join your crew and show up together on lezgo.",
-      { privatePage: !loaderData?.crew, canonicalPath: `/c/${params.code}`, imagePath: `/og/challenge/${params.code}`, imageAlt: "Join a crew on lezgo", lang },
+      copyLang === "fr" ? "Rejoignez votre crew sur lezgo" : copyLang === "ar" ? "انضم إلى فريقك على lezgo" : "Join a crew on lezgo",
+      copyLang === "fr" ? "Rejoignez votre crew et soyez présents ensemble sur lezgo." : copyLang === "ar" ? "انضم إلى فريقك واظهروا معاً على lezgo." : "Join your crew and show up together on lezgo.",
+      { privatePage: true, localeAlternates: false, canonicalPath: `/c/${params.code}`, imagePath: `/og/challenge/${params.code}`, imageAlt: "Join a crew on lezgo", lang },
     );
     const creator = challenge.creator ? `@${challenge.creator.replace(/^@/, "")}` : "";
     const habits = challenge.habits.map((habit) => loc(habit.name, lang)).filter(Boolean);
     const habitList = habits.slice(0, 3).join(", ") + (habits.length > 3 ? "…" : "");
-    const startDate = new Intl.DateTimeFormat(lang === "ar" ? "ar-TN" : lang, { day: "numeric", month: "long", timeZone: "UTC" })
+    const startDate = new Intl.DateTimeFormat(copyLang === "ar" ? "ar-TN" : copyLang, { day: "numeric", month: "long", timeZone: "UTC" })
       .format(new Date(`${challenge.starts_on}T00:00:00Z`));
     const copy = {
       en: {
@@ -78,7 +79,7 @@ export const Route = createFileRoute("/c/$code")({
         people: `${challenge.members} مشارك`,
         when: challenge.ended ? "انتهى الموسم" : challenge.full ? "الفريق مكتمل" : `يبدأ ${startDate}`,
       },
-    }[lang];
+    }[copyLang];
     const description = `${copy.who}: ${copy.meta} (${habitList}). ${copy.people} · ${copy.when}.`;
     return pageHead(
       copy.title,
@@ -94,8 +95,7 @@ function Invite() {
   const code = rawCode.toUpperCase();
   const { lang, challenge, crew, unavailable } = Route.useLoaderData();
   const preview = challenge ?? crew;
-  const blocked = preview?.ended ? "events.closed" : preview?.full ? (crew ? "events.crewFull" : "batch6.full")
-    : preview && preview.starts_on > localDate("Africa/Tunis") ? "events.early" : null;
+  const blocked = preview ? inviteBlock(preview, crew ? "crew" : "creator") : null;
   const t = i18n.getFixedT(lang);
 
   return (
@@ -113,8 +113,8 @@ function Invite() {
               <p className="text-[13px] font-semibold">{loc(habit.what_counts, lang)} · {habit.target}{habit.unit ? ` ${habit.unit}` : ""}</p>
             </article>)}
           </div>
-          <ClientOnly fallback={<p className="font-extrabold">{t("events.joinOnLezgo")}</p>}>
-            <InviteActions code={code} challenge={challenge} blocked={blocked} />
+          <ClientOnly fallback={<p className="font-extrabold">{t(blocked ?? "events.joinOnLezgo")}</p>}>
+            <InviteActions code={code} challenge={challenge} blocked={blocked} lang={lang} />
           </ClientOnly>
         </>
       ) : crew ? (
@@ -124,14 +124,14 @@ function Invite() {
           <Num>{code.toUpperCase()}</Num>
           <p>{t("batch6.crewInviteNote")}</p>
           <ClientOnly fallback={<p className="font-extrabold">{blocked ? t(blocked) : t("crew.joinBtn")}</p>}>
-            <InviteActions code={code} challenge={null} blocked={blocked} />
+            <InviteActions code={code} challenge={null} blocked={blocked} lang={lang} />
           </ClientOnly>
         </>
       ) : (
         <>
           <h1 className="invite-error">{t(unavailable ? "events.inviteUnavailable" : "events.invalidCode")}</h1>
           {unavailable && <RetryInvite label={t("batch9.retry")} />}
-          <Link to="/start"><StickerButton variant="secondary">{t("challengeHistory.pickNext")}</StickerButton></Link>
+          <Link to="/start" search={{ lang }} className="public-action public-action-secondary">{t("challengeHistory.pickNext")}</Link>
         </>
       )}
     </main>
@@ -147,7 +147,7 @@ function RetryInvite({ label }: { label: string }) {
   }}>{label}</StickerButton>;
 }
 
-function InviteActions({ code, challenge, blocked }: { code: string; challenge: ChallengePreview | null; blocked: string | null }) {
+function InviteActions({ code, challenge, blocked, lang }: { code: string; challenge: ChallengePreview | null; blocked: string | null; lang: Lang }) {
   const user = useUser();
   const leaveGuest = useLeaveGuest();
   // The player's own entry in this challenge's season (any status), readable under RLS.
@@ -170,7 +170,7 @@ function InviteActions({ code, challenge, blocked }: { code: string; challenge: 
       return data;
     },
   });
-  const { t } = useTranslation();
+  const t = i18n.getFixedT(lang);
   const qc = useQueryClient();
   const nav = useNavigate();
   const [busy, setBusy] = useState(false);
@@ -178,7 +178,7 @@ function InviteActions({ code, challenge, blocked }: { code: string; challenge: 
 
   async function join() {
     if (!user || userProfile.data?.onboarded === false) {
-      void nav({ to: "/start", search: { code } });
+      void nav({ to: "/start", search: { code, lang } });
       return;
     }
     if (busy) return;
@@ -213,14 +213,14 @@ function InviteActions({ code, challenge, blocked }: { code: string; challenge: 
   const member = entry.data?.status === "active" && !challenge?.ended;
   if (member) return <>
     <p role="status" className="font-extrabold">{t("flows.youreIn")}</p>
-    <Link to="/today"><StickerButton block variant="lime">{t("events.goToday")}</StickerButton></Link>
+    <Link to="/today" className="public-action public-action-primary">{t("events.goToday")}</Link>
   </>;
   if (blocked) return <>
     <p role="status">{t(blocked)}</p>
     {blocked === "events.closed" && challenge && entry.data && (
-      <Link to="/wrapped" search={{ season: challenge.season_id }}><StickerButton block variant="secondary">{t("flows.seeRecap")}</StickerButton></Link>
+      <Link to="/wrapped" search={{ season: challenge.season_id }} className="public-action public-action-secondary">{t("flows.seeRecap")}</Link>
     )}
-    {blocked !== "events.closed" && <Link to="/start"><StickerButton block variant="secondary">{t("challengeHistory.pickNext")}</StickerButton></Link>}
+    <Link to="/start" search={{ lang }} className="public-action public-action-secondary">{t("challengeHistory.pickNext")}</Link>
   </>;
   const label = user ? (challenge ? t("batch6.join") : t("crew.joinBtn")) : t("batch6.signIn");
   const issueText = joinIssue === "guest_read_only" ? t("flows.guestJoin")
@@ -231,7 +231,7 @@ function InviteActions({ code, challenge, blocked }: { code: string; challenge: 
     {joinIssue === "guest_read_only"
       ? <StickerButton block variant="lime" onClick={signUpFromGuest}>{t("guest.create")}</StickerButton>
       : joinIssue === "active_challenge_exists" || joinIssue === "already_in_crew"
-      ? <Link to="/today"><StickerButton block variant="secondary">{t("events.goToday")}</StickerButton></Link>
+      ? <Link to="/today" className="public-action public-action-secondary">{t("events.goToday")}</Link>
       : <StickerButton block disabled={busy || user === undefined || (!!user && userProfile.isLoading)} onClick={() => void join()}>{busy ? t("common.loading") : label}</StickerButton>}
     {!user && <Link to="/auth" className="sr-only">{t("batch6.signIn")}</Link>}
   </>;

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { createPortal } from "react-dom";
+import * as Dialog from "@radix-ui/react-dialog";
 import { cva, type VariantProps } from "class-variance-authority";
 import { X } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -70,27 +70,40 @@ export function Tile({ selected, className, ...p }: React.ButtonHTMLAttributes<H
 
 export function BottomSheet({ open, onClose, title, children }: { open: boolean; onClose: () => void; title?: React.ReactNode; children: React.ReactNode }) {
   const { t } = useTranslation();
-  React.useEffect(() => {
-    if (!open) return;
-    const k = (e: KeyboardEvent) => e.key === "Escape" && onClose();
-    window.addEventListener("keydown", k);
-    return () => window.removeEventListener("keydown", k);
-  }, [open, onClose]);
-  if (!open || typeof document === "undefined") return null;
-  return createPortal(
-    <div className="fixed inset-0 z-50 flex items-end justify-center" dir={document.documentElement.dir}>
-      <div className="animate-fade absolute inset-0 bg-ink/50" onClick={onClose} />
-      <div role="dialog" aria-modal className="animate-sheet relative max-h-[88vh] w-full max-w-[440px] overflow-y-auto rounded-t-[26px] bg-cream p-5 pb-8 sticker-border border-b-0">
-        <div className="mb-4 flex items-center justify-between gap-3">
-          <h2 className="text-[22px] font-extrabold">{title}</h2>
-          <button type="button" onClick={onClose} aria-label={t("common.close")} className="press grid size-11 place-items-center rounded-full bg-card sticker-border shadow-hard-sm">
-            <X strokeWidth={2.5} className="size-5" />
-          </button>
-        </div>
-        {children}
-      </div>
-    </div>,
-    document.body,
+  const closeButton = React.useRef<HTMLButtonElement>(null);
+  const panel = React.useRef<HTMLDivElement>(null);
+  const opener = React.useRef<HTMLElement | null>(null);
+  return (
+    <Dialog.Root open={open} onOpenChange={(next) => { if (!next) onClose(); }}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-ink/50 motion-safe:animate-fade" />
+        <Dialog.Content
+          ref={panel}
+          aria-modal="true"
+          aria-describedby={undefined}
+          onOpenAutoFocus={(event) => {
+            opener.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+            event.preventDefault();
+            (panel.current?.querySelector<HTMLElement>("[data-sheet-focus]") ?? closeButton.current)?.focus({ preventScroll: true });
+          }}
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            if (opener.current?.isConnected) opener.current.focus({ preventScroll: true });
+          }}
+          className="fixed inset-x-0 bottom-0 z-50 mx-auto max-h-[88dvh] w-full max-w-[440px] overflow-y-auto overscroll-contain rounded-t-[26px] bg-cream p-5 pb-[max(2rem,env(safe-area-inset-bottom))] sticker-border border-b-0 motion-safe:animate-sheet"
+        >
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <Dialog.Title className={title ? "min-w-0 break-words text-[22px] font-extrabold" : "sr-only"}>
+              {title ?? t("common.close")}
+            </Dialog.Title>
+            <Dialog.Close ref={closeButton} type="button" aria-label={t("common.close")} className="press ms-auto grid size-11 shrink-0 place-items-center rounded-full bg-card sticker-border shadow-hard-sm">
+              <X strokeWidth={2.5} className="size-5" aria-hidden="true" />
+            </Dialog.Close>
+          </div>
+          {children}
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }
 

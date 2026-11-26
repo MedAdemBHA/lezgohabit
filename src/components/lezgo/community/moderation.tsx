@@ -65,6 +65,9 @@ function ModerationQueue(scope: ModerationScope) {
 
   const members = queue.data?.members.filter(member => member.id !== queue.data?.me) ?? [];
   const items = section === "members" ? members : queue.data?.[section];
+  const viewingReports = section === "reports";
+  const loading = queue.isPending || (viewingReports && reports.isPending);
+  const failed = queue.isError || (viewingReports && reports.isError);
   return <div className="space-y-4">
     <div className="flex flex-wrap gap-2">
       {(["reports", "members", "restrictions"] as const).map(tab => <StickerButton key={tab} size="sm" type="button"
@@ -74,9 +77,16 @@ function ModerationQueue(scope: ModerationScope) {
     {section === "members" && <label className="block text-sm font-bold">{t("moderation.search")}
       <input className={inputCls} type="search" value={search} onChange={e => setSearch(e.target.value)} />
     </label>}
-    {queue.isPending && <p role="status">{t("common.loading")}</p>}
-    {queue.isError && <p role="alert">{t("moderation.error")}</p>}
-    {queue.isSuccess && !items?.length && (section !== "reports" || !reports.data?.length) && <p>{t("moderation.empty")}</p>}
+    {loading && <p role="status">{t("common.loading")}</p>}
+    {failed && <div className="space-y-2">
+      <p role="alert">{t("moderation.loadError")}</p>
+      <StickerButton type="button" size="sm" variant="secondary" disabled={queue.isFetching || (viewingReports && reports.isFetching)}
+        onClick={() => {
+          if (queue.isError) void queue.refetch();
+          if (viewingReports && reports.isError) void reports.refetch();
+        }}>{t("common.retry")}</StickerButton>
+    </div>}
+    {!loading && !failed && !items?.length && (!viewingReports || !reports.data?.length) && <p>{t("moderation.empty")}</p>}
     {section === "reports" && !scope.crew && (announcement === null
       ? <StickerButton size="sm" variant="secondary" onClick={() => setAnnouncement("")}>{t("moderation.announce")}</StickerButton>
       : <form className="space-y-2 rounded-xl border p-3" onSubmit={e => { e.preventDefault(); void publishAnnouncement(); }}>

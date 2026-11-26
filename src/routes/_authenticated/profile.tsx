@@ -61,6 +61,7 @@ function ProfilePage() {
   const creatorDashboard = useQuery({
     queryKey: ["creatorDashboard", uid],
     enabled: !!uid && (!!roles.data?.includes("creator") || !!profile?.is_admin),
+    retry: false,
     queryFn: async () => {
       const { data, error } = await supabase.rpc("creator_dashboard");
       if (error) throw error;
@@ -156,11 +157,14 @@ function ProfilePage() {
             size="sm"
             variant="secondary"
             className="mt-2 w-full"
-            onClick={() =>
-              void navigator.clipboard
-                .writeText(challengeLink(challenge.code))
-                .then(() => toast(t("crew.copied")))
-            }
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(challengeLink(challenge.code));
+                toast(t("crew.copied"));
+              } catch {
+                toast.error(t("common.error"));
+              }
+            }}
           >
             {t("batch6.copy")}: <bdi dir="ltr">{challenge.code}</bdi>
           </StickerButton>
@@ -169,7 +173,16 @@ function ProfilePage() {
           </div>
         </article>
       ))}
-      {!creatorDashboard.data?.length && (
+      {creatorDashboard.isPending && <p role="status">{t("common.loading")}</p>}
+      {creatorDashboard.isError && (
+        <div className="space-y-2">
+          <p role="alert">{t("common.error")}</p>
+          <StickerButton size="sm" variant="secondary" onClick={() => void creatorDashboard.refetch()}>
+            {t("common.retry")}
+          </StickerButton>
+        </div>
+      )}
+      {creatorDashboard.isSuccess && !creatorDashboard.data.length && (
         <p className="text-[14px] font-semibold text-muted-foreground">
           {t("batch6.noCreatorChallenges")}
         </p>

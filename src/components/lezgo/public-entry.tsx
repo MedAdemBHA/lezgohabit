@@ -102,7 +102,7 @@ export function InviteCodeButton({
           <Field label={t("landing.codeHint")}>
             <input
               dir="ltr"
-              autoFocus
+              data-sheet-focus
               value={code}
               maxLength={6}
               autoCapitalize="characters"
