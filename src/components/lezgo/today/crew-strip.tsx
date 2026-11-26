@@ -26,6 +26,8 @@ export function TodayCrewStrip({ uid, seasonId }: { uid: string; seasonId: strin
   }
   if (!pulse.data?.crew_id) return <section className="today-crew-strip"><span><strong>{t("todayDesign.crew")}</strong><small>{t("challengePulse.noCrew")}</small></span><Link to="/crew"><StickerButton size="sm" variant="secondary">{t("challengePulse.findCrew")}<ArrowRight size={16} className="rtl:-scale-x-100" /></StickerButton></Link></section>;
   const crew = pulse.data.crew;
+  // Crew sync only means something with company: alone, point to inviting people instead.
+  if (crew.length < 2) return <section className="today-crew-strip"><span><strong>{t("ux.aloneShort")}</strong><small>{t("ux.aloneHint")}</small></span><Link to="/crew"><StickerButton size="sm" variant="secondary">{t("crew.invite")}<ArrowRight size={16} className="rtl:-scale-x-100" /></StickerButton></Link></section>;
   const checked = crew.filter((member) => member.checked_in).length;
   return (
     <section className="today-crew-strip">

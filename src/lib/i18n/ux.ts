@@ -1,5 +1,15 @@
 /** Copy for the "easy to use" pass (UX-01…UX-18). en is the typed source; fr/ar/aeb must match. */
 export const uxEn = {
+  members_zero: "{{count}} members",
+  members_one: "{{count}} member",
+  members_two: "{{count}} members",
+  members_few: "{{count}} members",
+  members_many: "{{count}} members",
+  members_other: "{{count}} members",
+  aloneTitle: "You’re first in this crew",
+  aloneBody: "We add players who join {{challenge}} — or invite friends with this code:",
+  aloneShort: "Your crew",
+  aloneHint: "You’re first in — invite friends",
   trophyTarget: "Trophy at {{need}} good days",
   bonus: "bonus",
   streakBonus: "Streak bonus ×{{m}}",
@@ -36,6 +46,16 @@ export const uxEn = {
 export type UxCopy = typeof uxEn;
 
 export const uxFr: UxCopy = {
+  members_zero: "{{count}} membre",
+  members_one: "{{count}} membre",
+  members_two: "{{count}} membres",
+  members_few: "{{count}} membres",
+  members_many: "{{count}} membres",
+  members_other: "{{count}} membres",
+  aloneTitle: "Tu es le premier de ce crew",
+  aloneBody: "On ajoute des joueurs qui rejoignent {{challenge}} — ou invite tes amis avec ce code :",
+  aloneShort: "Ton crew",
+  aloneHint: "Tu es le premier — invite tes amis",
   trophyTarget: "Trophée à {{need}} bonnes journées",
   bonus: "bonus",
   streakBonus: "Bonus de série ×{{m}}",
@@ -70,6 +90,16 @@ export const uxFr: UxCopy = {
 };
 
 export const uxAr: UxCopy = {
+  members_zero: "لا أعضاء",
+  members_one: "عضو واحد",
+  members_two: "عضوان",
+  members_few: "{{count}} أعضاء",
+  members_many: "{{count}} عضوًا",
+  members_other: "{{count}} عضو",
+  aloneTitle: "أنت أول من في هذا الفريق",
+  aloneBody: "نضيف اللاعبين الذين ينضمون إلى {{challenge}} — أو ادعُ أصدقاءك بهذا الرمز:",
+  aloneShort: "فريقك",
+  aloneHint: "أنت الأول — ادعُ أصدقاءك",
   trophyTarget: "الكأس عند {{need}} يومًا جيدًا",
   bonus: "مكافأة",
   streakBonus: "مكافأة السلسلة ×{{m}}",
@@ -104,6 +134,16 @@ export const uxAr: UxCopy = {
 };
 
 export const uxAeb: UxCopy = {
+  members_zero: "حتى عضو",
+  members_one: "عضو واحد",
+  members_two: "زوز أعضاء",
+  members_few: "{{count}} أعضاء",
+  members_many: "{{count}} عضو",
+  members_other: "{{count}} عضو",
+  aloneTitle: "إنتِ الأوّل في الجماعة هاذي",
+  aloneBody: "نزيدو اللاعبين اللي يدخلو لـ {{challenge}} — ولا عيّط لصحابك بالكود هذا:",
+  aloneShort: "جماعتك",
+  aloneHint: "إنتِ الأوّل — عيّط لصحابك",
   trophyTarget: "الكأس في {{need}} نهار باهي",
   bonus: "بونوس",
   streakBonus: "بونوس السلسلة ×{{m}}",

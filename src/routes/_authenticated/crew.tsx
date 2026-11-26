@@ -3,6 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 import { toast } from "sonner";
 import { ArrowRight, Copy, Hand, Plus, Share2, UserPlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -73,6 +74,20 @@ function CrewPage() {
   );
 }
 
+/** Web Share when available, clipboard otherwise; a cancelled share is not an error. */
+async function shareInvite(code: string, t: TFunction) {
+  const text = t("crew.inviteText", { code });
+  try {
+    if (navigator.share) await navigator.share({ text, url: link(code) });
+    else {
+      await navigator.clipboard.writeText(`${text} ${link(code)}`);
+      toast(t("crew.copied"));
+    }
+  } catch {
+    /* cancelled */
+  }
+}
+
 function ShareSheet({ code, open, onClose }: { code: string; open: boolean; onClose: () => void }) {
   const { t } = useTranslation();
   return (
@@ -96,18 +111,7 @@ function ShareSheet({ code, open, onClose }: { code: string; open: boolean; onCl
           {t("crew.copy")}
         </StickerButton>
         <StickerButton
-          onClick={async () => {
-            const text = t("crew.inviteText", { code });
-            try {
-              if (navigator.share) await navigator.share({ text, url: link(code) });
-              else {
-                await navigator.clipboard.writeText(`${text} ${link(code)}`);
-                toast(t("crew.copied"));
-              }
-            } catch {
-              /* cancelled */
-            }
-          }}
+          onClick={() => void shareInvite(code, t)}
         >
           <Share2 strokeWidth={2.5} className="size-5" />
           {t("crew.shareBtn")}
@@ -250,7 +254,7 @@ function NoCrew() {
 function CrewToday({ crewId }: { crewId: string }) {
   const { t, i18n } = useTranslation();
   const qc = useQueryClient();
-  const { uid, tz } = useBase();
+  const { uid, tz, season } = useBase();
   const now = useNow();
   const [share, setShare] = useState(false);
   const q = useQuery({
@@ -300,7 +304,7 @@ function CrewToday({ crewId }: { crewId: string }) {
             to="/crew-details"
             className="block min-h-11 truncate text-[15px] font-bold text-muted-foreground underline"
           >
-            {crew.name} · {t("crew.membersCount", { n: members.length })}
+            {crew.name} · {t("ux.members", { count: members.length })}
           </Link>
         </div>
         <div className="flex shrink-0 flex-col items-end gap-2">
@@ -314,6 +318,19 @@ function CrewToday({ crewId }: { crewId: string }) {
         </div>
       </div>
 
+      {members.length === 1 ? (
+        <StickerCard className="mt-4 bg-yellow">
+          <p className="text-[20px] font-extrabold">{t("ux.aloneTitle")}</p>
+          <p className="mt-1 text-[15px] font-bold">{t("ux.aloneBody", { challenge: season ? loc(season.name, i18n.language) : "" })}</p>
+          <div className="mt-3 rounded-[18px] bg-card p-3 text-center sticker-border">
+            <Num className="text-[32px] font-bold tracking-[0.25em]">{crew.code}</Num>
+          </div>
+          <StickerButton block variant="lime" className="mt-3" onClick={() => void shareInvite(crew.code, t)}>
+            <Share2 strokeWidth={2.5} className="size-5" />
+            {t("crew.shareBtn")}
+          </StickerButton>
+        </StickerCard>
+      ) : (
       <StickerCard className={cn("mt-4", allDone ? "bg-lime" : "bg-card")}>
         <div className="flex items-center gap-2">
           <FlameIcon size={30} dim={doneCount === 0} />
@@ -367,6 +384,7 @@ function CrewToday({ crewId }: { crewId: string }) {
           </Num>
         </p>
       </StickerCard>
+      )}
 
       <h2 className="mt-6 mb-2 text-[20px] font-extrabold">{t("crew.who")}</h2>
       <div className="space-y-3">
