@@ -52,6 +52,7 @@ import { TodayMoments } from "@/components/lezgo/signature/moments";
 import { ChallengeSurrenderSheet } from "@/components/lezgo/challenge-surrender-sheet";
 import { loc } from "@/lib/i18n";
 import { bossQuery } from "@/lib/batch6-data";
+import { challengeHistoryQuery } from "@/lib/challenge-history";
 export const Route = createFileRoute("/_authenticated/today")({
   head: () => pageHead("Today — lezgo", "Log today's gos and keep your go streak alive."),
   component: Today,
@@ -105,19 +106,25 @@ function Today() {
   const avg = list.length ? comps.reduce((a, b) => a + b, 0) / list.length : 0;
   const dayIndex = season ? daysBetween(season.starts_on, today) + 1 : 1;
   const seasonLength = season ? daysBetween(season.starts_on, season.ends_on) + 1 : 1;
+  // Features unlock by days *played* in this challenge, so a late joiner still gets a calm day 1.
+  const history = useQuery({ ...challengeHistoryQuery(uid), enabled: !!uid && !!sid });
+  const entry = history.data?.find((e) => e.season_id === sid);
+  const joinedOn = entry ? new Intl.DateTimeFormat("en-CA", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(entry.joined_at)) : null;
+  const playDay = joinedOn ? Math.max(1, daysBetween(joinedOn < (season?.starts_on ?? joinedOn) ? season!.starts_on : joinedOn, today) + 1) : dayIndex;
+  const hadPerfectDay = (entry?.perfect_days ?? 0) > 0 || !!score?.perfect;
   const newKey = `lezgo_today_new_${uid}_${sid}`;
   useEffect(() => {
     if (!uid || !sid) return;
     try { setNewDismissed(JSON.parse(localStorage.getItem(newKey) ?? "{}") as Record<string, boolean>); } catch { setNewDismissed({}); }
     setNewReady(true);
   }, [uid, sid, newKey]);
-  const showNew = (key: string, minDay: number) => newReady && dayIndex >= minDay && !newDismissed[key];
+  const showNew = (key: string, minDay: number) => newReady && playDay >= minDay && !newDismissed[key];
   function dismissNew(key: string) {
     const next = { ...newDismissed, [key]: true };
     setNewDismissed(next);
     try { localStorage.setItem(newKey, JSON.stringify(next)); } catch { /* storage can be unavailable */ }
   }
-  const bossOverview = useQuery({ ...bossQuery(uid, sid), enabled: !!uid && !!sid && showNew("boss", 3) });
+  const bossOverview = useQuery({ ...bossQuery(uid, sid), enabled: !!uid && !!sid && showNew("boss", 5) });
   const closed = !!season && (today < season.starts_on || today > season.ends_on);
   const atRisk = !!now && streakAtRisk(localHour(tz, now), avg, list.length > 0, closed);
   const salat = list.find((h) => h.kind === "salat");
@@ -472,7 +479,7 @@ function Today() {
           />
         </div>
       )}
-      {dayIndex >= 2 && <BonusSection uid={uid} seasonId={sid} points={Number(score?.stack_points ?? 0)}>
+      {playDay >= 3 && <BonusSection uid={uid} seasonId={sid} points={Number(score?.stack_points ?? 0)}>
         {score?.comeback && <section className="today-banner bg-blue"><h2 className="font-extrabold">{t("todayDesign.comeBack")}</h2><p>{t("todayDesign.comebackBody")}</p></section>}
         {atRisk && <section className="today-banner bg-yellow"><h2 className="flex items-center gap-2 font-extrabold"><AlertTriangle size={20}/>{t("today.riskTitle")}</h2><p>{t("today.riskBody")}</p><div className="mt-2 flex flex-wrap gap-2">{missing.map((habit)=><StickerButton variant="secondary" size="sm" key={habit.id} onClick={()=>tap(habit)}>{habitName(habit,t,i18n.language)}</StickerButton>)}</div></section>}
         <TodayMoments missing={missing} pending={pending} onDone={(habit)=>habit.kind==='salat'||habit.kind==='timer'||habit.kind==='quit'||habit.template?.key==='detox'?tap(habit):log(habit,Number(habit.target))} />
@@ -480,11 +487,11 @@ function Today() {
         <div className="flex flex-wrap gap-2"><StickerButton variant="secondary" onClick={()=>setProofOpen(true)}>{t("todayDesign.proof")}</StickerButton>{tinyWin ? <Link to="/small-wins"><StickerButton variant="lime">{t("batch6.winTitle")}</StickerButton></Link> : <Link to="/small-wins"><StickerButton variant="secondary">{t("batch6.winTitle")}</StickerButton></Link>}</div>
       </BonusSection>}
       {showNew("ghost",2) && summary.data?.mode === "solo" && <NewFeature title={t("todayDesign.ghostNew")} onDismiss={()=>dismissNew("ghost")}><GhostBar uid={uid} sid={sid}/></NewFeature>}
-      {showNew("streak",2) && <NewFeature title={t("todayDesign.streakNew")} onDismiss={()=>dismissNew("streak")}><div className="streak-pill"><TodayFlame/><span><Num>{score?.streak ?? 0}</Num> {t("todayDesign.days")} · ×<Num>{Number(score?.multiplier ?? 1).toFixed(2)}</Num></span></div></NewFeature>}
-      {showNew("boss",3) && bossOverview.data?.boss && <NewFeature title={t("batch6.boss")} onDismiss={()=>dismissNew("boss")}><BossMini overview={bossOverview.data}/></NewFeature>}
-      {showNew("capsule",3) && <NewFeature title={t("todayDesign.capsuleNew")} onDismiss={()=>dismissNew("capsule")}><Link to="/capsule"><StickerButton block variant="secondary">{t("batch8.capsule")}<ArrowRight size={18} className="rtl:-scale-x-100"/></StickerButton></Link></NewFeature>}
-      {showNew("crew",2) && <NewFeature title={t("todayDesign.crew")} onDismiss={()=>dismissNew("crew")}><TodayCrewStrip uid={uid} seasonId={sid}/></NewFeature>}
-      {dayIndex >= 2 && missing.length === 0 && list.length > 0 && (
+      {showNew("streak",2) && <NewFeature title={t("todayDesign.streakNew")} onDismiss={()=>dismissNew("streak")}><div className="streak-pill"><TodayFlame/><span><Num>{score?.streak ?? 0}</Num> {t("todayDesign.days")} · {t("ux.streakBonus", { m: new Intl.NumberFormat(i18n.language === "aeb" ? "ar-TN" : i18n.language, { maximumFractionDigits: 2 }).format(Number(score?.multiplier ?? 1)) })}</span></div></NewFeature>}
+      {showNew("boss",5) && bossOverview.data?.boss && <NewFeature title={t("batch6.boss")} onDismiss={()=>dismissNew("boss")}><BossMini overview={bossOverview.data}/></NewFeature>}
+      {showNew("capsule",1) && hadPerfectDay && <NewFeature title={t("todayDesign.capsuleNew")} onDismiss={()=>dismissNew("capsule")}><Link to="/capsule"><StickerButton block variant="secondary">{t("batch8.capsule")}<ArrowRight size={18} className="rtl:-scale-x-100"/></StickerButton></Link></NewFeature>}
+      <TodayCrewStrip uid={uid} seasonId={sid}/>
+      {playDay >= 2 && missing.length === 0 && list.length > 0 && (
         <Link to="/ranks" className="today-next">
           {t("today.nextDone")}
           <ArrowRight size={18} className="rtl:-scale-x-100" />

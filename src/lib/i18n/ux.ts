@@ -1,5 +1,13 @@
 /** Copy for the "easy to use" pass (UX-01…UX-18). en is the typed source; fr/ar/aeb must match. */
 export const uxEn = {
+  bonus: "bonus",
+  streakBonus: "Streak bonus ×{{m}}",
+  habitsDone: "{{done}} of {{total}} habits today",
+  welcomeTitle: "Welcome to {{name}}",
+  welcomeLeft: "{{left}} days left.",
+  welcomeGood: "A good day = {{x}} of {{y}} habits.",
+  welcomeTrophy: "Trophy at {{need}} good days — you can still make it.",
+  welcomeNoTrophy: "The trophy needs {{need}} good days — out of reach this time, but every good day still scores.",
   backToToday: "Back to Today",
   youLeft: "You left this one",
   youFinished: "You finished this one",
@@ -27,6 +35,14 @@ export const uxEn = {
 export type UxCopy = typeof uxEn;
 
 export const uxFr: UxCopy = {
+  bonus: "bonus",
+  streakBonus: "Bonus de série ×{{m}}",
+  habitsDone: "{{done}} habitude(s) sur {{total}} aujourd’hui",
+  welcomeTitle: "Bienvenue dans {{name}}",
+  welcomeLeft: "Il reste {{left}} jours.",
+  welcomeGood: "Une bonne journée = {{x}} habitudes sur {{y}}.",
+  welcomeTrophy: "Trophée à {{need}} bonnes journées — c’est encore possible.",
+  welcomeNoTrophy: "Le trophée demande {{need}} bonnes journées — hors de portée cette fois, mais chaque bonne journée compte.",
   backToToday: "Retour à Aujourd’hui",
   youLeft: "Tu as quitté celui-ci",
   youFinished: "Tu l’as terminé",
@@ -52,6 +68,14 @@ export const uxFr: UxCopy = {
 };
 
 export const uxAr: UxCopy = {
+  bonus: "مكافأة",
+  streakBonus: "مكافأة السلسلة ×{{m}}",
+  habitsDone: "{{done}} من {{total}} عادات اليوم",
+  welcomeTitle: "مرحبًا بك في {{name}}",
+  welcomeLeft: "بقي {{left}} يومًا.",
+  welcomeGood: "اليوم الجيد = {{x}} من {{y}} عادات.",
+  welcomeTrophy: "الكأس عند {{need}} يومًا جيدًا — ما زال بإمكانك تحقيقها.",
+  welcomeNoTrophy: "الكأس تتطلب {{need}} يومًا جيدًا — بعيدة هذه المرة، لكن كل يوم جيد يمنحك نقاطًا.",
   backToToday: "العودة إلى اليوم",
   youLeft: "غادرت هذا التحدي",
   youFinished: "أنهيت هذا التحدي",
@@ -77,6 +101,14 @@ export const uxAr: UxCopy = {
 };
 
 export const uxAeb: UxCopy = {
+  bonus: "بونوس",
+  streakBonus: "بونوس السلسلة ×{{m}}",
+  habitsDone: "{{done}} من {{total}} عادات اليوم",
+  welcomeTitle: "مرحبا بيك في {{name}}",
+  welcomeLeft: "بقالك {{left}} نهار.",
+  welcomeGood: "نهار باهي = {{x}} من {{y}} عادات.",
+  welcomeTrophy: "الكأس في {{need}} نهار باهي — مازلت تنجّم.",
+  welcomeNoTrophy: "الكأس تحب {{need}} نهار باهي — المرّة هاذي صعيبة، أما كل نهار باهي يجيب نقاط.",
   backToToday: "ارجع لليوم",
   youLeft: "خرجت من هذا",
   youFinished: "كمّلت هذا",
