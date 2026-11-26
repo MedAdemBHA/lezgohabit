@@ -1,5 +1,6 @@
 /** Copy for the "easy to use" pass (UX-01…UX-18). en is the typed source; fr/ar/aeb must match. */
 export const uxEn = {
+  backToToday: "Back to Today",
   youLeft: "You left this one",
   youFinished: "You finished this one",
   youreIn: "You’re in",
@@ -26,6 +27,7 @@ export const uxEn = {
 export type UxCopy = typeof uxEn;
 
 export const uxFr: UxCopy = {
+  backToToday: "Retour à Aujourd’hui",
   youLeft: "Tu as quitté celui-ci",
   youFinished: "Tu l’as terminé",
   youreIn: "Tu participes",
@@ -50,6 +52,7 @@ export const uxFr: UxCopy = {
 };
 
 export const uxAr: UxCopy = {
+  backToToday: "العودة إلى اليوم",
   youLeft: "غادرت هذا التحدي",
   youFinished: "أنهيت هذا التحدي",
   youreIn: "أنت مشارك",
@@ -74,6 +77,7 @@ export const uxAr: UxCopy = {
 };
 
 export const uxAeb: UxCopy = {
+  backToToday: "ارجع لليوم",
   youLeft: "خرجت من هذا",
   youFinished: "كمّلت هذا",
   youreIn: "إنتِ داخل",

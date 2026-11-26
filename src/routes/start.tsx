@@ -6,10 +6,11 @@ import { ArrowLeft, ArrowRight, Lock } from "lucide-react";
 import { Brand } from "@/components/lezgo/brand";
 import { DesignLanguage } from "@/components/lezgo/design-language";
 import { HabitIcon } from "@/components/lezgo/habit-icon";
-import { BottomSheet, Num, StickerButton, Tile, inputCls } from "@/components/lezgo/ui";
+import { Avatar, BottomSheet, Num, StickerButton, Tile, inputCls } from "@/components/lezgo/ui";
 import { challengePreview, crewInvitePreview } from "@/lib/challenge-preview.functions";
 import { supabase } from "@/integrations/supabase/client";
-import { errKey, templatesQuery, useUser, type Template } from "@/lib/data";
+import { errKey, templatesQuery, useBase, type Template } from "@/lib/data";
+import { AppShell } from "@/components/lezgo/app-shell";
 import { formatDayMonth, loc } from "@/lib/i18n";
 import { pageHead } from "@/lib/page-head";
 import { clearStartFlow, finishStartFlow, saveStartFlow, toggleStartHabit, type StartFlow } from "@/lib/start-flow";
@@ -47,7 +48,9 @@ function StartPage() {
   const { t, i18n } = useTranslation();
   const nav = useNavigate();
   const code = Route.useSearch().code ?? "";
-  const user = useUser();
+  const { user, profile } = useBase();
+  // Signed-in, onboarded players stay inside the app: bottom nav, no "Sign in" button.
+  const inApp = !!user && !!profile?.onboarded;
   const active = useQuery({ ...myActiveEventQuery(user?.id ?? ""), enabled: !!user });
   const activeName = loc(active.data?.seasons?.name, i18n.language);
   const catalog = useQuery({
@@ -218,13 +221,21 @@ function StartPage() {
     { label: t("startFlow.creator"), cards: creators.filter(card => card.starts_on <= today && today <= card.ends_on) },
   ];
 
-  return (
-    <main className="design-screen mx-auto flex min-h-screen w-full max-w-[480px] flex-col gap-4 px-5 pb-8 pt-4">
+  const Wrapper = inApp ? "div" : "main";
+  const page = (
+    <Wrapper className={`design-screen mx-auto flex w-full max-w-[480px] flex-col gap-4 px-5 pt-4 ${inApp ? "pb-28" : "min-h-screen pb-8"}`}>
       <header className="flex items-center justify-between gap-2">
         <Brand size={36} />
         <div className="flex items-center gap-2">
           <DesignLanguage />
-          <Link to="/auth" className="inline-flex min-h-11 shrink-0 items-center rounded-xl bg-card px-3 text-sm font-extrabold sticker-border">{t("auth.signIn")}</Link>
+          {user ? (
+            <Link to="/today" aria-label={t("ux.backToToday")} className="inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl bg-card px-2 text-sm font-extrabold sticker-border">
+              {profile && <Avatar id={profile.id} name={profile.display_name} url={profile.avatar_url} size={30} />}
+              <span>{t("ux.backToToday")}</span>
+            </Link>
+          ) : user === null ? (
+            <Link to="/auth" className="inline-flex min-h-11 shrink-0 items-center rounded-xl bg-card px-3 text-sm font-extrabold sticker-border">{t("auth.signIn")}</Link>
+          ) : null}
         </div>
       </header>
 
@@ -280,7 +291,7 @@ function StartPage() {
               </ul>
             </section>
           )}
-          {selected && <div className="sticky bottom-0 z-10 bg-background py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+          {selected && <div className={`sticky z-10 bg-background py-2 ${inApp ? "bottom-[calc(88px+env(safe-area-inset-bottom,0px))]" : "bottom-0 pb-[max(0.5rem,env(safe-area-inset-bottom))]"}`}>
             <StickerButton block size="lg" onClick={continueToPlay}>{t(active.data?.season_id === selected.season_id ? "events.goToday" : "common.next")}<ArrowRight className="rtl:-scale-x-100" /></StickerButton>
           </div>}
         </>
@@ -324,8 +335,9 @@ function StartPage() {
           onCancel={() => setConfirm(null)}
         />}
       </BottomSheet>
-    </main>
+    </Wrapper>
   );
+  return inApp ? <AppShell todayLayout>{page}</AppShell> : page;
 }
 
 function addDaysIso(iso: string, n: number) {
