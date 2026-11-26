@@ -8,6 +8,10 @@ export const Route = createFileRoute("/_authenticated")({
     const { data } = await supabase.auth.getUser();
     if (!data.user) {
       // Start sign-in with a fresh document so the protected route can finish leaving hydration.
+      if (location.pathname === "/wrapped") {
+        const season = new URLSearchParams(location.searchStr).get("season") ?? "";
+        throw redirect({ to: "/auth", search: { next: "/wrapped", season }, reloadDocument: true });
+      }
       if (location.pathname === "/admin") {
         throw redirect({ to: "/auth", search: { next: "/admin" }, reloadDocument: true });
       }

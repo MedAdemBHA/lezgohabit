@@ -14,17 +14,26 @@ import { formatDayMonth } from "@/lib/i18n";
 import { pageHead } from "@/lib/page-head";
 import { supabase } from "@/integrations/supabase/client";
 import { ConfirmSheet } from "@/components/lezgo/confirm-sheet";
+import { isSeasonId, seasonSearch } from "@/lib/season-id";
 export const Route = createFileRoute("/_authenticated/capsule")({
+  validateSearch: (search: Record<string, unknown>): { season?: string } =>
+    search["season"] === undefined ? {} : { season: seasonSearch(search["season"]) },
   head: () =>
     pageHead("Time capsule — lezgo", "Seal a private note or recording for your season-end self."),
   component: CapsulePage,
 });
 function CapsulePage() {
+  const { season } = Route.useSearch();
+  return <CapsuleForSeason key={season} requestedSeason={season} />;
+}
+
+function CapsuleForSeason({ requestedSeason }: { requestedSeason: string | undefined }) {
   const { t, i18n } = useTranslation();
-  const { uid, season } = useBase();
-  const sid = season?.id ?? "";
+  const { uid, season, loading } = useBase();
+  const sid = requestedSeason || season?.id || "";
+  const valid = isSeasonId(sid);
   const qc = useQueryClient();
-  const q = useQuery({ ...signatureQuery(uid, sid), enabled: !!uid && !!sid });
+  const q = useQuery({ ...signatureQuery(uid, sid), enabled: !!uid && valid });
   const [body, setBody] = useState("");
   const [busy, setBusy] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -110,7 +119,7 @@ function CapsulePage() {
     }
   }
   async function seal() {
-    if (!season || recording) return;
+    if (!valid || !q.data || recording) return;
     setConfirmOpen(false);
     setBusy(true);
     let path: string | null = null;
@@ -140,12 +149,20 @@ function CapsulePage() {
       setBusy(false);
     }
   }
-  const date = season ? formatDayMonth(season.ends_on, i18n.language) : "—";
+  const opensOn = c?.opens_on ?? (season?.id === sid ? season?.ends_on : undefined);
+  const date = opensOn ? formatDayMonth(opensOn, i18n.language) : "";
   return (
     <SignatureFrame>
-      <Link to="/today"><StickerButton block variant="ghost">{t("batch9.skip")}</StickerButton></Link>
-      <span className="capsule-day num">{t("batch8.day", { n: 1 })}</span>
-      {c?.sealed ? (
+      {requestedSeason ? (
+        <Link className="wrapped-text-link" to="/wrapped" search={{ season: requestedSeason }}>{t("batch6.wrapped")}</Link>
+      ) : (
+        <Link to="/today"><StickerButton block variant="ghost">{t("batch9.skip")}</StickerButton></Link>
+      )}
+      {valid && (loading && !uid || q.isPending) ? (
+        <p role="status">{t("common.loading")}</p>
+      ) : !c ? (
+        <p>{t("wrapped.capsuleUnavailable")}</p>
+      ) : c.sealed ? (
         <section className="capsule-sealed">
           <Lock size={88} className="seal-pop" />
           <FitHeading
@@ -170,7 +187,7 @@ function CapsulePage() {
               maxLength={CAPSULE_MAX}
               value={body}
               onChange={(e) => setBody(e.target.value)}
-              placeholder={t("batch8.dear", { date })}
+              placeholder={date ? t("batch8.dear", { date }) : t("batch8.note")}
             />
             <Num className="block text-end text-[13px] mt-2">
               {body.length}/{CAPSULE_MAX}

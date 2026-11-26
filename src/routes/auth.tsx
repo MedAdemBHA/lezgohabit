@@ -13,13 +13,20 @@ import { finishStartFlow, readStartFlow } from "@/lib/start-flow";
 import { errKey } from "@/lib/data";
 import { guestDemoAvailable } from "@/lib/admin.functions";
 import { selectLang } from "@/lib/i18n";
+import { seasonSearch } from "@/lib/season-id";
 
+const WRAPPED_SIGN_IN = "lezgo_wrapped_sign_in";
 const publicEmailSignIn = import.meta.env["VITE_PUBLIC_EMAIL_SIGNIN"] === "true";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
-  validateSearch: (search: Record<string, unknown>): { next?: "/admin" } =>
-    search["next"] === "/admin" ? { next: "/admin" } : {},
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { next?: "/admin" | "/wrapped"; season?: string } => {
+    if (search["next"] === "/wrapped")
+      return { next: "/wrapped", season: seasonSearch(search["season"]) };
+    return search["next"] === "/admin" ? { next: "/admin" } : {};
+  },
   head: () => ({
     meta: [
       { title: "Sign in — lezgo" },
@@ -66,7 +73,7 @@ function GoogleG() {
 function AuthPage() {
   const { t, i18n } = useTranslation();
   const nav = useNavigate();
-  const { next } = Route.useSearch();
+  const { next, season } = Route.useSearch();
   const emailEnabled = publicEmailSignIn || next === "/admin";
   const [adult, setAdult] = useState(false);
   const [email, setEmail] = useState("");
@@ -78,6 +85,7 @@ function AuthPage() {
   const [emailOpen, setEmailOpen] = useState(false);
   const [flowError, setFlowError] = useState("");
   const completing = useRef(false);
+  const returningToWrapped = useRef(false);
   const demo = useQuery({
     queryKey: ["guest-demo-available"],
     queryFn: () => guestDemoAvailable(),
@@ -113,8 +121,21 @@ function AuthPage() {
     let redirecting = false;
     let timer: ReturnType<typeof setTimeout>;
     const go = () => {
-      if (!active || redirecting) return;
+      if (!active || redirecting || returningToWrapped.current) return;
       redirecting = true;
+      const wrappedSeason =
+        next === "/wrapped" ? (season ?? "") : sessionStorage.getItem(WRAPPED_SIGN_IN);
+      if (wrappedSeason !== null) {
+        returningToWrapped.current = true;
+        sessionStorage.removeItem(WRAPPED_SIGN_IN);
+        void nav({
+          to: "/wrapped",
+          search: { season: wrappedSeason },
+          replace: true,
+          reloadDocument: true,
+        });
+        return;
+      }
       const adminSignIn = sessionStorage.getItem("lezgo_admin_signin") === "1";
       sessionStorage.removeItem("lezgo_admin_signin");
       if (next === "/admin" || (adminSignIn && !readStartFlow())) {
@@ -144,16 +165,18 @@ function AuthPage() {
       clearTimeout(timer);
       data.subscription.unsubscribe();
     };
-  }, [nav, next, t]);
+  }, [nav, next, season, t]);
 
-  function rememberAdminDestination() {
+  function rememberDestination() {
+    if (next === "/wrapped") sessionStorage.setItem(WRAPPED_SIGN_IN, season ?? "");
+    else sessionStorage.removeItem(WRAPPED_SIGN_IN);
     if (next === "/admin") sessionStorage.setItem("lezgo_admin_signin", "1");
     else sessionStorage.removeItem("lezgo_admin_signin");
   }
 
   async function google() {
     if (!adult) return;
-    rememberAdminDestination();
+    rememberDestination();
     setBusy(true);
     // Keep the exact allowlisted callback across sign-in destinations.
     const { error } = await supabase.auth.signInWithOAuth({
@@ -161,6 +184,7 @@ function AuthPage() {
       options: { redirectTo: window.location.origin + "/auth" },
     });
     if (error) {
+      sessionStorage.removeItem(WRAPPED_SIGN_IN);
       toast(t("common.error"));
       setBusy(false);
     }
@@ -168,19 +192,20 @@ function AuthPage() {
   async function magic(e: React.FormEvent) {
     e.preventDefault();
     if (!emailEnabled || !email || !adult) return;
-    rememberAdminDestination();
+    rememberDestination();
     setEmailError(null);
     setBusy(true);
+    const callback = new URL("/auth", window.location.origin);
+    const code = sessionStorage.getItem("lezgo_challenge_invite");
+    if (next === "/wrapped") {
+      callback.searchParams.set("next", next);
+      if (season) callback.searchParams.set("season", season);
+    } else if (code) {
+      callback.searchParams.set("code", code);
+    }
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: {
-        emailRedirectTo:
-          window.location.origin +
-          "/auth" +
-          (sessionStorage.getItem("lezgo_challenge_invite")
-            ? "?code=" + encodeURIComponent(sessionStorage.getItem("lezgo_challenge_invite") ?? "")
-            : ""),
-      },
+      options: { emailRedirectTo: callback.href },
     });
     setBusy(false);
     if (error) {
@@ -205,15 +230,17 @@ function AuthPage() {
         <DesignLanguage segmented />
       </header>
       <h1 className="mt-4 text-[36px] font-extrabold leading-tight">
-        {t(next ? "auth.adminSignIn" : "auth.signIn")}
+        {t(next === "/admin" ? "auth.adminSignIn" : "auth.signIn")}
       </h1>
       <p className="text-[16px] font-semibold leading-[1.5] text-design-body">
         {t(
-          next
-            ? "auth.adminSignInHint"
-            : emailEnabled
-              ? "auth.existingEmail"
-              : "auth.googleSignInHint",
+          next === "/wrapped"
+            ? "wrapped.signIn"
+            : next === "/admin"
+              ? "auth.adminSignInHint"
+              : emailEnabled
+                ? "auth.existingEmail"
+                : "auth.googleSignInHint",
         )}
       </p>
       {flowError && (
