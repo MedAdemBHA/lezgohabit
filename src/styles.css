@@ -766,29 +766,49 @@
 .signature-page { width:100%;max-width:560px;min-height:100svh;margin-inline:auto;display:flex;flex-direction:column;gap:20px;padding:24px 20px 36px; }
 .signature-page h1 {font-weight:800;line-height:1.08;margin:4px 0 0;}
 .signature-sub {font-size:16px;line-height:1.5;font-weight:600;margin-top:-8px;}
-.trail-board {background:var(--card);border:2.5px solid var(--ink);border-radius:26px;padding:16px;box-shadow:calc(var(--sx)*1.5) 6px 0 var(--ink);}
-.trail-board header {display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:24px;font-size:18px;font-weight:800;}
-.trail-board header .num {font-size:16px;white-space:nowrap;}
-.trail-grid {display:flex;flex-direction:column;gap:10px;}
-.trail-row {display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:7px;}
-.trail-tile {position:relative;aspect-ratio:1;display:grid;place-items:center;min-width:0;max-width:56px;border-radius:12px;border:2.5px solid var(--ink);font-size:16px;font-weight:700;}
-.trail-tile svg {width:55%;height:55%;}
-.trail-tile[data-state=perfect] {background:var(--lime);box-shadow:var(--sx2) 2px 0 var(--ink);}
-.trail-tile[data-state=partial] {background:var(--yellow);}
-.trail-tile[data-state=shield] {background:var(--blue);}
-.trail-tile[data-state=today] {background:var(--orange);box-shadow:var(--trail-glow);}
-.trail-tile[data-state=future] {border-style:dashed;border-color:var(--trail-dash);color:var(--muted-foreground);}
-.trail-tile[data-milestone=true][data-state=future] {background:var(--cream);border-color:var(--ink);}
-.trail-tile[data-state=missed] {background:var(--cream);border-color:var(--trail-dash);color:var(--muted-foreground);}
-.trail-friends {position:absolute;inset-inline-end:-6px;bottom:-6px;display:flex;pointer-events:none;}
-.trail-friends>span+span {margin-inline-start:-10px;}
-.trail-legend {display:flex;flex-wrap:wrap;gap:10px;margin-top:24px;font-size:12px;font-weight:700;}
-.trail-legend span {display:flex;align-items:center;gap:5px;}
-.trail-legend i {width:12px;height:12px;border:1.5px solid var(--ink);border-radius:3px;background:var(--lime);}
-.trail-legend i[data-state=partial] {background:var(--yellow);}.trail-legend i[data-state=missed] {background:var(--cream);border-color:var(--trail-dash);}.trail-legend i[data-state=milestone] {background:var(--cream);border-style:dashed;}.trail-legend i[data-state=shield] {background:var(--blue);}.trail-legend i[data-state=today] {background:var(--orange);}
-.trail-milestone {display:flex;align-items:center;gap:12px;padding:18px;border:2.5px solid var(--ink);border-radius:20px;box-shadow:var(--sx) 4px 0 var(--ink);}
-.trail-milestone svg {flex-shrink:0;}.trail-milestone strong {font-size:16px;font-weight:800;}.trail-milestone p {font-size:14px;margin-top:4px;}
-.trail-footer {border-top:2.5px solid var(--ink);padding-top:18px;display:flex;flex-direction:column;gap:8px;font-size:14px;font-weight:600;}
+.trail-head { display:flex; flex-direction:column; gap:6px; }
+.trail-head .signature-sub { margin-top:0; color:var(--color-design-body); }
+.trail-summary { display:flex; flex-direction:column; gap:14px; padding:18px; background:var(--yellow); border:2.5px solid var(--ink); border-radius:22px; box-shadow:var(--sx) 5px 0 var(--ink); }
+.trail-summary-top { display:flex; align-items:baseline; justify-content:space-between; gap:12px; }
+.trail-summary h2 { font-size:var(--text-title); font-weight:800; line-height:1.2; }
+.trail-day { flex:none; font-size:14px; font-weight:800; }
+.trail-progress { position:relative; height:14px; border:2.5px solid var(--ink); border-radius:999px; background:var(--card); overflow:hidden; }
+.trail-progress > span { position:absolute; inset-block:0; inset-inline-start:0; background:var(--lime); border-inline-end:2.5px solid var(--ink); }
+.trail-progress > i { position:absolute; inset-block:2px; width:2.5px; background:var(--ink); opacity:.35; }
+.trail-stats { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; }
+.trail-stats > div { display:flex; flex-direction:column-reverse; gap:2px; padding:10px 8px; background:var(--card); border:2px solid var(--ink); border-radius:14px; text-align:center; }
+.trail-stats dt { font-size:11px; font-weight:700; line-height:1.25; color:var(--color-design-body); }
+.trail-stats dd { font-size:20px; font-weight:700; }
+.trail-board { padding:16px; background:var(--card); border:2.5px solid var(--ink); border-radius:22px; box-shadow:var(--sx) 5px 0 var(--ink); }
+.trail-grid { display:flex; flex-direction:column; gap:8px; }
+.trail-row { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:8px; }
+.trail-tile { position:relative; aspect-ratio:1; display:grid; place-items:center; min-width:0; border-radius:12px; border:2px solid color-mix(in oklab, var(--ink) 14%, transparent); background:var(--cream); font-size:14px; font-weight:700; color:var(--muted-foreground); }
+.trail-tile svg { width:52%; height:52%; }
+.trail-tile[data-state=perfect] { background:var(--lime); border-color:var(--ink); color:var(--ink); box-shadow:var(--sx2) 2px 0 var(--ink); }
+.trail-tile[data-state=partial] { background:var(--yellow); border-color:var(--ink); color:var(--ink); }
+.trail-tile[data-state=shield] { background:var(--blue); border-color:var(--ink); color:var(--ink); }
+.trail-tile[data-state=today] { background:var(--orange); border-color:var(--ink); color:var(--ink); box-shadow:0 0 0 3px var(--card), 0 0 0 5.5px var(--ink); }
+.trail-tile[data-state=missed] { background:transparent; border-style:dashed; color:color-mix(in oklab, var(--muted-foreground) 70%, transparent); }
+.trail-tile[data-state=future] { background:var(--cream); }
+.trail-tile-star { position:absolute; top:-7px; inset-inline-end:-7px; width:18px!important; height:18px!important; color:var(--yellow); stroke:var(--ink); stroke-width:2.5; }
+.trail-friends { position:absolute; inset-inline-end:-6px; bottom:-6px; display:flex; pointer-events:none; }
+.trail-friends>span+span { margin-inline-start:-8px; }
+.trail-legend { display:flex; flex-wrap:wrap; gap:8px 14px; margin-top:16px; padding-top:14px; border-top:1.5px solid color-mix(in oklab, var(--ink) 14%, transparent); font-size:12px; font-weight:700; }
+.trail-legend li { display:flex; align-items:center; gap:6px; }
+.trail-legend i { width:14px; height:14px; border:1.5px solid var(--ink); border-radius:4px; background:var(--lime); }
+.trail-legend i[data-state=partial] { background:var(--yellow); }
+.trail-legend i[data-state=shield] { background:var(--blue); }
+.trail-legend i[data-state=today] { background:var(--orange); }
+.trail-legend i[data-state=missed] { background:transparent; border-style:dashed; border-color:var(--muted-foreground); }
+.trail-cards { display:flex; flex-direction:column; gap:12px; }
+.trail-milestone { display:flex; align-items:center; gap:14px; min-height:72px; padding:14px 16px; background:var(--card); border:2.5px solid var(--ink); border-radius:20px; box-shadow:var(--sx) 4px 0 var(--ink); }
+.trail-milestone.is-done { background:color-mix(in oklab, var(--lime) 45%, var(--card)); }
+.trail-milestone-icon { display:grid; place-items:center; flex:none; width:44px; height:44px; border:2.5px solid var(--ink); border-radius:14px; }
+.trail-milestone-icon svg { width:22px; height:22px; }
+.trail-milestone strong { display:block; font-size:16px; font-weight:800; line-height:1.3; }
+.trail-milestone p { margin-top:2px; font-size:14px; font-weight:600; color:var(--color-design-body); }
+.trail-footer { display:flex; flex-direction:column; gap:8px; padding-top:16px; border-top:1.5px solid color-mix(in oklab, var(--ink) 14%, transparent); font-size:14px; font-weight:600; }
+.trail-actions { display:flex; flex-direction:column; gap:10px; }
 .lights-page {background:var(--night-bg);color:var(--night-text);min-height:100svh;}
 .lights-inner {max-width:480px;margin-inline:auto;min-height:100svh;display:flex;flex-direction:column;gap:26px;padding:24px 20px 32px;}
 .lights-inner header {display:flex;align-items:center;justify-content:space-between;color:var(--night-muted);font-size:14px;}
@@ -816,7 +836,7 @@
 .badge-unlock svg {color:var(--yellow);}
 .badge-unlock p {color:var(--cream);font-weight:700;}.badge-unlock svg {width:36px;height:36px;}.badge-unlock strong {font-size:16px;}.badge-unlock p {font-size:14px;}
 @keyframes seal-pop {from {transform:scale(.6) rotate(-12deg);} to {transform:scale(1) rotate(0);}}.seal-pop {animation:seal-pop .5s ease-out;}
-@media(max-width:390px){.signature-page{padding-inline:16px;}.trail-board{padding:12px;}.trail-row{gap:5px;}.trail-tile{font-size:12px;border-radius:8px;}.trail-friends>span{width:20px!important;height:20px!important;}.trail-board header h2{font-size:16px;}.lights-summary{gap:10px;padding:16px 12px;}.lights-summary h2{font-size:18px;}}
+@media(max-width:390px){.signature-page{padding-inline:16px;}.trail-board{padding:12px;}.trail-row{gap:6px;}.trail-tile{font-size:12px;border-radius:10px;}.trail-stats dd{font-size:18px;}.trail-friends>span{width:20px!important;height:20px!important;}.trail-board header h2{font-size:16px;}.lights-summary{gap:10px;padding:16px 12px;}.lights-summary h2{font-size:18px;}}
 @media(prefers-reduced-motion:reduce){.seal-pop,.badge-unlock{animation:none;}}
 .capsule-sealed {min-width:0;width:100%;}.capsule-sealed h1,.moment-inner h1 {min-width:0;width:100%;max-width:100%;}
 .signature-page>button:disabled {border-style:dashed;color:var(--muted-foreground);background:transparent;box-shadow:none;}
