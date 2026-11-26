@@ -1,5 +1,11 @@
 /** Copy for the "easy to use" pass (UX-01…UX-18). en is the typed source; fr/ar/aeb must match. */
 export const uxEn = {
+  setCity: "Set your city",
+  maxDumbbell: "Heaviest dumbbell",
+  bodyweightIncluded: "Bodyweight moves are always included.",
+  dailyReminder: "Daily check-in reminder",
+  reminderTime: "Reminder time",
+  account: "Account",
   trust: "Free · no ads · leave anytime",
   playersJoined_zero: "{{count}} players joined",
   playersJoined_one: "{{count}} player joined",
@@ -80,6 +86,12 @@ export const uxEn = {
 export type UxCopy = typeof uxEn;
 
 export const uxFr: UxCopy = {
+  setCity: "Choisir ta ville",
+  maxDumbbell: "Haltère la plus lourde",
+  bodyweightIncluded: "Les exercices au poids du corps sont toujours inclus.",
+  dailyReminder: "Rappel de check-in quotidien",
+  reminderTime: "Heure du rappel",
+  account: "Compte",
   trust: "Gratuit · sans pub · tu arrêtes quand tu veux",
   playersJoined_zero: "{{count}} joueur inscrit",
   playersJoined_one: "{{count}} joueur inscrit",
@@ -160,6 +172,12 @@ export const uxFr: UxCopy = {
 };
 
 export const uxAr: UxCopy = {
+  setCity: "حدّد مدينتك",
+  maxDumbbell: "أثقل دمبل",
+  bodyweightIncluded: "تمارين وزن الجسم متاحة دائمًا.",
+  dailyReminder: "تذكير يومي بالتسجيل",
+  reminderTime: "وقت التذكير",
+  account: "الحساب",
   trust: "مجاني · بلا إعلانات · غادر متى شئت",
   playersJoined_zero: "لا مشاركين بعد",
   playersJoined_one: "مشارك واحد",
@@ -237,6 +255,12 @@ export const uxAr: UxCopy = {
 };
 
 export const uxAeb: UxCopy = {
+  setCity: "اختار مدينتك",
+  maxDumbbell: "أثقل دمبل",
+  bodyweightIncluded: "تمارين وزن الجسم ديما موجودة.",
+  dailyReminder: "تذكير يومي باش تسجّل",
+  reminderTime: "وقت التذكير",
+  account: "الحساب",
   trust: "بلاش · بلا إشهار · تخرج وقت اللي تحب",
   playersJoined_zero: "حتى حد مازال",
   playersJoined_one: "لاعب واحد داخل",

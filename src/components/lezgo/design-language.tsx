@@ -1,14 +1,65 @@
-import { useTranslation } from 'react-i18next';
-import { Globe } from 'lucide-react';
-import { useState } from 'react';
-import i18next, { applyLang, LANGS, type Lang } from '@/lib/i18n';
-import { BottomSheet, StickerButton } from './ui';
-const labels = { en: 'EN', fr: 'FR', ar: 'ع', aeb: 'تو' };
-export function DesignLanguage({ segmented = false, lang, onSelect }: { segmented?: boolean; lang?: Lang; onSelect?: (lang: Lang) => void }) {
- const { t: translate, i18n } = useTranslation(); const [open, setOpen] = useState(false);
- const t = lang ? i18next.getFixedT(lang) : translate;
- const current = lang ?? i18n.language;
- const control = <div role="group" aria-label={t('common.language')} className="design-language" dir="ltr">{LANGS.map(l => <StickerButton key={l} variant="ghost" aria-pressed={current === l} onClick={() => { applyLang(l); onSelect?.(l); setOpen(false); }} className={`language-option ${current === l ? 'bg-ink text-lime' : 'bg-card text-ink'} ${l === 'en' || l === 'fr' ? 'num' : 'font-arabic'}`}>{labels[l]}</StickerButton>)}</div>;
- if (segmented) return control;
- return <><StickerButton variant="secondary" className="join-language" aria-label={t('common.language')} onClick={() => setOpen(true)}><Globe size={16} strokeWidth={2.4} />{labels[current as keyof typeof labels] ?? 'EN'}</StickerButton><BottomSheet open={open} onClose={() => setOpen(false)} title={t('common.language')}>{control}</BottomSheet></>;
+import { useTranslation } from "react-i18next";
+import { Check, ChevronDown } from "lucide-react";
+import { useState } from "react";
+import i18next, { applyLang, isRtl, LANGS, type Lang } from "@/lib/i18n";
+import { LanguageIcon } from "@/components/icons";
+import { BottomSheet } from "./ui";
+
+/** Each language named in itself, so a reader can always find their own. */
+const NATIVE: Record<Lang, string> = { en: "English", fr: "Français", ar: "العربية", aeb: "تونسي" };
+
+/**
+ * Language picker: a compact pill (custom icon + current language + chevron) that opens a sheet
+ * listing every language by its native name. `segmented` is kept for older call sites.
+ */
+export function DesignLanguage({
+  lang,
+  onSelect,
+}: {
+  segmented?: boolean;
+  lang?: Lang;
+  onSelect?: (lang: Lang) => void;
+}) {
+  const { t: translate, i18n } = useTranslation();
+  const [open, setOpen] = useState(false);
+  const t = lang ? i18next.getFixedT(lang) : translate;
+  const current = ((lang ?? i18n.language) in NATIVE ? (lang ?? i18n.language) : "en") as Lang;
+  return (
+    <>
+      <button
+        type="button"
+        className="language-pill press"
+        aria-haspopup="dialog"
+        aria-label={`${t("common.language")}: ${NATIVE[current]}`}
+        onClick={() => setOpen(true)}
+      >
+        <LanguageIcon size={24} />
+        <span className={isRtl(current) ? "font-arabic" : undefined}>{NATIVE[current]}</span>
+        <ChevronDown size={16} strokeWidth={2.6} aria-hidden="true" />
+      </button>
+      <BottomSheet open={open} onClose={() => setOpen(false)} title={t("common.language")}>
+        <div role="radiogroup" aria-label={t("common.language")} className="language-list">
+          {LANGS.map((l) => (
+            <button
+              key={l}
+              type="button"
+              role="radio"
+              aria-checked={current === l}
+              dir={isRtl(l) ? "rtl" : "ltr"}
+              lang={l === "aeb" ? "ar-TN" : l}
+              className={`language-row${current === l ? " is-on" : ""}${isRtl(l) ? " font-arabic" : ""}`}
+              onClick={() => {
+                applyLang(l);
+                onSelect?.(l);
+                setOpen(false);
+              }}
+            >
+              <span>{NATIVE[l]}</span>
+              {current === l && <Check size={20} strokeWidth={3} aria-hidden="true" />}
+            </button>
+          ))}
+        </div>
+      </BottomSheet>
+    </>
+  );
 }

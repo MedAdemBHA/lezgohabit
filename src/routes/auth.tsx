@@ -267,9 +267,9 @@ function AuthPage() {
         <div className="login-brand flex items-center gap-2" dir="ltr">
           <Brand size={34} />
         </div>
-        <DesignLanguage segmented />
+        <DesignLanguage />
       </header>
-      <h1 className="mt-4 text-[36px] font-extrabold leading-tight">
+      <h1 className="text-[36px] font-extrabold leading-tight">
         {t(toAdmin ? "auth.adminSignIn" : "auth.signIn")}
       </h1>
       <p className="text-[16px] font-semibold leading-[1.5] text-design-body">
@@ -344,6 +344,33 @@ function AuthPage() {
             )}
           </div>
         </div>
+      )}
+      {!user && !toAdmin && (
+        <section className="login-welcome" aria-label={t("landing.how")}>
+          <img
+            src="/images/lezgo-track.webp"
+            alt=""
+            width={1122}
+            height={1402}
+            className="login-photo"
+            decoding="async"
+          />
+          <ol className="login-steps">
+            {([1, 2, 3] as const).map((n) => (
+              <li key={n}>
+                <span
+                  className={`login-step-num num ${["bg-lime", "bg-yellow", "bg-blue"][n - 1]}`}
+                >
+                  {n}
+                </span>
+                <span>
+                  <strong>{t(`landing.step${n}`)}</strong>
+                  <small>{t(`landing.step${n}Detail`)}</small>
+                </span>
+              </li>
+            ))}
+          </ol>
+        </section>
       )}
       {(countries.data ?? 0) >= 2 && (
         <div className="flex items-center gap-3">
