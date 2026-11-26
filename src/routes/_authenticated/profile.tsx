@@ -60,7 +60,7 @@ function ProfilePage() {
   const roles = useQuery({ ...rolesQuery(uid), enabled: !!uid });
   const creatorDashboard = useQuery({
     queryKey: ["creatorDashboard", uid],
-    enabled: !!uid && !!roles.data?.includes("creator"),
+    enabled: !!uid && (!!roles.data?.includes("creator") || !!profile?.is_admin),
     queryFn: async () => {
       const { data, error } = await supabase.rpc("creator_dashboard");
       if (error) throw error;
@@ -101,7 +101,7 @@ function ProfilePage() {
         <p>{t("common.loading")}</p>
       </AppShell>
     );
-  const creatorPanel = roles.data?.includes("creator") && <section className="sticker mt-3 rounded-[20px] bg-card p-4">
+  const creatorPanel = (roles.data?.includes("creator") || !!profile?.is_admin) && <section className="sticker mt-3 rounded-[20px] bg-card p-4">
         <div className="mb-3 flex items-center justify-between gap-3"><h2 className="text-[18px] font-extrabold">{t("batch6.creatorDashboard")}</h2><Link to="/create-challenge"><StickerButton size="sm" variant="lime">{t("batch6.create")}</StickerButton></Link></div>
         {creatorDashboard.data?.map((challenge) => <article key={challenge.id} className="mb-3 rounded-[16px] bg-background p-3 sticker-border">
           <h3 className="truncate font-extrabold">{challenge.name}</h3>

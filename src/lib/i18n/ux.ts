@@ -1,5 +1,9 @@
 /** Copy for the "easy to use" pass (UX-01…UX-18). en is the typed source; fr/ar/aeb must match. */
 export const uxEn = {
+  reviewWho: "Someone on the lezgo team reviews each request by hand.",
+  reviewWhen: "It usually takes a few days.",
+  reviewAfter: "Once approved, you can create public challenges and share their invite link.",
+  privateForMe: "Start a private challenge for yourself",
   recapTitle: "Your {{name}} run",
   recapBody: "You stepped away. Here’s what you built — it stays in your history.",
   recapGoodDays: "Good days",
@@ -64,6 +68,10 @@ export const uxEn = {
 export type UxCopy = typeof uxEn;
 
 export const uxFr: UxCopy = {
+  reviewWho: "Une personne de l’équipe lezgo examine chaque demande.",
+  reviewWhen: "Cela prend généralement quelques jours.",
+  reviewAfter: "Une fois accepté·e, tu peux créer des challenges publics et partager leur lien d’invitation.",
+  privateForMe: "Lancer un challenge privé pour moi",
   recapTitle: "Ton parcours {{name}}",
   recapBody: "Tu as fait une pause. Voici ce que tu as construit — ça reste dans ton historique.",
   recapGoodDays: "Bonnes journées",
@@ -127,6 +135,10 @@ export const uxFr: UxCopy = {
 };
 
 export const uxAr: UxCopy = {
+  reviewWho: "يراجع أحد أعضاء فريق lezgo كل طلب يدويًا.",
+  reviewWhen: "يستغرق ذلك عادة بضعة أيام.",
+  reviewAfter: "بعد القبول، يمكنك إنشاء تحديات عامة ومشاركة رابط الدعوة.",
+  privateForMe: "ابدأ تحديًا خاصًا بك",
   recapTitle: "مشوارك في {{name}}",
   recapBody: "توقفت. هذا ما بنيته — يبقى محفوظًا في سجلك.",
   recapGoodDays: "أيام جيدة",
@@ -188,6 +200,10 @@ export const uxAr: UxCopy = {
 };
 
 export const uxAeb: UxCopy = {
+  reviewWho: "واحد من فريق lezgo يراجع كل طلب بيدو.",
+  reviewWhen: "عادة ياخو كم من نهار.",
+  reviewAfter: "كي يتقبل طلبك، تنجّم تعمل تحدّيات عامة وتشارك رابط الدعوة.",
+  privateForMe: "ابدا تحدّي خاص بيك",
   recapTitle: "مشوارك في {{name}}",
   recapBody: "وقفت. هاذا اللي بنيتو — يقعد محفوظ في التاريخ متاعك.",
   recapGoodDays: "نهارات باهين",

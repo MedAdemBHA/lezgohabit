@@ -28,7 +28,7 @@ type Created = { id: string; season_id: string; code: string; days: number; star
 
 function CreateChallenge() {
   const { t, i18n } = useTranslation();
-  const { uid, today } = useBase();
+  const { uid, today, profile } = useBase();
   const qc = useQueryClient();
   const templates = useQuery(templatesQuery);
   const roles = useQuery({ ...rolesQuery(uid), enabled: !!uid });
@@ -50,7 +50,8 @@ function CreateChallenge() {
   const [busy, setBusy] = useState(false);
   const [requestSent, setRequestSent] = useState(false);
   const [created, setCreated] = useState<Created | null>(null);
-  const isCreator = !!roles.data?.includes("creator");
+  // Admins can create directly (the server checks the same rule in create_creator_challenge).
+  const isCreator = !!roles.data?.includes("creator") || !!profile?.is_admin;
   const selected = new Map(picks.map((p) => [p.key, p.target]));
   const list = templates.data ?? [];
 
@@ -107,16 +108,24 @@ function CreateChallenge() {
         <StickerButton variant="secondary" className="icon-control" aria-label={t("common.back")} onClick={() => step ? setStep(step - 1) : history.back()}>
           <ArrowLeft className="rtl:-scale-x-100" />
         </StickerButton>
-        <Num className="rounded-full bg-ink px-3 py-1 text-lime">{isCreator ? `${step + 1} / 3` : "1 / 1"}</Num>
+        {isCreator && <Num className="rounded-full bg-ink px-3 py-1 text-lime">{`${step + 1} / 3`}</Num>}
       </div>
       <FitHeading requestedSize={44} className="batch6-heading" text={t("batch6.create")} />
       {!isCreator ? (
         <section className="sticker rounded-[20px] bg-card p-4">
           <h2 className="text-[20px] font-extrabold">{t("batch6.applyCreator")}</h2>
           <p className="mt-2 text-[14px] font-semibold text-muted-foreground">{t("batch6.applyCreatorSub")}</p>
+          <ul className="mt-3 list-disc space-y-1 ps-5 text-[14px] font-semibold">
+            <li>{t("ux.reviewWho")}</li>
+            <li>{t("ux.reviewWhen")}</li>
+            <li>{t("ux.reviewAfter")}</li>
+          </ul>
           <StickerButton block className="mt-4" disabled={busy || requestSent || request.data === "pending"} onClick={() => void apply()}>
             {requestSent || request.data === "pending" ? t("batch6.creatorPending") : t("batch6.applyCreator")}
           </StickerButton>
+          <Link to="/start" className="mt-3 block">
+            <StickerButton block variant="secondary">{t("ux.privateForMe")}</StickerButton>
+          </Link>
         </section>
       ) : step === 0 ? (
         <div className="space-y-5">
