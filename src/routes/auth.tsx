@@ -269,7 +269,7 @@ function AuthPage() {
         </div>
         <DesignLanguage segmented />
       </header>
-      <h1 className="mt-4 text-[36px] font-extrabold leading-tight">
+      <h1 className="text-[36px] font-extrabold leading-tight">
         {t(toAdmin ? "auth.adminSignIn" : "auth.signIn")}
       </h1>
       <p className="text-[16px] font-semibold leading-[1.5] text-design-body">

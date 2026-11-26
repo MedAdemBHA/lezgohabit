@@ -125,198 +125,204 @@ function SettingsPage() {
     profile.units === "lb" ? Math.round(p.max_dumbbell * 2.2046226218 * 10) / 10 : p.max_dumbbell;
   return (
     <AppShell todayLayout hideTabs>
-      <header className="settings-head">
-        <Link to="/profile">
-          <StickerButton variant="secondary" className="icon-control" aria-label={t("common.back")}>
-            <ArrowLeft className="rtl:-scale-x-100" />
-          </StickerButton>
-        </Link>
-        <h1 className="settings-title">{t("settings.title")}</h1>
-      </header>
-      <h2 className="section-label">{t("batch4.language")}</h2>
-      <div className="settings-card settings-languages">
-        {LANGS.map((lang, i) => (
-          <StickerButton
-            variant="secondary"
-            className={cn(i18n.language === lang ? "bg-yellow shadow-hard" : "shadow-none")}
-            key={lang}
-            disabled={busy}
-            aria-pressed={i18n.language === lang}
-            onClick={() => {
-              applyLang(lang);
-              if (!profile.is_demo) void update({ language: lang });
-            }}
-          >
-            {t(`batch4.${["english", "french", "arabic", "darja"][i]}`)}
-          </StickerButton>
-        ))}
-      </div>
-      <h2 className="section-label mt-2">{t("batch4.units")}</h2>
-      <div className="settings-card divided">
-        <div className="settings-row">
-          <span>{t("batch4.weight")}</span>
-          <Segmented
-            value={profile.units}
-            onChange={(v) => void update({ units: v })}
-            options={["kg", "lb"].map((v) => ({ value: v, label: t(`batch4.${v}`) }))}
-          />
+      <div className="settings-page">
+        <header className="settings-head">
+          <Link to="/profile">
+            <StickerButton
+              variant="secondary"
+              className="icon-control"
+              aria-label={t("common.back")}
+            >
+              <ArrowLeft className="rtl:-scale-x-100" />
+            </StickerButton>
+          </Link>
+          <h1 className="settings-title">{t("settings.title")}</h1>
+        </header>
+        <h2 className="section-label">{t("batch4.language")}</h2>
+        <div className="settings-card settings-languages">
+          {LANGS.map((lang, i) => (
+            <StickerButton
+              variant="secondary"
+              className={cn(i18n.language === lang ? "bg-yellow shadow-hard" : "shadow-none")}
+              key={lang}
+              disabled={busy}
+              aria-pressed={i18n.language === lang}
+              onClick={() => {
+                applyLang(lang);
+                if (!profile.is_demo) void update({ language: lang });
+              }}
+            >
+              {t(`batch4.${["english", "french", "arabic", "darja"][i]}`)}
+            </StickerButton>
+          ))}
         </div>
-        <div className="settings-row">
-          <span>{t("batch4.distance")}</span>
-          <Segmented
-            value={p.distance_unit}
-            onChange={(v) => void savePrefs({ distance_unit: v })}
-            options={["km", "mi"].map((v) => ({ value: v, label: t(`batch4.${v}`) }))}
-          />
-        </div>
-      </div>
-      <h2 className="section-label mt-2">{t("batch4.prayer")}</h2>
-      <div className="settings-card divided">
-        <Switch
-          label={t("batch4.prayerHabits")}
-          checked={p.prayer_enabled}
-          onChange={(v) => void savePrefs({ prayer_enabled: v })}
-        />
-        {p.prayer_enabled && (
-          <>
-            <NavRow
-              label={t("batch4.method")}
-              value={t(`batch4.method${p.prayer_method}`)}
-              onClick={() => setSheet("method")}
+        <h2 className="section-label">{t("batch4.units")}</h2>
+        <div className="settings-card divided">
+          <div className="settings-row">
+            <span>{t("batch4.weight")}</span>
+            <Segmented
+              value={profile.units}
+              onChange={(v) => void update({ units: v })}
+              options={["kg", "lb"].map((v) => ({ value: v, label: t(`batch4.${v}`) }))}
             />
-            <NavRow
-              label={t("batch4.location")}
-              icon={<MapPin size={18} aria-hidden="true" />}
-              value={profile.city || t("ux.setCity")}
-              muted={!profile.city}
-              onClick={() => edit("city", profile.city ?? "")}
+          </div>
+          <div className="settings-row">
+            <span>{t("batch4.distance")}</span>
+            <Segmented
+              value={p.distance_unit}
+              onChange={(v) => void savePrefs({ distance_unit: v })}
+              options={["km", "mi"].map((v) => ({ value: v, label: t(`batch4.${v}`) }))}
             />
-          </>
-        )}
-      </div>
-      <h2 className="section-label mt-2">{t("batch4.equipment")}</h2>
-      <div className="settings-card divided">
-        {(["dumbbells", "pullup", "barbell"] as const).map((e) => (
-          <Switch
-            key={e}
-            label={t(`batch4.${e}`)}
-            checked={p.equipment.includes(e)}
-            onChange={(on) =>
-              void savePrefs({
-                // Bodyweight moves are always available, so "bodyweight" stays in the kit.
-                equipment: [
-                  "bodyweight",
-                  ...p.equipment.filter((v) => v !== "bodyweight" && v !== e),
-                  ...(on ? [e] : []),
-                ],
-              })
-            }
-          />
-        ))}
-        {p.equipment.includes("dumbbells") && (
-          <NavRow
-            label={t("ux.maxDumbbell")}
-            value={`${new Intl.NumberFormat(numberLocale(i18n.language)).format(maxWeight)} ${t(`batch4.${profile.units}`)}`}
-            onClick={() => edit("max", String(maxWeight))}
-          />
-        )}
-        <p className="settings-note">{t("ux.bodyweightIncluded")}</p>
-      </div>
-      <NotificationSettings uid={uid} />
-      <h2 className="section-label mt-2">{t("batch4.reminders")}</h2>
-      <div className="settings-card divided">
-        <Switch
-          label={t("ux.dailyReminder")}
-          checked={profile.notif_daily}
-          onChange={(v) => void update({ notif_daily: v })}
-        />
-        {profile.notif_daily && (
-          <NavRow
-            label={t("ux.reminderTime")}
-            value={p.daily_time.slice(0, 5)}
-            ltrValue
-            onClick={() => edit("time", p.daily_time.slice(0, 5))}
-          />
-        )}
-        <Switch
-          label={t("settings.notifCrew")}
-          checked={profile.notif_crew}
-          onChange={(v) => void update({ notif_crew: v })}
-        />
-        <Switch
-          label={t("batch4.bossAlerts")}
-          checked={p.boss_alerts}
-          onChange={(v) => void savePrefs({ boss_alerts: v })}
-        />
-      </div>
-      <h2 className="section-label mt-2">{t("batch4.privacy")}</h2>
-      <div className="settings-card divided">
-        <NavRow
-          label={t("batch5.birthDate")}
-          value={
-            profile.birth_date
-              ? new Intl.DateTimeFormat(numberLocale(i18n.language), {
-                  dateStyle: "medium",
-                  timeZone: "UTC",
-                }).format(new Date(`${profile.birth_date}T00:00:00Z`))
-              : t("batch5.unset")
-          }
-          muted={!profile.birth_date}
-          onClick={() => edit("birthday", profile.birth_date ?? "")}
-        />
-        <div className="py-3">
-          <p className="mb-2 text-[16px] font-bold">{t("batch5.gender")}</p>
-          <div className="settings-choices" role="group" aria-label={t("batch5.gender")}>
-            {["woman", "man", "other", "unset"].map((g) => {
-              const on = profile.gender === g || (!profile.gender && g === "unset");
-              return (
-                <button
-                  key={g}
-                  type="button"
-                  aria-pressed={on}
-                  className={cn("settings-choice", on && "is-on")}
-                  onClick={() => void update({ gender: g === "unset" ? null : g })}
-                >
-                  {t(`batch5.${g}`)}
-                </button>
-              );
-            })}
           </div>
         </div>
-        <Switch
-          label={t("settings.publicBoards")}
-          checked={profile.show_on_public_board}
-          onChange={(v) => void update({ show_on_public_board: v })}
-        />
-        <Switch
-          label={t("settings.faithPublic")}
-          checked={profile.faith_public}
-          onChange={(v) => void update({ faith_public: v })}
-        />
-        <p className="py-3 text-[13px] font-semibold text-muted-foreground">
-          {t("settings.faithHint")}
-        </p>
-      </div>
-      <h2 className="section-label mt-2">{t("ux.account")}</h2>
-      <div className="settings-card divided mb-8">
-        <NavRow
-          label={t("settings.editHabits")}
-          icon={<ListChecks size={18} aria-hidden="true" />}
-          onClick={() => void nav({ to: "/habits" })}
-        />
-        <NavRow
-          label={t("settings.signOut")}
-          icon={<LogOut size={18} aria-hidden="true" />}
-          onClick={() => void signOut()}
-        />
-        {!profile.is_demo && (
-          <NavRow
-            label={t("settings.deleteAccount")}
-            icon={<Trash2 size={18} aria-hidden="true" />}
-            danger
-            onClick={() => setSheet("delete")}
+        <h2 className="section-label">{t("batch4.prayer")}</h2>
+        <div className="settings-card divided">
+          <Switch
+            label={t("batch4.prayerHabits")}
+            checked={p.prayer_enabled}
+            onChange={(v) => void savePrefs({ prayer_enabled: v })}
           />
-        )}
+          {p.prayer_enabled && (
+            <>
+              <NavRow
+                label={t("batch4.method")}
+                value={t(`batch4.method${p.prayer_method}`)}
+                onClick={() => setSheet("method")}
+              />
+              <NavRow
+                label={t("batch4.location")}
+                icon={<MapPin size={18} aria-hidden="true" />}
+                value={profile.city || t("ux.setCity")}
+                muted={!profile.city}
+                onClick={() => edit("city", profile.city ?? "")}
+              />
+            </>
+          )}
+        </div>
+        <h2 className="section-label">{t("batch4.equipment")}</h2>
+        <div className="settings-card divided">
+          {(["dumbbells", "pullup", "barbell"] as const).map((e) => (
+            <Switch
+              key={e}
+              label={t(`batch4.${e}`)}
+              checked={p.equipment.includes(e)}
+              onChange={(on) =>
+                void savePrefs({
+                  // Bodyweight moves are always available, so "bodyweight" stays in the kit.
+                  equipment: [
+                    "bodyweight",
+                    ...p.equipment.filter((v) => v !== "bodyweight" && v !== e),
+                    ...(on ? [e] : []),
+                  ],
+                })
+              }
+            />
+          ))}
+          {p.equipment.includes("dumbbells") && (
+            <NavRow
+              label={t("ux.maxDumbbell")}
+              value={`${new Intl.NumberFormat(numberLocale(i18n.language)).format(maxWeight)} ${t(`batch4.${profile.units}`)}`}
+              onClick={() => edit("max", String(maxWeight))}
+            />
+          )}
+          <p className="settings-note">{t("ux.bodyweightIncluded")}</p>
+        </div>
+        <NotificationSettings uid={uid} />
+        <h2 className="section-label">{t("batch4.reminders")}</h2>
+        <div className="settings-card divided">
+          <Switch
+            label={t("ux.dailyReminder")}
+            checked={profile.notif_daily}
+            onChange={(v) => void update({ notif_daily: v })}
+          />
+          {profile.notif_daily && (
+            <NavRow
+              label={t("ux.reminderTime")}
+              value={p.daily_time.slice(0, 5)}
+              ltrValue
+              onClick={() => edit("time", p.daily_time.slice(0, 5))}
+            />
+          )}
+          <Switch
+            label={t("settings.notifCrew")}
+            checked={profile.notif_crew}
+            onChange={(v) => void update({ notif_crew: v })}
+          />
+          <Switch
+            label={t("batch4.bossAlerts")}
+            checked={p.boss_alerts}
+            onChange={(v) => void savePrefs({ boss_alerts: v })}
+          />
+        </div>
+        <h2 className="section-label">{t("batch4.privacy")}</h2>
+        <div className="settings-card divided">
+          <NavRow
+            label={t("batch5.birthDate")}
+            value={
+              profile.birth_date
+                ? new Intl.DateTimeFormat(numberLocale(i18n.language), {
+                    dateStyle: "medium",
+                    timeZone: "UTC",
+                  }).format(new Date(`${profile.birth_date}T00:00:00Z`))
+                : t("batch5.unset")
+            }
+            muted={!profile.birth_date}
+            onClick={() => edit("birthday", profile.birth_date ?? "")}
+          />
+          <div className="py-3">
+            <p className="mb-2 text-[16px] font-bold">{t("batch5.gender")}</p>
+            <div className="settings-choices" role="group" aria-label={t("batch5.gender")}>
+              {["woman", "man", "other", "unset"].map((g) => {
+                const on = profile.gender === g || (!profile.gender && g === "unset");
+                return (
+                  <button
+                    key={g}
+                    type="button"
+                    aria-pressed={on}
+                    className={cn("settings-choice", on && "is-on")}
+                    onClick={() => void update({ gender: g === "unset" ? null : g })}
+                  >
+                    {t(`batch5.${g}`)}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          <Switch
+            label={t("settings.publicBoards")}
+            checked={profile.show_on_public_board}
+            onChange={(v) => void update({ show_on_public_board: v })}
+          />
+          <Switch
+            label={t("settings.faithPublic")}
+            checked={profile.faith_public}
+            onChange={(v) => void update({ faith_public: v })}
+          />
+          <p className="py-3 text-[13px] font-semibold text-muted-foreground">
+            {t("settings.faithHint")}
+          </p>
+        </div>
+        <h2 className="section-label">{t("ux.account")}</h2>
+        <div className="settings-card divided">
+          <NavRow
+            label={t("settings.editHabits")}
+            icon={<ListChecks size={18} aria-hidden="true" />}
+            onClick={() => void nav({ to: "/habits" })}
+          />
+          <NavRow
+            label={t("settings.signOut")}
+            icon={<LogOut size={18} aria-hidden="true" />}
+            onClick={() => void signOut()}
+          />
+          {!profile.is_demo && (
+            <NavRow
+              label={t("settings.deleteAccount")}
+              icon={<Trash2 size={18} aria-hidden="true" />}
+              danger
+              onClick={() => setSheet("delete")}
+            />
+          )}
+        </div>
       </div>
       <BottomSheet
         open={sheet === "method"}
