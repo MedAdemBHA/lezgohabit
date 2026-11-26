@@ -175,6 +175,11 @@
 .login-brand { font-size:16px; }
 .design-language { display:flex; overflow:hidden; border:2.5px solid var(--ink); border-radius:12px; background:var(--card); flex-shrink:0; }
 .language-option { width:44px; min-width:44px; height:44px; min-height:44px; border:0; border-radius:0; padding:0; font-size:12px; box-shadow:none; }
+.language-pill { display:inline-flex; align-items:center; gap:6px; min-height:44px; padding:0 10px 0 6px; border:2.5px solid var(--ink); border-radius:14px; background:var(--card); box-shadow:var(--sx) 3px 0 var(--ink); font-size:14px; font-weight:800; white-space:nowrap; }
+.language-pill:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
+.language-list { display:flex; flex-direction:column; gap:10px; }
+.language-row { display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:56px; padding:0 16px; border:2.5px solid var(--ink); border-radius:16px; background:var(--card); font-size:18px; font-weight:800; text-align:start; }
+.language-row.is-on { background:var(--lime); box-shadow:var(--sx) 3px 0 var(--ink); }
 .login-season { align-self:flex-start; background:var(--blue); border:2.5px solid var(--ink); border-radius:999px; padding:6px 12px; font-size:12px; font-weight:800; box-shadow:calc(var(--sx) * .75) 3px 0 var(--ink); }
 .login-hero { font-size:64px; line-height:.92; font-weight:800; white-space:pre-line; }
 [dir="rtl"] .login-hero { font-size:60px; line-height:1.15; }

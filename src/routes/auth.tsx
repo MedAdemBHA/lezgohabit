@@ -267,7 +267,7 @@ function AuthPage() {
         <div className="login-brand flex items-center gap-2" dir="ltr">
           <Brand size={34} />
         </div>
-        <DesignLanguage segmented />
+        <DesignLanguage />
       </header>
       <h1 className="text-[36px] font-extrabold leading-tight">
         {t(toAdmin ? "auth.adminSignIn" : "auth.signIn")}
