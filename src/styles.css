@@ -763,7 +763,8 @@
 /* Batch 8: private signature experiences. Lights out is a scoped night scene, not a site theme. */
 :root { --night-bg:#13111C; --night-panel:#211C33; --night-border:#3A3360; --night-text:#FFFFFF; --night-muted:#C9C3E6; --trail-dash:#BDBDBD; --trail-glow:0 0 0 3px var(--orange); }
 @theme inline { --color-night-bg:var(--night-bg); --color-night-text:var(--night-text); }
-.signature-page { width:100%;max-width:560px;min-height:100svh;margin-inline:auto;display:flex;flex-direction:column;gap:20px;padding:24px 20px 36px; }
+/* Width and padding come from AppShell (.today-content), like every other screen. */
+.signature-page { display:flex; flex-direction:column; gap:20px; padding-bottom:12px; }
 .signature-page h1 {font-weight:800;line-height:1.08;margin:4px 0 0;}
 .signature-sub {font-size:16px;line-height:1.5;font-weight:600;margin-top:-8px;}
 .trail-head { display:flex; flex-direction:column; gap:6px; }
@@ -836,7 +837,7 @@
 .badge-unlock svg {color:var(--yellow);}
 .badge-unlock p {color:var(--cream);font-weight:700;}.badge-unlock svg {width:36px;height:36px;}.badge-unlock strong {font-size:16px;}.badge-unlock p {font-size:14px;}
 @keyframes seal-pop {from {transform:scale(.6) rotate(-12deg);} to {transform:scale(1) rotate(0);}}.seal-pop {animation:seal-pop .5s ease-out;}
-@media(max-width:390px){.signature-page{padding-inline:16px;}.trail-board{padding:12px;}.trail-row{gap:6px;}.trail-tile{font-size:12px;border-radius:10px;}.trail-stats dd{font-size:18px;}.trail-friends>span{width:20px!important;height:20px!important;}.trail-board header h2{font-size:16px;}.lights-summary{gap:10px;padding:16px 12px;}.lights-summary h2{font-size:18px;}}
+@media(max-width:390px){.trail-board{padding:12px;}.trail-row{gap:6px;}.trail-tile{font-size:12px;border-radius:10px;}.trail-stats dd{font-size:18px;}.trail-friends>span{width:20px!important;height:20px!important;}.trail-board header h2{font-size:16px;}.lights-summary{gap:10px;padding:16px 12px;}.lights-summary h2{font-size:18px;}}
 @media(prefers-reduced-motion:reduce){.seal-pop,.badge-unlock{animation:none;}}
 .capsule-sealed {min-width:0;width:100%;}.capsule-sealed h1,.moment-inner h1 {min-width:0;width:100%;max-width:100%;}
 .signature-page>button:disabled {border-style:dashed;color:var(--muted-foreground);background:transparent;box-shadow:none;}
