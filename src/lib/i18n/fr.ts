@@ -182,7 +182,7 @@ export const fr: Dict = {
   common: {
     cta: "Lezgo", today: "Aujourd'hui", ranks: "Classement", crew: "Crew", profile: "Profil", settings: "Réglages",
     back: "Retour", save: "Enregistrer", cancel: "Annuler", close: "Fermer", done: "Fait", loading: "Chargement…",
-    error: "Oups, un souci. Réessaie.", next: "Suivant", skip: "Passer", pts: "pts", language: "Langue",
+    retry: "Réessayer", error: "Oups, un souci. Réessaie.", next: "Suivant", skip: "Passer", pts: "pts", language: "Langue",
     season1: "Saison 1", live: "LIVE", openProfile: "Ouvrir le profil",
   },
   nav: { today: "Aujourd’hui", board: "Classement", crew: "Crew", me: "Moi", pulse: "Pulse" },

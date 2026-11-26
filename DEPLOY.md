@@ -16,7 +16,7 @@ migrations (0000–0062), season content, the 15-minute day-lock job and the not
 | Name | Type | Value |
 |---|---|---|
 | `APP_URL` | Text | Your public app origin, e.g. `https://lezgo.<you>.workers.dev` (no trailing slash) |
-| `APP_URL` | Text | your public address, e.g. `https://lezgo.vercel.app` (link previews need absolute image URLs) |
+| `APP_URL` | Text | your public address, e.g. `https://lezgohabit.vercel.app` (link previews need absolute image URLs) |
 | `SUPABASE_URL` | Text | `https://yjkniwjneqmtatwozcpv.supabase.co` |
 | `SUPABASE_PUBLISHABLE_KEY` | Text | `sb_publishable_6RNKjzRWhGs6un9RGDXXZg_dgIqZpJV` |
 | `SUPABASE_SERVICE_ROLE_KEY` | Secret | Supabase → Project Settings → API Keys → `service_role` / secret key |

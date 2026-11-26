@@ -181,7 +181,7 @@ export const en = {
   common: {
     cta: "Lezgo", today: "Today", ranks: "Ranks", crew: "Crew", profile: "Profile", settings: "Settings",
     back: "Back", save: "Save", cancel: "Cancel", close: "Close", done: "Done", loading: "Loading…",
-    error: "Something went wrong. Try again.", next: "Next", skip: "Skip", pts: "pts", language: "Language",
+    retry: "Retry", error: "Something went wrong. Try again.", next: "Next", skip: "Skip", pts: "pts", language: "Language",
     season1: "Season 1", live: "LIVE", openProfile: "Open profile",
   },
   nav: { today: "Today", board: "Board", crew: "Crew", me: "Me", pulse: "Pulse" },

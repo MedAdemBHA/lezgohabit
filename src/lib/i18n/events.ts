@@ -45,6 +45,7 @@ export const eventsEn = {
   archiveBlocked: "This event still has active players.",
   saveError: "Check the dates, translations, and habit targets, then try again.",
   eventBanned: "You can no longer join this event.",
+  leftBefore: "You left this challenge, so you can’t rejoin it. Pick another one.",
   crewBanned: "You can no longer join this crew.",
   removed: "Removed by moderation",
 };
@@ -71,7 +72,7 @@ export const eventsFr: EventsCopy = {
   joined: "Inscrits", checkins: "Actifs aujourd’hui", completed: "Terminé", left: "Départs",
   archiveConfirm: "Archiver cet événement ? Il disparaîtra de la liste.", archiveBlocked: "Cet événement a encore des joueurs actifs.",
   saveError: "Vérifie les dates, les traductions et les objectifs, puis réessaie.",
-  eventBanned: "Tu ne peux plus rejoindre cet événement.", crewBanned: "Tu ne peux plus rejoindre cette équipe.", removed: "Exclusion par la modération",
+  eventBanned: "Tu ne peux plus rejoindre cet événement.", leftBefore: "Tu as quitté ce défi, tu ne peux pas le rejoindre. Choisis-en un autre.", crewBanned: "Tu ne peux plus rejoindre cette équipe.", removed: "Exclusion par la modération",
 };
 
 export const eventsAr: EventsCopy = {
@@ -92,7 +93,7 @@ export const eventsAr: EventsCopy = {
   joined: "المسجلون", checkins: "سجلوا اليوم", completed: "أكملوا", left: "غادروا",
   archiveConfirm: "هل تريد أرشفة الفعالية؟ ستختفي من قائمة الفعاليات.", archiveBlocked: "لا يزال في الفعالية مشاركون نشطون.",
   saveError: "تحقّق من التواريخ والترجمات والأهداف وحاول مجددًا.",
-  eventBanned: "لم يعد بإمكانك الانضمام إلى هذه الفعالية.", crewBanned: "لم يعد بإمكانك الانضمام إلى هذا الفريق.", removed: "إزالة بقرار الإشراف",
+  eventBanned: "لم يعد بإمكانك الانضمام إلى هذه الفعالية.", leftBefore: "غادرت هذا التحدي، لذا لا يمكنك الانضمام إليه مجددًا. اختر تحديًا آخر.", crewBanned: "لم يعد بإمكانك الانضمام إلى هذا الفريق.", removed: "إزالة بقرار الإشراف",
 };
 
 export const eventsAeb: EventsCopy = {
@@ -102,7 +103,7 @@ export const eventsAeb: EventsCopy = {
   keepPlaying: "كمّل فعاليتك وإلا اخرج منها قبل ما تدخل لفعالية أخرى.", early: "الفعالية هاذي ما بداتش.",
   closed: "الفعالية هاذي وفات.", noLive: "ما فما حتى فعالية رسمية مفتوحة توّا.",
   sameHabits: "الناس الكل في نفس الفعالية يتبعوا نفس قواعد العادات.",
-  inviteUnavailable: "الدعوة ما تحلّتش. ثبّت في الكونكسيون وعاود.", joinOnLezgo: "ادخل للتحدي هذا على lezgo",
+  inviteUnavailable: "الدعوة ما تحلّتش. ثبّت في الكونكسيون وعاود.", leftBefore: "خرجت من التحدي هذا، ما تنجمش ترجعلو. اختار تحدي آخر.", joinOnLezgo: "ادخل للتحدي هذا على lezgo",
 };
 
 export const moderationEn = {
