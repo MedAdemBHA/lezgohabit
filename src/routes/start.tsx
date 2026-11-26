@@ -1,19 +1,20 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, ArrowRight, Lock } from "lucide-react";
 import { Brand } from "@/components/lezgo/brand";
 import { DesignLanguage } from "@/components/lezgo/design-language";
 import { HabitIcon } from "@/components/lezgo/habit-icon";
-import { Num, StickerButton, Tile, inputCls } from "@/components/lezgo/ui";
+import { BottomSheet, Num, StickerButton, Tile, inputCls } from "@/components/lezgo/ui";
 import { challengePreview, crewInvitePreview } from "@/lib/challenge-preview.functions";
 import { supabase } from "@/integrations/supabase/client";
-import { templatesQuery, useUser, type Template } from "@/lib/data";
+import { errKey, templatesQuery, useUser, type Template } from "@/lib/data";
 import { formatDayMonth, loc } from "@/lib/i18n";
 import { pageHead } from "@/lib/page-head";
-import { saveStartFlow, toggleStartHabit, type StartFlow } from "@/lib/start-flow";
-import { eventColor, myActiveEventQuery } from "@/lib/event-data";
+import { clearStartFlow, finishStartFlow, saveStartFlow, toggleStartHabit, type StartFlow } from "@/lib/start-flow";
+import { planFor } from "@/lib/challenge-plan";
+import { eventColor, joinErrorKey, myActiveEventQuery } from "@/lib/event-data";
 import type { CrewInvitePreview } from "@/lib/public-challenges.server";
 import { localDate } from "@/lib/time";
 
@@ -84,6 +85,9 @@ function StartPage() {
   const [playMode, setPlayMode] = useState<PlayMode>("solo");
   const [crewCode, setCrewCode] = useState("");
   const [busy, setBusy] = useState(false);
+  const [confirm, setConfirm] = useState<StartFlow | null>(null);
+  const [joinError, setJoinError] = useState<string | null>(null);
+  const qc = useQueryClient();
   const processedInvite = useRef("");
   const today = localDate("Africa/Tunis");
   const allOfficial = (catalog.data ?? []).filter(
@@ -120,11 +124,10 @@ function StartPage() {
     } else if (selected) setStep("play");
   }
 
-  async function continueToSignIn() {
-    if (busy) return;
+  function buildFlow(): StartFlow | null {
     let flow: StartFlow;
     if (personal) {
-      if (!pickedTemplates.length) return;
+      if (!pickedTemplates.length) return null;
       flow = {
         challenge: {
           kind: "personal",
@@ -143,12 +146,46 @@ function StartPage() {
         ? { challenge: { kind: "creator", code: selected.code }, play: { mode: "code", code: crewCode } }
         : { challenge: { kind: "creator", code: selected.code }, play: { mode: playMode as "solo" | "find" | "create" } };
     } else {
-      return;
+      return null;
     }
+    return flow;
+  }
+
+  async function continueToSignIn() {
+    if (busy) return;
+    const flow = buildFlow();
+    if (!flow) return;
+    // Signed-in players never go through /auth: they confirm a summary and join right here.
+    if (user) { setJoinError(null); setConfirm(flow); return; }
     setBusy(true);
     try {
       saveStartFlow(flow);
       await nav({ to: "/auth" });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function confirmJoin() {
+    if (!confirm || busy) return;
+    setBusy(true);
+    setJoinError(null);
+    try {
+      saveStartFlow(confirm);
+      await finishStartFlow();
+      await qc.invalidateQueries();
+      setConfirm(null);
+      await nav({ to: "/today" });
+    } catch (error) {
+      const key = errKey(error) || (error as { message?: string })?.message || "";
+      if (key === "crew_setup_pending") {
+        // Joined the challenge; only the crew step failed. Today has the crew tools.
+        clearStartFlow();
+        await qc.invalidateQueries();
+      } else {
+        clearStartFlow();
+      }
+      setJoinError(key);
     } finally {
       setBusy(false);
     }
@@ -260,10 +297,60 @@ function StartPage() {
             {(["solo","find","create","code"] as const).map((mode) => <button key={mode} type="button" aria-pressed={playMode === mode} onClick={() => setPlayMode(mode)} className={`min-h-[76px] rounded-[18px] p-3 text-start font-extrabold sticker-border ${playMode === mode ? "bg-lime shadow-hard" : "bg-card"}`}>{t(`startFlow.${mode}`)}</button>)}
           </div>}
           {!personal && playMode === "code" && <label className="block text-[14px] font-extrabold">{t("startFlow.codeHint")}<input dir="ltr" value={crewCode} maxLength={6} autoCapitalize="characters" onChange={(e) => setCrewCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,""))} className={`${inputCls} num mt-2 text-center text-[24px] tracking-[0.25em]`} /></label>}
-          <div className="mt-auto space-y-3"><StickerButton block size="lg" disabled={busy || (!!active.data && playMode !== "code") || (!personal && playMode === "code" && crewCode.length !== 6)} onClick={() => void continueToSignIn()}>{t("startFlow.continue")}<ArrowRight className="rtl:-scale-x-100" /></StickerButton><p className="text-center text-[12px] font-semibold text-design-muted">{t("startFlow.signInNext")}</p></div>
+          <div className="mt-auto space-y-3"><StickerButton block size="lg" disabled={busy || (!!active.data && playMode !== "code") || (!personal && playMode === "code" && crewCode.length !== 6)} onClick={() => void continueToSignIn()}>{user ? t("ux.joinChallenge", { name: personal ? t("startFlow.personalName", { n: days }) : loc(selected?.name, i18n.language) }) : t("startFlow.continue")}<ArrowRight className="rtl:-scale-x-100" /></StickerButton>{!user && <p className="text-center text-[12px] font-semibold text-design-muted">{t("startFlow.signInNext")}</p>}</div>
         </>
       )}
+      <BottomSheet open={confirm !== null} onClose={() => { if (!busy) setConfirm(null); }} title={t("ux.confirmTitle")}>
+        {confirm && <JoinSummary
+          name={personal ? t("startFlow.personalName", { n: days }) : loc(selected?.name, i18n.language)}
+          startsOn={personal ? today : selected?.starts_on ?? today}
+          endsOn={personal ? addDaysIso(today, days - 1) : selected?.ends_on ?? today}
+          today={today}
+          habits={personal ? picked.length : selected?.habits.length ?? 0}
+          mode={"play" in confirm ? confirm.play.mode : "code"}
+          busy={busy}
+          error={joinError}
+          onConfirm={() => void confirmJoin()}
+          onCancel={() => setConfirm(null)}
+        />}
+      </BottomSheet>
     </main>
+  );
+}
+
+function addDaysIso(iso: string, n: number) {
+  const d = new Date(`${iso}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+
+function JoinSummary({ name, startsOn, endsOn, today, habits, mode, busy, error, onConfirm, onCancel }: {
+  name: string; startsOn: string; endsOn: string; today: string; habits: number; mode: string;
+  busy: boolean; error: string | null; onConfirm: () => void; onCancel: () => void;
+}) {
+  const { t, i18n } = useTranslation();
+  const plan = planFor(startsOn, endsOn, today, habits);
+  const fmt = new Intl.NumberFormat(i18n.language === "aeb" ? "ar-TN" : i18n.language);
+  return (
+    <div className="space-y-3">
+      <p className="text-[20px] font-extrabold">{name}</p>
+      <p className="font-semibold">{formatDayMonth(startsOn, i18n.language)} – {formatDayMonth(endsOn, i18n.language)}</p>
+      <ul className="space-y-2 text-[15px] font-semibold">
+        <li>{plan.day > 1
+          ? t("ux.joiningOn", { day: fmt.format(plan.day), total: fmt.format(plan.total), left: fmt.format(plan.left) })
+          : t("ux.joiningStart", { total: fmt.format(plan.total) })}</li>
+        {habits > 0 && <li>{t("ux.goodDay", { x: fmt.format(plan.goodHabits), y: fmt.format(habits) })}</li>}
+        <li>{t(plan.reachable ? "ux.trophyReachable" : "ux.trophyOut", { need: fmt.format(plan.need) })}</li>
+        <li>{t("ux.modeLine", { mode: t(`startFlow.${mode}`) })}</li>
+        <li className="text-design-muted">{t("ux.oneActive")}</li>
+      </ul>
+      {error !== null && <div role="alert" className="space-y-2 rounded-[14px] bg-yellow p-3 font-bold sticker-border">
+        <p>{t(joinErrorKey(error))}</p>
+        {(error === "crew_setup_pending" || error === "active_challenge_exists") && <Link to="/today"><StickerButton size="sm" variant="lime">{t("events.goToday")}</StickerButton></Link>}
+      </div>}
+      <StickerButton block size="lg" variant="lime" disabled={busy || error === "crew_setup_pending"} onClick={onConfirm}>{t(busy ? "common.loading" : "ux.confirmJoin")}</StickerButton>
+      <StickerButton block variant="secondary" disabled={busy} onClick={onCancel}>{t("common.cancel")}</StickerButton>
+    </div>
   );
 }
 

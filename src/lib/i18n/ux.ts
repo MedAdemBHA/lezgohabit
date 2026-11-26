@@ -1,5 +1,15 @@
 /** Copy for the "easy to use" pass (UX-01…UX-18). en is the typed source; fr/ar/aeb must match. */
 export const uxEn = {
+  joinChallenge: "Join {{name}}",
+  confirmTitle: "Ready to join?",
+  joiningStart: "You start on day 1 of {{total}}.",
+  joiningOn: "You’re joining on day {{day}} of {{total}} — {{left}} days left.",
+  goodDay: "A good day = {{x}} of your {{y}} habits done.",
+  trophyReachable: "Trophy at {{need}} good days — you can still make it.",
+  trophyOut: "Trophy needs {{need}} good days — too few days left, but every day still counts for points.",
+  modeLine: "You play: {{mode}}",
+  oneActive: "You can only have one active challenge at a time.",
+  confirmJoin: "Confirm and join",
   doneTarget: "Done — {{target}} {{unit}}",
   orPartial: "Or log part of it:",
   sleptEnough: "Slept {{n}}h or more",
@@ -13,6 +23,16 @@ export const uxEn = {
 export type UxCopy = typeof uxEn;
 
 export const uxFr: UxCopy = {
+  joinChallenge: "Rejoindre {{name}}",
+  confirmTitle: "Prêt·e à rejoindre ?",
+  joiningStart: "Tu commences au jour 1 sur {{total}}.",
+  joiningOn: "Tu rejoins au jour {{day}} sur {{total}} — il reste {{left}} jours.",
+  goodDay: "Une bonne journée = {{x}} de tes {{y}} habitudes faites.",
+  trophyReachable: "Trophée à {{need}} bonnes journées — c’est encore possible.",
+  trophyOut: "Le trophée demande {{need}} bonnes journées — il reste trop peu de jours, mais chaque jour rapporte des points.",
+  modeLine: "Tu joues : {{mode}}",
+  oneActive: "Tu ne peux avoir qu’un seul challenge actif à la fois.",
+  confirmJoin: "Confirmer et rejoindre",
   doneTarget: "Fait — {{target}} {{unit}}",
   orPartial: "Ou note une partie :",
   sleptEnough: "Dormi {{n}} h ou plus",
@@ -24,6 +44,16 @@ export const uxFr: UxCopy = {
 };
 
 export const uxAr: UxCopy = {
+  joinChallenge: "انضم إلى {{name}}",
+  confirmTitle: "جاهز للانضمام؟",
+  joiningStart: "تبدأ من اليوم 1 من {{total}}.",
+  joiningOn: "تنضم في اليوم {{day}} من {{total}} — بقي {{left}} يومًا.",
+  goodDay: "اليوم الجيد = إنجاز {{x}} من عاداتك الـ{{y}}.",
+  trophyReachable: "الكأس عند {{need}} يومًا جيدًا — ما زال بإمكانك تحقيقها.",
+  trophyOut: "الكأس تتطلب {{need}} يومًا جيدًا — الأيام المتبقية قليلة، لكن كل يوم يمنحك نقاطًا.",
+  modeLine: "طريقة اللعب: {{mode}}",
+  oneActive: "يمكنك المشاركة في تحدٍّ نشط واحد فقط في كل مرة.",
+  confirmJoin: "تأكيد والانضمام",
   doneTarget: "تمّ — {{target}} {{unit}}",
   orPartial: "أو سجّل جزءًا منه:",
   sleptEnough: "نمت {{n}} ساعات أو أكثر",
@@ -35,6 +65,16 @@ export const uxAr: UxCopy = {
 };
 
 export const uxAeb: UxCopy = {
+  joinChallenge: "ادخل لـ {{name}}",
+  confirmTitle: "حاضر تدخل؟",
+  joiningStart: "تبدا من النهار 1 من {{total}}.",
+  joiningOn: "داخل في النهار {{day}} من {{total}} — بقالك {{left}} نهار.",
+  goodDay: "نهار باهي = تكمّل {{x}} من عاداتك الـ{{y}}.",
+  trophyReachable: "الكأس في {{need}} نهار باهي — مازلت تنجّم.",
+  trophyOut: "الكأس تحب {{need}} نهار باهي — النهارات اللي بقات قلال، أما كل نهار يجيبلك نقاط.",
+  modeLine: "تلعب: {{mode}}",
+  oneActive: "تنجّم يكون عندك تحدّي واحد برك في نفس الوقت.",
+  confirmJoin: "أكّد وادخل",
   doneTarget: "كمّلت — {{target}} {{unit}}",
   orPartial: "ولا سجّل شويّة منها:",
   sleptEnough: "رقدت {{n}} سوايع ولا أكثر",
