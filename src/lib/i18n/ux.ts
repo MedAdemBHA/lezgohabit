@@ -1,5 +1,14 @@
 /** Copy for the "easy to use" pass (UX-01…UX-18). en is the typed source; fr/ar/aeb must match. */
 export const uxEn = {
+  trailTitle: "Your trail",
+  trailDay: "Day {{day}} of {{total}}",
+  goodDaysStat: "Good days",
+  perfectStat: "Perfect",
+  streakStat: "Streak",
+  daysLeftStat: "Days left",
+  halfwayTitle: "Halfway badge",
+  halfwayReached: "You made it past halfway.",
+  capsuleTitle: "Day {{n}} · your note opens",
   units: {
     min: "min",
     steps: "steps",
@@ -99,6 +108,15 @@ export const uxEn = {
 export type UxCopy = typeof uxEn;
 
 export const uxFr: UxCopy = {
+  trailTitle: "Ton parcours",
+  trailDay: "Jour {{day}} sur {{total}}",
+  goodDaysStat: "Bonnes journées",
+  perfectStat: "Parfaites",
+  streakStat: "Série",
+  daysLeftStat: "Jours restants",
+  halfwayTitle: "Badge mi-parcours",
+  halfwayReached: "Tu as passé la moitié.",
+  capsuleTitle: "Jour {{n}} · ta note s’ouvre",
   units: {
     min: "min",
     steps: "pas",
@@ -198,6 +216,15 @@ export const uxFr: UxCopy = {
 };
 
 export const uxAr: UxCopy = {
+  trailTitle: "مسارك",
+  trailDay: "اليوم {{day}} من {{total}}",
+  goodDaysStat: "أيام جيدة",
+  perfectStat: "مثالية",
+  streakStat: "السلسلة",
+  daysLeftStat: "أيام متبقية",
+  halfwayTitle: "شارة منتصف الطريق",
+  halfwayReached: "تجاوزت منتصف الطريق.",
+  capsuleTitle: "اليوم {{n}} · تُفتح رسالتك",
   units: {
     min: "د",
     steps: "خطوة",
@@ -294,6 +321,15 @@ export const uxAr: UxCopy = {
 };
 
 export const uxAeb: UxCopy = {
+  trailTitle: "المسار متاعك",
+  trailDay: "النهار {{day}} من {{total}}",
+  goodDaysStat: "نهارات باهين",
+  perfectStat: "كاملين",
+  streakStat: "السلسلة",
+  daysLeftStat: "نهارات باقية",
+  halfwayTitle: "شارة نص الطريق",
+  halfwayReached: "فتّ نص الطريق.",
+  capsuleTitle: "النهار {{n}} · رسالتك تتحلّ",
   units: {
     min: "د",
     steps: "خطوة",
