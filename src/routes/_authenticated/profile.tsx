@@ -64,7 +64,20 @@ function ProfilePage() {
     queryFn: async () => {
       const { data, error } = await supabase.rpc("creator_dashboard");
       if (error) throw error;
-      return data as unknown as { id: string; season_id: string; name: string; code: string; days: number; starts_on: string; ends_on: string; participants: number; surrenders: number; checked_in: number; checkin_percent: number; url: string }[];
+      return data as unknown as {
+        id: string;
+        season_id: string;
+        name: string;
+        code: string;
+        days: number;
+        starts_on: string;
+        ends_on: string;
+        participants: number;
+        surrenders: number;
+        checked_in: number;
+        checkin_percent: number;
+        url: string;
+      }[];
     },
   });
   const [share, setShare] = useState(false);
@@ -72,13 +85,18 @@ function ProfilePage() {
   const [selectedBadge, setSelectedBadge] = useState<(typeof BADGE_KEYS)[number] | null>(null);
   const scores = useQuery({ ...scoresQuery(uid, season?.id ?? ""), enabled: !!uid && !!season });
   const q = useQuery({ ...summaryQuery(uid, season?.id ?? ""), enabled: !!uid && !!season });
-  const pulse = useQuery({ ...challengePulseQuery(uid, season?.id ?? ""), enabled: !!uid && !!season });
+  const pulse = useQuery({
+    ...challengePulseQuery(uid, season?.id ?? ""),
+    enabled: !!uid && !!season,
+  });
   const countryReady = (pulse.data?.participants ?? 0) >= COUNTRY_RANK_MIN_PLAYERS;
   // Only badges this challenge can award (plus anything already earned) — no "Sugar-free week"
   // in a challenge without a sugar habit.
   const myHabits = useQuery({ ...habitsQuery(uid, season?.id ?? ""), enabled: !!uid && !!season });
   const boss = useQuery({ ...bossQuery(uid, season?.id ?? ""), enabled: !!uid && !!season });
-  const habitKeys = new Set((myHabits.data ?? []).map((h) => (h.kind === "salat" ? "salat" : h.template?.key ?? "")));
+  const habitKeys = new Set(
+    (myHabits.data ?? []).map((h) => (h.kind === "salat" ? "salat" : (h.template?.key ?? ""))),
+  );
   const achievable: Record<(typeof BADGE_KEYS)[number], boolean> = {
     first_go: true,
     streak7: true,
@@ -101,40 +119,128 @@ function ProfilePage() {
         <p>{t("common.loading")}</p>
       </AppShell>
     );
-  const creatorPanel = (roles.data?.includes("creator") || !!profile?.is_admin) && <section className="sticker mt-3 rounded-[20px] bg-card p-4">
-        <div className="mb-3 flex items-center justify-between gap-3"><h2 className="text-[18px] font-extrabold">{t("batch6.creatorDashboard")}</h2><Link to="/create-challenge"><StickerButton size="sm" variant="lime">{t("batch6.create")}</StickerButton></Link></div>
-        {creatorDashboard.data?.map((challenge) => <article key={challenge.id} className="mb-3 rounded-[16px] bg-background p-3 sticker-border">
+  const creatorPanel = (roles.data?.includes("creator") || !!profile?.is_admin) && (
+    <section className="sticker mt-3 rounded-[20px] bg-card p-4">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <h2 className="text-[18px] font-extrabold">{t("batch6.creatorDashboard")}</h2>
+        <Link to="/create-challenge">
+          <StickerButton size="sm" variant="lime">
+            {t("batch6.create")}
+          </StickerButton>
+        </Link>
+      </div>
+      {creatorDashboard.data?.map((challenge) => (
+        <article
+          key={challenge.id}
+          className="mb-3 rounded-[16px] bg-background p-3 sticker-border"
+        >
           <h3 className="truncate font-extrabold">{challenge.name}</h3>
-          <p className="text-[13px] font-semibold">{t("batch6.days", { n: challenge.days })} · {challenge.starts_on} — {challenge.ends_on}</p>
+          <p className="text-[13px] font-semibold">
+            {t("batch6.days", { n: challenge.days })} · {challenge.starts_on} — {challenge.ends_on}
+          </p>
           <div className="mt-2 grid grid-cols-3 gap-2 text-center">
-            <span><Num>{challenge.participants}</Num><small className="block">{t("batch6.participants")}</small></span>
-            <span><Num>{challenge.checkin_percent}%</Num><small className="block">{t("batch6.checkedInToday")}</small></span>
-            <span><Num>{challenge.surrenders}</Num><small className="block">{t("batch6.surrenders")}</small></span>
+            <span>
+              <Num>{challenge.participants}</Num>
+              <small className="block">{t("batch6.participants")}</small>
+            </span>
+            <span>
+              <Num>{challenge.checkin_percent}%</Num>
+              <small className="block">{t("batch6.checkedInToday")}</small>
+            </span>
+            <span>
+              <Num>{challenge.surrenders}</Num>
+              <small className="block">{t("batch6.surrenders")}</small>
+            </span>
           </div>
-          <StickerButton size="sm" variant="secondary" className="mt-2 w-full" onClick={() => void navigator.clipboard.writeText(challengeLink(challenge.code)).then(() => toast(t("crew.copied")))}>{t("batch6.copy")}: <bdi dir="ltr">{challenge.code}</bdi></StickerButton>
-          <div className="mt-2"><ManageCommunity season={challenge.season_id} /></div>
-        </article>)}
-        {!creatorDashboard.data?.length && <p className="text-[14px] font-semibold text-muted-foreground">{t("batch6.noCreatorChallenges")}</p>}
-      </section>;
+          <StickerButton
+            size="sm"
+            variant="secondary"
+            className="mt-2 w-full"
+            onClick={() =>
+              void navigator.clipboard
+                .writeText(challengeLink(challenge.code))
+                .then(() => toast(t("crew.copied")))
+            }
+          >
+            {t("batch6.copy")}: <bdi dir="ltr">{challenge.code}</bdi>
+          </StickerButton>
+          <div className="mt-2">
+            <ManageCommunity season={challenge.season_id} />
+          </div>
+        </article>
+      ))}
+      {!creatorDashboard.data?.length && (
+        <p className="text-[14px] font-semibold text-muted-foreground">
+          {t("batch6.noCreatorChallenges")}
+        </p>
+      )}
+    </section>
+  );
 
   if (!season)
     return (
       <AppShell todayLayout>
         <div className="flex items-center justify-between">
-          <Link to="/today"><StickerButton variant="secondary" className="habit-back" aria-label={t("common.back")}><ArrowLeft size={22} className="rtl:-scale-x-100" /></StickerButton></Link>
-          <Link to="/settings"><StickerButton variant="secondary" className="habit-back" aria-label={t("common.settings")}><Settings size={22} /></StickerButton></Link>
+          <Link to="/today">
+            <StickerButton variant="secondary" className="habit-back" aria-label={t("common.back")}>
+              <ArrowLeft size={22} className="rtl:-scale-x-100" />
+            </StickerButton>
+          </Link>
+          <Link to="/settings">
+            <StickerButton
+              variant="secondary"
+              className="habit-back"
+              aria-label={t("common.settings")}
+            >
+              <Settings size={22} />
+            </StickerButton>
+          </Link>
         </div>
         <div className="profile-header mt-3">
-          <Avatar id={profile.id} name={profile.display_name} url={profile.avatar_url} size={84} className="border-[3px] bg-yellow text-[40px]" />
-          <div className="min-w-0 flex-1"><h1 className="profile-name">{profile.display_name}</h1><p className="text-[16px] font-semibold text-design-muted"><bdi dir="ltr">@{profile.handle}</bdi></p></div>
+          <Avatar
+            id={profile.id}
+            name={profile.display_name}
+            url={profile.avatar_url}
+            size={84}
+            className="border-[3px] bg-yellow text-[40px]"
+          />
+          <div className="min-w-0 flex-1">
+            <h1 className="profile-name">{profile.display_name}</h1>
+            <p className="text-[16px] font-semibold text-design-muted">
+              <bdi dir="ltr">@{profile.handle}</bdi>
+            </p>
+          </div>
         </div>
         <h2 className="mt-4 text-[22px] font-extrabold">{t("challengeHistory.title")}</h2>
         <p className="text-[15px] font-semibold">{t("challengeHistory.noActive")}</p>
-        <Link to="/challenges" search={{ season: "" }} className="mt-3 block"><StickerButton block variant="lime">{t("challengeHistory.openHistory")}</StickerButton></Link>
-        <Link to="/start" className="mt-3 block"><StickerButton block variant="secondary">{t("challengeHistory.pickNext")}</StickerButton></Link>
-        <Link to="/create-challenge" className="mt-3 block"><StickerButton block variant="secondary">{t("batch6.create")}</StickerButton></Link>
+        <Link to="/challenges" search={{ season: "" }} className="mt-3 block">
+          <StickerButton block variant="lime">
+            {t("challengeHistory.openHistory")}
+          </StickerButton>
+        </Link>
+        <Link to="/start" className="mt-3 block">
+          <StickerButton block variant="secondary">
+            {t("challengeHistory.pickNext")}
+          </StickerButton>
+        </Link>
+        <Link to="/create-challenge" className="mt-3 block">
+          <StickerButton block variant="secondary">
+            {t("batch6.create")}
+          </StickerButton>
+        </Link>
         {creatorPanel}
-        <div className="mt-3 grid grid-cols-2 gap-3"><Link to="/lift"><StickerButton block variant="secondary">{t("design.lift")}</StickerButton></Link><Link to="/boss"><StickerButton block variant="secondary">{t("design.boss")}</StickerButton></Link></div>
+        <div className="mt-3 grid grid-cols-2 gap-3">
+          <Link to="/lift">
+            <StickerButton block variant="secondary">
+              {t("design.lift")}
+            </StickerButton>
+          </Link>
+          <Link to="/boss">
+            <StickerButton block variant="secondary">
+              {t("design.boss")}
+            </StickerButton>
+          </Link>
+        </div>
       </AppShell>
     );
   const data = q.data;
@@ -151,7 +257,8 @@ function ProfilePage() {
       streak: info.streak,
     });
     try {
-      if (navigator.share) await navigator.share({ title: "lezgo", text, url: window.location.origin });
+      if (navigator.share)
+        await navigator.share({ title: "lezgo", text, url: window.location.origin });
       else {
         await navigator.clipboard.writeText(`${text} ${window.location.origin}`);
         toast(t("crew.copied"));
@@ -257,7 +364,12 @@ function ProfilePage() {
         </span>
         <ChevronRight className="shrink-0 rtl:-scale-x-100" />
       </Link>
-      <Link to="/trail" search={{ season: season.id }} className="mt-2 block" aria-label={t('batch8.viewTrail')}>
+      <Link
+        to="/trail"
+        search={{ season: season.id }}
+        className="mt-2 block"
+        aria-label={t("batch8.viewTrail")}
+      >
         <h2 className="mb-2 text-[13px] font-extrabold">{t("profile.trail")}</h2>
         <div className="season-trail">
           {Array.from({ length }, (_, i) => {
@@ -289,15 +401,23 @@ function ProfilePage() {
           })}
         </div>
       </Link>
-      <Link to="/lights-out" className="mt-3 block"><StickerButton block variant="secondary">{t('ux.closeMyDay')}</StickerButton></Link>
+      <Link to="/lights-out" className="mt-3 block">
+        <StickerButton block variant="secondary">
+          {t("ux.closeMyDay")}
+        </StickerButton>
+      </Link>
       <Link to="/challenges" search={{ season: "" }} className="mt-3 block">
-        <StickerButton block variant="secondary">{t("challengeHistory.title")}</StickerButton>
+        <StickerButton block variant="secondary">
+          {t("challengeHistory.title")}
+        </StickerButton>
       </Link>
       <div className="mt-3 flex items-center justify-between">
         <h2 className="text-[13px] font-extrabold">
           {t("profile.badges").toLocaleUpperCase(i18n.language === "aeb" ? "ar" : i18n.language)}
         </h2>
-        <Num className="text-[13px] font-bold">{visibleBadges.filter((b) => data?.badges.includes(b)).length}/{visibleBadges.length}</Num>
+        <Num className="text-[13px] font-bold">
+          {visibleBadges.filter((b) => data?.badges.includes(b)).length}/{visibleBadges.length}
+        </Num>
       </div>
       <div className="grid grid-cols-3 gap-3">
         {visibleBadges.map((b) => {
@@ -320,12 +440,32 @@ function ProfilePage() {
         })}
       </div>
       <h2 className="mt-4 text-[13px] font-extrabold">{t("ux.more")}</h2>
-      <Link to="/create-challenge"><StickerButton block variant="lime">{t("batch6.create")}</StickerButton></Link>
-      <Link to="/wrapped" search={{season:season.id}}><StickerButton block variant="secondary">{t("batch6.wrapped")}</StickerButton></Link>
-      <Link to="/small-wins"><StickerButton block variant="secondary">{t("batch6.winTitle")}</StickerButton></Link>
+      <Link to="/create-challenge">
+        <StickerButton block variant="lime">
+          {t("batch6.create")}
+        </StickerButton>
+      </Link>
+      <Link to="/wrapped" search={{ season: season.id }}>
+        <StickerButton block variant="secondary">
+          {t("batch6.wrapped")}
+        </StickerButton>
+      </Link>
+      <Link to="/small-wins">
+        <StickerButton block variant="secondary">
+          {t("batch6.winTitle")}
+        </StickerButton>
+      </Link>
       <div className="mt-3 grid grid-cols-2 gap-3">
-        <Link to="/lift"><StickerButton block variant="secondary">{t("design.lift")}</StickerButton></Link>
-        <Link to="/boss"><StickerButton block variant="secondary">{t("design.boss")}</StickerButton></Link>
+        <Link to="/lift">
+          <StickerButton block variant="secondary">
+            {t("design.lift")}
+          </StickerButton>
+        </Link>
+        <Link to="/boss">
+          <StickerButton block variant="secondary">
+            {t("design.boss")}
+          </StickerButton>
+        </Link>
       </div>
       <Link
         to="/buddies"

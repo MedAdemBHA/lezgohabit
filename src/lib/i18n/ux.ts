@@ -94,7 +94,8 @@ export const uxFr: UxCopy = {
   signInToRemind: "Connecte-toi pour recevoir un rappel",
   reviewWho: "Une personne de l’équipe lezgo examine chaque demande.",
   reviewWhen: "Cela prend généralement quelques jours.",
-  reviewAfter: "Une fois accepté·e, tu peux créer des challenges publics et partager leur lien d’invitation.",
+  reviewAfter:
+    "Une fois accepté·e, tu peux créer des challenges publics et partager leur lien d’invitation.",
   privateForMe: "Lancer un challenge privé pour moi",
   recapTitle: "Ton parcours {{name}}",
   recapBody: "Tu as fait une pause. Voici ce que tu as construit — ça reste dans ton historique.",

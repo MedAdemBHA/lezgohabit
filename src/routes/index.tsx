@@ -17,7 +17,8 @@ export const Route = createFileRoute("/")({
     search["lang"] === "fr" || search["lang"] === "ar" ? { lang: search["lang"] } : {},
   loader: async ({ location }) => {
     const requestedLang = new URLSearchParams(location.searchStr).get("lang");
-    const lang: "en" | "fr" | "ar" = requestedLang === "fr" || requestedLang === "ar" ? requestedLang : "en";
+    const lang: "en" | "fr" | "ar" =
+      requestedLang === "fr" || requestedLang === "ar" ? requestedLang : "en";
     const [challenges, event] = await Promise.all([
       featuredCreatorChallenges().catch(() => []),
       currentOfficialEvent().catch(() => null),
@@ -26,11 +27,13 @@ export const Route = createFileRoute("/")({
   },
   head: ({ loaderData }) => {
     const t = i18n.getFixedT(loaderData?.lang ?? "en");
-    return pageHead(
-      `lezgo — ${t("landing.hero").replace(/\n/g, " ")}`,
-      t("landing.subtitle"),
-      { privatePage: false, canonicalPath: "/", imagePath: "/og-home.png", imageAlt: "Show up. Lezgo.", lang: loaderData?.lang ?? "en" },
-    );
+    return pageHead(`lezgo — ${t("landing.hero").replace(/\n/g, " ")}`, t("landing.subtitle"), {
+      privatePage: false,
+      canonicalPath: "/",
+      imagePath: "/og-home.png",
+      imageAlt: "Show up. Lezgo.",
+      lang: loaderData?.lang ?? "en",
+    });
   },
   component: Landing,
 });
@@ -49,36 +52,130 @@ function Landing() {
         <Brand size={38} />
         <div className="flex items-center gap-2">
           <DesignLanguage />
-          <Link to="/auth" className="inline-flex min-h-11 shrink-0 items-center rounded-xl bg-card px-3 text-sm font-extrabold sticker-border">{t("auth.signIn")}</Link>
+          <Link
+            to="/auth"
+            className="inline-flex min-h-11 shrink-0 items-center rounded-xl bg-card px-3 text-sm font-extrabold sticker-border"
+          >
+            {t("auth.signIn")}
+          </Link>
         </div>
       </header>
-      <div className="flex flex-col gap-2.5"><h1 className="join-hero">{t("landing.hero")}</h1><p className="text-[17px] font-semibold leading-[1.5] text-design-body">{t("landing.subtitle")}</p></div>
-      {event && <section className="join-season" style={{ borderInlineStart: `6px solid ${eventColor(event.color)}` }} aria-labelledby="live-event">
-        <div className="flex items-center justify-between gap-2"><h2 id="live-event" className="text-[16px] font-extrabold">{loc(event.name, lang)}</h2><span className="rounded-lg bg-lime px-2 py-[3px] text-[12px] font-extrabold text-ink">{t("common.live")}</span></div>
-        <p className="text-[13px] font-bold">
-          {formatDayMonth(event.starts_on, lang)} – {formatDayMonth(event.ends_on, lang)}
-          {typeof event.members === "number" && <> · {t("ux.playersJoined", { count: event.members })}</>}
+      <div className="flex flex-col gap-2.5">
+        <h1 className="join-hero">{t("landing.hero")}</h1>
+        <p className="text-[17px] font-semibold leading-[1.5] text-design-body">
+          {t("landing.subtitle")}
         </p>
-        {!!event.habits?.length && <ul className="flex flex-wrap gap-1.5">{event.habits.map((habit) => <li key={habit.key} className="rounded-full bg-background px-2 py-1 text-[12px] font-bold">{loc(habit.name, lang)}</li>)}</ul>}
-        <ClientOnly fallback={null}><SeasonCountdown endsOn={event.ends_on} /></ClientOnly>
-        <StickerButton block variant="lime" onClick={() => void nav({ to: "/start", search: event.season_id ? { season: event.season_id } : {} })}>{t("ux.joinChallenge", { name: loc(event.name, lang) })}<ArrowRight className="size-4 rtl:rotate-180" /></StickerButton>
-      </section>}
-      <ol className="flex flex-col gap-3">{steps.map((step, i) => <li key={step} className="flex items-center gap-3"><span className={`num flex size-[34px] shrink-0 items-center justify-center rounded-[10px] text-[15px] font-bold sticker-border ${["bg-lime", "bg-yellow", "bg-blue"][i] ?? "bg-lime"}`}>{i + 1}</span><span className="text-[17px] font-bold leading-[1.35]">{step}</span></li>)}</ol>
-      {featured.map((challenge) => <StickerButton key={challenge.code} variant="secondary" onClick={() => void nav({ to: "/c/$code", params: { code: challenge.code } })}>{challenge.name}<ArrowRight className="size-4 rtl:rotate-180" /></StickerButton>)}
-      <div className="join-actions">
-        <StickerButton block className="join-primary" onClick={() => nav({ to: "/start" })}>{t("common.cta")}</StickerButton>
-        <StickerButton block variant="secondary" className="join-code" onClick={() => setCodeOpen(true)}>{t("landing.haveCode")}</StickerButton>
-        <ClientOnly fallback={null}><ExploreAsGuest /></ClientOnly>
-        <p className="text-center text-[14px] font-extrabold">{t("ux.trust")}</p>
-        <p className="text-center text-[13px] font-semibold text-design-muted">{t("landing.footer")} · <bdi>EN · FR · عربي · تونسي</bdi></p>
       </div>
-      <BottomSheet open={codeOpen} onClose={() => setCodeOpen(false)} title={t("landing.codeTitle")}>
+      {event && (
+        <section
+          className="join-season"
+          style={{ borderInlineStart: `6px solid ${eventColor(event.color)}` }}
+          aria-labelledby="live-event"
+        >
+          <div className="flex items-center justify-between gap-2">
+            <h2 id="live-event" className="text-[16px] font-extrabold">
+              {loc(event.name, lang)}
+            </h2>
+            <span className="rounded-lg bg-lime px-2 py-[3px] text-[12px] font-extrabold text-ink">
+              {t("common.live")}
+            </span>
+          </div>
+          <p className="text-[13px] font-bold">
+            {formatDayMonth(event.starts_on, lang)} – {formatDayMonth(event.ends_on, lang)}
+            {typeof event.members === "number" && (
+              <> · {t("ux.playersJoined", { count: event.members })}</>
+            )}
+          </p>
+          {!!event.habits?.length && (
+            <ul className="flex flex-wrap gap-1.5">
+              {event.habits.map((habit) => (
+                <li
+                  key={habit.key}
+                  className="rounded-full bg-background px-2 py-1 text-[12px] font-bold"
+                >
+                  {loc(habit.name, lang)}
+                </li>
+              ))}
+            </ul>
+          )}
+          <ClientOnly fallback={null}>
+            <SeasonCountdown endsOn={event.ends_on} />
+          </ClientOnly>
+          <StickerButton
+            block
+            variant="lime"
+            onClick={() =>
+              void nav({ to: "/start", search: event.season_id ? { season: event.season_id } : {} })
+            }
+          >
+            {t("ux.joinChallenge", { name: loc(event.name, lang) })}
+            <ArrowRight className="size-4 rtl:rotate-180" />
+          </StickerButton>
+        </section>
+      )}
+      <ol className="flex flex-col gap-3">
+        {steps.map((step, i) => (
+          <li key={step} className="flex items-center gap-3">
+            <span
+              className={`num flex size-[34px] shrink-0 items-center justify-center rounded-[10px] text-[15px] font-bold sticker-border ${["bg-lime", "bg-yellow", "bg-blue"][i] ?? "bg-lime"}`}
+            >
+              {i + 1}
+            </span>
+            <span className="text-[17px] font-bold leading-[1.35]">{step}</span>
+          </li>
+        ))}
+      </ol>
+      {featured.map((challenge) => (
+        <StickerButton
+          key={challenge.code}
+          variant="secondary"
+          onClick={() => void nav({ to: "/c/$code", params: { code: challenge.code } })}
+        >
+          {challenge.name}
+          <ArrowRight className="size-4 rtl:rotate-180" />
+        </StickerButton>
+      ))}
+      <div className="join-actions">
+        <StickerButton block className="join-primary" onClick={() => nav({ to: "/start" })}>
+          {t("common.cta")}
+        </StickerButton>
+        <StickerButton
+          block
+          variant="secondary"
+          className="join-code"
+          onClick={() => setCodeOpen(true)}
+        >
+          {t("landing.haveCode")}
+        </StickerButton>
+        <ClientOnly fallback={null}>
+          <ExploreAsGuest />
+        </ClientOnly>
+        <p className="text-center text-[14px] font-extrabold">{t("ux.trust")}</p>
+        <p className="text-center text-[13px] font-semibold text-design-muted">
+          {t("landing.footer")} · <bdi>EN · FR · عربي · تونسي</bdi>
+        </p>
+      </div>
+      <BottomSheet
+        open={codeOpen}
+        onClose={() => setCodeOpen(false)}
+        title={t("landing.codeTitle")}
+      >
         <p className="mb-3 text-[15px] text-muted-foreground">{t("landing.codeHint")}</p>
-        <input dir="ltr" value={code} maxLength={6} autoCapitalize="characters" placeholder="ABC123"
+        <input
+          dir="ltr"
+          value={code}
+          maxLength={6}
+          autoCapitalize="characters"
+          placeholder="ABC123"
           onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))}
-          className={`${inputCls} num text-center text-[26px] tracking-[0.3em]`} />
-        <StickerButton block className="mt-4" disabled={code.length !== 6}
-          onClick={() => void nav({ to: "/c/$code", params: { code } })}>
+          className={`${inputCls} num text-center text-[26px] tracking-[0.3em]`}
+        />
+        <StickerButton
+          block
+          className="mt-4"
+          disabled={code.length !== 6}
+          onClick={() => void nav({ to: "/c/$code", params: { code } })}
+        >
           {t("common.cta")}
         </StickerButton>
       </BottomSheet>
@@ -90,5 +187,25 @@ function SeasonCountdown({ endsOn }: { endsOn: string }) {
   const { t } = useTranslation();
   const now = useNow();
   const left = splitMs(now ? officialEventEndsAt(endsOn) - now.getTime() : 0);
-  return <div className="grid grid-cols-4 gap-2" dir="ltr">{([ ["d", left.d, t("landing.days")], ["h", left.h, t("landing.hrs")], ["m", left.m, t("landing.min")], ["s", left.s, t("landing.sec")] ] as const).map(([key, value, label]) => <div key={key} className="flex flex-col items-center"><span className={`num text-[28px] font-bold leading-none ${key === "s" ? "text-orange" : ""}`}>{pad(value)}</span><span className="mt-1 text-[11px] font-bold text-countdown-muted">{label}</span></div>)}</div>;
+  return (
+    <div className="grid grid-cols-4 gap-2" dir="ltr">
+      {(
+        [
+          ["d", left.d, t("landing.days")],
+          ["h", left.h, t("landing.hrs")],
+          ["m", left.m, t("landing.min")],
+          ["s", left.s, t("landing.sec")],
+        ] as const
+      ).map(([key, value, label]) => (
+        <div key={key} className="flex flex-col items-center">
+          <span
+            className={`num text-[28px] font-bold leading-none ${key === "s" ? "text-orange" : ""}`}
+          >
+            {pad(value)}
+          </span>
+          <span className="mt-1 text-[11px] font-bold text-countdown-muted">{label}</span>
+        </div>
+      ))}
+    </div>
+  );
 }

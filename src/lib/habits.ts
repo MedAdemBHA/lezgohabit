@@ -4,13 +4,19 @@ export const PRAYERS = ["fajr", "dhuhr", "asr", "maghrib", "isha"] as const;
 export type PrayerState = "on_time" | "late" | "missed";
 
 /** Mirrors the server's _habit_completion for instant UI feedback; the server stays the source of truth. */
-export function completion(h: Pick<UserHabit, "kind" | "target">, c?: Pick<Checkin, "value" | "detail"> | null): number {
+export function completion(
+  h: Pick<UserHabit, "kind" | "target">,
+  c?: Pick<Checkin, "value" | "detail"> | null,
+): number {
   if (!c) return 0;
   const detail = c.detail as { limit_met?: boolean } | null;
   if (detail?.limit_met !== undefined) return detail.limit_met ? 1 : 0;
   if (h.kind === "salat") {
-    const pr = ((c.detail as { prayers?: Record<string, PrayerState> } | null)?.prayers) ?? {};
-    const sum = Object.values(pr).reduce((s, v) => s + (v === "on_time" ? 1 : v === "late" ? 0.5 : 0), 0);
+    const pr = (c.detail as { prayers?: Record<string, PrayerState> } | null)?.prayers ?? {};
+    const sum = Object.values(pr).reduce(
+      (s, v) => s + (v === "on_time" ? 1 : v === "late" ? 0.5 : 0),
+      0,
+    );
     return Math.min(1, sum / 5);
   }
   if (h.kind === "count") return Math.min(1, Math.max(0, Number(c.value) / Number(h.target || 1)));
@@ -25,8 +31,22 @@ export function stepFor(unit: string | null, target: number) {
   return 1;
 }
 
-export const CHAOS_KEYS = ["pushups", "mom", "nophone", "stairs", "compliment", "cold", "walk", "tidy", "fruit", "plank", "thanks", "sunrise"] as const;
-export const chaosFor = (dayIndex: number) => CHAOS_KEYS[((dayIndex % CHAOS_KEYS.length) + CHAOS_KEYS.length) % CHAOS_KEYS.length]!;
+export const CHAOS_KEYS = [
+  "pushups",
+  "mom",
+  "nophone",
+  "stairs",
+  "compliment",
+  "cold",
+  "walk",
+  "tidy",
+  "fruit",
+  "plank",
+  "thanks",
+  "sunrise",
+] as const;
+export const chaosFor = (dayIndex: number) =>
+  CHAOS_KEYS[((dayIndex % CHAOS_KEYS.length) + CHAOS_KEYS.length) % CHAOS_KEYS.length]!;
 
 /** Points are whole numbers on screen; the server keeps the exact values (display rounding only). */
 export function fmtPts(v: number | null | undefined) {

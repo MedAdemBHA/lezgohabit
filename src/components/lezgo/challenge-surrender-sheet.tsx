@@ -30,7 +30,13 @@ export function ChallengeSurrenderSheet({
       return;
     }
     // Keep the frozen result for the recap card shown once the challenge is gone from Today.
-    const r = (data ?? {}) as { points?: number; completed_days?: number; perfect_days?: number; consistency?: number; trophy?: boolean };
+    const r = (data ?? {}) as {
+      points?: number;
+      completed_days?: number;
+      perfect_days?: number;
+      consistency?: number;
+      trophy?: boolean;
+    };
     saveSurrenderRecap({
       season_id: seasonId,
       name,
