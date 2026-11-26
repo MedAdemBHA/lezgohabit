@@ -14,7 +14,7 @@ import { challengeLink } from '@/lib/batch6-data';
 import { countryName,crewDetailsQuery } from '@/lib/community-data';
 import { pageHead } from '@/lib/page-head';
 import { cn } from '@/lib/utils';
-export const Route=createFileRoute('/_authenticated/crew-details')({head:()=>pageHead('Your crew — lezgo','Crew sync, member results and your invitation code.'),component:CrewDetailsPage});
+export const Route=createFileRoute('/_authenticated/crew-details')({head:()=>pageHead('Your crew · lezgo','Crew sync, member results and your invitation code.'),component:CrewDetailsPage});
 function CrewDetailsPage(){
  const {t,i18n}=useTranslation();const {uid,season}=useBase();const qc=useQueryClient();const navigate=useNavigate();
  const [menu,setMenu]=useState(false);const [confirm,setConfirm]=useState(false);const [busy,setBusy]=useState(false);const [nudging,setNudging]=useState<string|null>(null);

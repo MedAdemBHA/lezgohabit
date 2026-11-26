@@ -61,7 +61,7 @@ import { challengeHistoryQuery } from "@/lib/challenge-history";
 import { planFor } from "@/lib/challenge-plan";
 import { WelcomeCard } from "@/components/lezgo/today/welcome-card";
 export const Route = createFileRoute("/_authenticated/today")({
-  head: () => pageHead("Today — lezgo", "Log today's gos and keep your go streak alive."),
+  head: () => pageHead("Today · lezgo", "Log today's gos and keep your go streak alive."),
   component: Today,
 });
 type DayData = {

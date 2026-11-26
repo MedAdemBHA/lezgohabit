@@ -38,7 +38,7 @@ function postsOptions(uid: string, sid: string, scope: Scope) {
 
 export const Route = createFileRoute("/_authenticated/community")({
   head: () =>
-    pageHead("Challenge pulse — lezgo", "A quiet pulse of check-ins and wins from your challenge."),
+    pageHead("Challenge pulse · lezgo", "A quiet pulse of check-ins and wins from your challenge."),
   component: Community,
 });
 

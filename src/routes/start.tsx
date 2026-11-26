@@ -68,7 +68,7 @@ export const Route = createFileRoute("/start")({
   head: ({ match }) => {
     const lang = match.search.lang ?? "en";
     const t = i18n.getFixedT(lang);
-    return pageHead(`${t("startFlow.pickTitle")} — lezgo`, t("startFlow.pickSub"), {
+    return pageHead(`${t("startFlow.pickTitle")} · lezgo`, t("startFlow.pickSub"), {
       privatePage: false,
       canonicalPath: "/start",
       imagePath: "/og-home.png",

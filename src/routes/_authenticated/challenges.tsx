@@ -20,7 +20,7 @@ export const Route = createFileRoute("/_authenticated/challenges")({
   validateSearch: (s: Record<string, unknown>) => ({
     season: typeof s["season"] === "string" ? s["season"] : "",
   }),
-  head: () => pageHead("My challenges — lezgo", "Your challenge history and progress."),
+  head: () => pageHead("My challenges · lezgo", "Your challenge history and progress."),
   component: ChallengesPage,
 });
 

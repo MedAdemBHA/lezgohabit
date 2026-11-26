@@ -23,7 +23,7 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () =>
     pageHead(
-      "Settings — lezgo",
+      "Settings · lezgo",
       "Language, units, prayer times, equipment, reminders and privacy.",
     ),
   loader: ({ context }) => context.queryClient.ensureQueryData(preferencesQuery(context.user.id)),

@@ -17,7 +17,7 @@ import { stepFor } from "@/lib/habits";
 import type { Json } from "@/integrations/supabase/types";
 
 export const Route = createFileRoute("/_authenticated/create-challenge")({
-  head: () => pageHead("Create a challenge — lezgo", "Create a challenge for your community."),
+  head: () => pageHead("Create a challenge · lezgo", "Create a challenge for your community."),
   component: CreateChallenge,
 });
 

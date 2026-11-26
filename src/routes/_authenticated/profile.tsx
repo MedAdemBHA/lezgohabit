@@ -25,7 +25,7 @@ import { bossQuery, rolesQuery, challengeLink } from "@/lib/batch6-data";
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () =>
     pageHead(
-      "Your profile — lezgo",
+      "Your profile · lezgo",
       "Your earned badges, season trail, crew and best habit results.",
     ),
   component: ProfilePage,

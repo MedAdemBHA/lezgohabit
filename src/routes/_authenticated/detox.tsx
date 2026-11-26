@@ -17,7 +17,7 @@ import { pageHead } from '@/lib/page-head';
 import { useServerFn } from '@tanstack/react-start';
 import { featureFlagsQuery } from '@/lib/admin-data';
 import { fingerprintProof } from '@/lib/admin.functions';
-export const Route=createFileRoute('/_authenticated/detox')({head:()=>pageHead('Scroll detox — lezgo','Lock in phone-free minutes, log screen-time proof and challenge your buddy.'),loader:({context})=>context.queryClient.ensureQueryData(detoxQuery(context.user.id)),component:Detox});
+export const Route=createFileRoute('/_authenticated/detox')({head:()=>pageHead('Scroll detox · lezgo','Lock in phone-free minutes, log screen-time proof and challenge your buddy.'),loader:({context})=>context.queryClient.ensureQueryData(detoxQuery(context.user.id)),component:Detox});
 function Detox(){const {t}=useTranslation();const {profile,season,today}=useBase();const uid=Route.useRouteContext().user.id;const qc=useQueryClient();const q=useSuspenseQuery(detoxQuery(uid));const habits=useQuery({...habitsQuery(uid,season?.id??''),enabled:!!season});const [duration,setDuration]=useState(30);const [session,setSession]=useState<DetoxSession|null>(null);const [remaining,setRemaining]=useState(1800);const [busy,setBusy]=useState(false);const [sheet,setSheet]=useState<'proof'|'challenge'|null>(null);const [minutes,setMinutes]=useState('');const [file,setFile]=useState<File|null>(null);const [preview,setPreview]=useState<string|null>(null);const running=useRef<DetoxSession|null>(null);const finishing=useRef(false);const fileRef=useRef<HTMLInputElement>(null);
  const flags=useQuery(featureFlagsQuery);
  const data=q.data;const duel=data.duel;const closed=!season||today<season.starts_on||today>season.ends_on;

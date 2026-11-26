@@ -29,7 +29,7 @@ import { msToMidnight, pad, splitMs, useNow } from "@/lib/time";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/crew")({
-  head: () => pageHead("Crew — lezgo", "See who in your crew showed up today."),
+  head: () => pageHead("Crew · lezgo", "See who in your crew showed up today."),
   component: CrewPage,
 });
 

@@ -17,7 +17,7 @@ import { FeatureGate } from "@/components/lezgo/feature-gate";
 export const Route = createFileRoute("/_authenticated/buddies")({
   head: () =>
     pageHead(
-      "Find a buddy — lezgo",
+      "Find a buddy · lezgo",
       "Meet a compatible adult habit buddy, accept safely and keep a shared go streak.",
     ),
   loader: async ({ context }) => {

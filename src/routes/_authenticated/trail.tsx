@@ -18,7 +18,7 @@ export const Route = createFileRoute("/_authenticated/trail")({
     season: typeof s["season"] === "string" ? s["season"] : "",
   }),
   head: () =>
-    pageHead("Your Trail — lezgo", "Every go, shield and milestone on your personal season trail."),
+    pageHead("Your Trail · lezgo", "Every go, shield and milestone on your personal season trail."),
   component: Trail,
 });
 function Trail() {

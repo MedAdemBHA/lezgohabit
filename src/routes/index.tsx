@@ -31,7 +31,7 @@ export const Route = createFileRoute("/")({
   head: ({ match }) => {
     const lang = match.search.lang ?? "en";
     const t = i18n.getFixedT(lang);
-    return pageHead(`${t("landing.headline").replace(/\n/g, " ")} — lezgo`, t("landing.subtitle"), {
+    return pageHead(`${t("landing.headline").replace(/\n/g, " ")} · lezgo`, t("landing.subtitle"), {
       privatePage: false,
       canonicalPath: "/",
       imagePath: "/og-home.png",
