@@ -345,6 +345,33 @@ function AuthPage() {
           </div>
         </div>
       )}
+      {!user && !toAdmin && (
+        <section className="login-welcome" aria-label={t("landing.how")}>
+          <img
+            src="/images/lezgo-track.webp"
+            alt=""
+            width={1122}
+            height={1402}
+            className="login-photo"
+            decoding="async"
+          />
+          <ol className="login-steps">
+            {([1, 2, 3] as const).map((n) => (
+              <li key={n}>
+                <span
+                  className={`login-step-num num ${["bg-lime", "bg-yellow", "bg-blue"][n - 1]}`}
+                >
+                  {n}
+                </span>
+                <span>
+                  <strong>{t(`landing.step${n}`)}</strong>
+                  <small>{t(`landing.step${n}Detail`)}</small>
+                </span>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
       {(countries.data ?? 0) >= 2 && (
         <div className="flex items-center gap-3">
           <div className="flex shrink-0" aria-hidden="true">
