@@ -3,7 +3,11 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { ArrowRight, Crown, Ghost } from "lucide-react";
+import { ArrowRight, Crown, Ghost, Share2 } from "lucide-react";
+import { toast } from "sonner";
+import type { TFunction } from "i18next";
+import { challengePulseQuery } from "@/lib/feed-data";
+import { COUNTRY_RANK_MIN_PLAYERS, PODIUM_MIN_PLAYERS } from "@/lib/challenge-plan";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/lezgo/app-shell";
 import { Avatar, BottomSheet, Num, StickerButton } from "@/components/lezgo/ui";
@@ -45,8 +49,11 @@ function Ranks() {
   });
   const history = useQuery({ ...challengeHistoryQuery(uid), enabled: !!uid && entry.data?.kind === "personal" });
   const personalStats = history.data?.find((item) => item.season_id === season?.id);
+  const pulse = useQuery({ ...challengePulseQuery(uid, season?.id ?? ""), enabled: !!uid && !!season });
+  // Country ranks only once enough people play; until then the challenge board is the board.
+  const countryReady = (pulse.data?.participants ?? 0) >= COUNTRY_RANK_MIN_PLAYERS;
   const official = entry.data?.kind === "official";
-  const boardScope: Scope = !official && scope === "country" ? "challenge" : scope;
+  const boardScope: Scope = (!official || !countryReady) && scope === "country" ? "challenge" : scope;
   const mineCrew = useQuery({ ...myCrewQuery(uid,season?.id ?? ""), enabled: !!uid && !!season && entry.data?.kind !== "personal" });
   const q = useQuery({
     queryKey: ["challengeScoreboard", uid, season?.id, boardScope],
@@ -95,10 +102,11 @@ function Ranks() {
   }, [q.data, me]);
   const pinned = !!me && !selfVisible;
   const top = [rows[1], rows[0], rows[2]];
-  const scopes: Scope[] = official ? ["crew","challenge","country"] : ["crew","challenge"];
+  const scopes: Scope[] = official && countryReady ? ["crew","challenge","country"] : ["crew","challenge"];
+  const early = rows.length > 0 && rows.length < PODIUM_MIN_PLAYERS;
   useEffect(() => {
-    if (!official && scope === "country") setScope("challenge");
-  }, [official, scope]);
+    if ((!official || (pulse.isSuccess && !countryReady)) && scope === "country") setScope("challenge");
+  }, [official, scope, countryReady, pulse.isSuccess]);
 
   if (!season) return <AppShell todayLayout><FitHeading text={t("nav.board")} requestedSize={44} className="board-title"/><p className="font-semibold">{t("challengeHistory.noActiveBody")}</p><Link to="/start"><StickerButton block variant="lime">{t("challengeHistory.pickNext")}</StickerButton></Link></AppShell>;
   if (entry.isLoading) return <AppShell todayLayout><p className="py-8 text-center">{t("common.loading")}</p></AppShell>;
@@ -151,6 +159,23 @@ function Ranks() {
         </StickerButton>
       ) : rows.length === 0 ? (
         scope === "crew" && !mineCrew.data ? <div className="space-y-3 rounded-[20px] bg-card p-5 text-center sticker-border"><p className="font-bold">{t("ranks.noCrew")}</p><Link to="/crew"><StickerButton variant="lime">{t("challengePulse.findCrew")}</StickerButton></Link></div> : <p className="py-8 text-center font-bold">{t("ranks.empty")}</p>
+      ) : early ? (
+        <>
+          <div className="space-y-3 rounded-[20px] bg-yellow p-4 sticker-border">
+            <p className="font-extrabold">{t("ux.boardEarly")}</p>
+            <StickerButton variant="lime" onClick={() => void inviteToChallenge(t)}>
+              <Share2 size={18} />
+              {t("crew.invite")}
+            </StickerButton>
+          </div>
+          <div className="mt-3">
+            {rows.map((row) => (
+              <div key={row.user_id ?? row.crew_id ?? row.rank} ref={row.is_me ? myAnchor : undefined} className="mb-3">
+                <RankRow row={row} onClick={() => setSel(row)} />
+              </div>
+            ))}
+          </div>
+        </>
       ) : (
         <>
           <div className="podium">
@@ -275,7 +300,7 @@ function Ranks() {
                   {t("common.pts")}
                 </p>
                 <p>{t("socialDesign.streakStat", { n: sel.streak })}</p>
-                <p>{t("challengeHistory.days",{done:sel.completed_days ?? 0,total:sel.elapsed_days ?? 0})} · {Math.round(sel.consistency ?? 0)}% {t("challengeHistory.consistency")}</p>
+                <p>{t("ux.goodDays",{done:sel.completed_days ?? 0,played:sel.elapsed_days ?? 0})}</p>
               </div>
             </div>
             {sel.is_me && (
@@ -291,6 +316,20 @@ function Ranks() {
     </AppShell>
   );
 }
+/** Share the app's challenge picker (Web Share, copy fallback). */
+async function inviteToChallenge(t: TFunction) {
+  const url = `${window.location.origin}/start`;
+  try {
+    if (navigator.share) await navigator.share({ text: t("ux.boardInvite"), url });
+    else {
+      await navigator.clipboard.writeText(`${t("ux.boardInvite")} ${url}`);
+      toast(t("crew.copied"));
+    }
+  } catch {
+    /* cancelled */
+  }
+}
+
 function RankRow({ row, onClick }: { row: RankRowData; onClick: () => void }) {
   const { t } = useTranslation();
   const delta = movement(row.previous_rank, row.rank);
@@ -312,7 +351,7 @@ function RankRow({ row, onClick }: { row: RankRowData; onClick: () => void }) {
         <span className="rank-sub block truncate">
           {row.members != null
             ? t("ranks.members", { n: row.members })
-            : `${Math.round(row.consistency ?? 0)}% · ${t("challengeHistory.days",{done:row.completed_days ?? 0,total:row.elapsed_days ?? 0})}`}
+            : t("ux.goodDays", { done: row.completed_days ?? 0, played: row.elapsed_days ?? 0 })}
         </span>
       </span>
       <span

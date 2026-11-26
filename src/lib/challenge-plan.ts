@@ -3,6 +3,9 @@ import { daysBetween } from "@/lib/time";
 /** A day counts as good at 60% of habits; the trophy needs ceil(75%) of the challenge's days. */
 export const GOOD_DAY_SHARE = 0.6;
 export const TROPHY_SHARE = 0.75;
+/** Podiums need a field; country ranks need enough players to mean something. */
+export const PODIUM_MIN_PLAYERS = 3;
+export const COUNTRY_RANK_MIN_PLAYERS = 10;
 
 export type ChallengePlan = {
   total: number;

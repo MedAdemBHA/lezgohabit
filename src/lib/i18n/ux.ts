@@ -1,5 +1,8 @@
 /** Copy for the "easy to use" pass (UX-01…UX-18). en is the typed source; fr/ar/aeb must match. */
 export const uxEn = {
+  boardEarly: "You’re early — the board fills up as players join.",
+  boardInvite: "Join me on lezgo",
+  goodDays: "{{done}} good days of {{played}}",
   pulseChallenge: "Challenge",
   pulseCrew: "My crew",
   actHabit: "finished {{habit}}",
@@ -52,6 +55,9 @@ export const uxEn = {
 export type UxCopy = typeof uxEn;
 
 export const uxFr: UxCopy = {
+  boardEarly: "Tu es en avance — le classement se remplit à mesure que les joueurs arrivent.",
+  boardInvite: "Rejoins-moi sur lezgo",
+  goodDays: "{{done}} bonnes journées sur {{played}}",
   pulseChallenge: "Challenge",
   pulseCrew: "Mon crew",
   actHabit: "a terminé {{habit}}",
@@ -102,6 +108,9 @@ export const uxFr: UxCopy = {
 };
 
 export const uxAr: UxCopy = {
+  boardEarly: "أنت مبكر — يمتلئ الترتيب كلما انضم لاعبون.",
+  boardInvite: "انضم إليّ على lezgo",
+  goodDays: "{{done}} أيام جيدة من {{played}}",
   pulseChallenge: "التحدي",
   pulseCrew: "فريقي",
   actHabit: "أنجز {{habit}}",
@@ -152,6 +161,9 @@ export const uxAr: UxCopy = {
 };
 
 export const uxAeb: UxCopy = {
+  boardEarly: "جيت بكري — الترتيب يتعمّر كي يدخلو لاعبين.",
+  boardInvite: "تعالى معايا في lezgo",
+  goodDays: "{{done}} نهارات باهين من {{played}}",
   pulseChallenge: "التحدّي",
   pulseCrew: "جماعتي",
   actHabit: "كمّل {{habit}}",

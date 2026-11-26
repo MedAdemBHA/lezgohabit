@@ -14,6 +14,8 @@ import { FittedLabel } from "@/components/lezgo/fitted-label";
 import { useHabitStatLabel } from "@/components/lezgo/habit-stat";
 import { scoresQuery, useBase } from "@/lib/data";
 import { buddyQuery, countryName, summaryQuery } from "@/lib/community-data";
+import { challengePulseQuery } from "@/lib/feed-data";
+import { COUNTRY_RANK_MIN_PLAYERS } from "@/lib/challenge-plan";
 import { BADGE_KEYS, trailState } from "@/lib/community-rules";
 import { addDays, daysBetween } from "@/lib/time";
 import { loc } from "@/lib/i18n";
@@ -70,6 +72,8 @@ function ProfilePage() {
   const [selectedBadge, setSelectedBadge] = useState<(typeof BADGE_KEYS)[number] | null>(null);
   const scores = useQuery({ ...scoresQuery(uid, season?.id ?? ""), enabled: !!uid && !!season });
   const q = useQuery({ ...summaryQuery(uid, season?.id ?? ""), enabled: !!uid && !!season });
+  const pulse = useQuery({ ...challengePulseQuery(uid, season?.id ?? ""), enabled: !!uid && !!season });
+  const countryReady = (pulse.data?.participants ?? 0) >= COUNTRY_RANK_MIN_PLAYERS;
   const shareQ = useQuery({
     ...summaryQuery(uid, season?.id ?? "", true),
     enabled: !!uid && !!season && share,
@@ -212,7 +216,7 @@ function ProfilePage() {
           {[
             { value: data?.points ?? "—", label: t("socialDesign.seasonPts") },
             {
-              value: data?.rank ? `#${data.rank}` : "—",
+              value: data?.rank && countryReady ? `#${data.rank}` : "—",
               label: t("socialDesign.countryRank", { rank: "", country }).replace(/^#\s*/, ""),
             },
             { value: data?.stat?.value ?? 0, label: statLabel },
