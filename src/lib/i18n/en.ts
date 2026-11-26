@@ -184,7 +184,7 @@ export const en = {
     retry: "Retry", error: "Something went wrong. Try again.", next: "Next", skip: "Skip", pts: "pts", language: "Language",
     season1: "Season 1", live: "LIVE", openProfile: "Open profile",
   },
-  nav: { today: "Today", board: "Board", crew: "Crew", me: "Me", pulse: "Pulse" },
+  nav: { today: "Today", board: "Board", crew: "Crew", me: "Me", pulse: "Feed" },
   landing: {
     headline: "Small habits.\nReal progress.",
     freeChallenges: "Free habit challenges",

@@ -185,7 +185,7 @@ export const ar: Dict = {
     retry: "إعادة المحاولة", error: "حدث خطأ. حاول مجدداً.", next: "التالي", skip: "تخطَّ", pts: "نقطة", language: "اللغة",
     season1: "الموسم 1", live: "مباشر", openProfile: "افتح الملف",
   },
-  nav: { today: "اليوم", board: "الترتيب", crew: "الفريق", me: "أنا", pulse: "نبض التحدّي" },
+  nav: { today: "اليوم", board: "الترتيب", crew: "الفريق", me: "أنا", pulse: "المنشورات" },
   landing: {
     headline: "عادات صغيرة.\nتقدّم حقيقي.",
     freeChallenges: "تحديات عادات مجانية",

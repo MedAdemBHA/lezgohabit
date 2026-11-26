@@ -185,7 +185,7 @@ export const fr: Dict = {
     retry: "Réessayer", error: "Oups, un souci. Réessaie.", next: "Suivant", skip: "Passer", pts: "pts", language: "Langue",
     season1: "Saison 1", live: "LIVE", openProfile: "Ouvrir le profil",
   },
-  nav: { today: "Aujourd’hui", board: "Classement", crew: "Crew", me: "Moi", pulse: "Pulse" },
+  nav: { today: "Aujourd’hui", board: "Classement", crew: "Crew", me: "Moi", pulse: "Fil" },
   landing: {
     headline: "De petites habitudes.\nDe vrais progrès.",
     freeChallenges: "Défis d’habitudes gratuits",
