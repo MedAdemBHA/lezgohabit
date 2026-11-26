@@ -148,7 +148,8 @@ Vercel production builds **`main`**, but this work lives on **`lezgo-v2`**. Afte
 (no force-push, no rebase of pushed commits) so the live site gets it.
 
 ## Definition of done
-- `bunx tsc --noEmit`, `bun run lint`, `bunx vitest run --exclude "**/*database*"` all pass.
+- `bunx tsc --noEmit` and `bunx vitest run --exclude "**/*database*"` pass. The repo already has many Prettier
+  errors; don't reformat untouched files, but files you change must not gain new lint errors (`bunx eslint <files>`).
 - New migrations are numbered after the latest file in `drizzle/migrations/`, and `scripts/verify_v2.sql` plus
   `scripts/verify_event_controls.sql` still pass when run against a test database.
 - Walk these journeys on a 390×844 viewport in en and ar, and describe each in the final report:
