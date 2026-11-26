@@ -101,7 +101,8 @@ export const myActiveEventQuery = (uid: string) => queryOptions({
 
 export function joinErrorKey(key: string) {
   if (key === "challenge_not_started") return "events.early";
-  if (key === "challenge_ended" || key === "challenge_complete" || key === "challenge_surrendered") return "events.closed";
+  if (key === "challenge_surrendered") return "events.leftBefore";
+  if (key === "challenge_ended" || key === "challenge_complete") return "events.closed";
   if (key === "crew_full") return "events.crewFull";
   if (key === "challenge_full") return "batch6.full";
   if (key === "crew_not_found" || key === "challenge_not_found") return "events.invalidCode";

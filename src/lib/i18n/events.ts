@@ -46,6 +46,7 @@ export const eventsEn = {
   saveError: "Check the dates, translations, and habit targets, then try again.",
   eventBanned: "You can no longer join this event.",
   crewBanned: "You can no longer join this crew.",
+  leftBefore: "You left this challenge, so you can’t rejoin it. Pick another one.",
   removed: "Removed by moderation",
 };
 
@@ -71,7 +72,7 @@ export const eventsFr: EventsCopy = {
   joined: "Inscrits", checkins: "Actifs aujourd’hui", completed: "Terminé", left: "Départs",
   archiveConfirm: "Archiver cet événement ? Il disparaîtra de la liste.", archiveBlocked: "Cet événement a encore des joueurs actifs.",
   saveError: "Vérifie les dates, les traductions et les objectifs, puis réessaie.",
-  eventBanned: "Tu ne peux plus rejoindre cet événement.", crewBanned: "Tu ne peux plus rejoindre cette équipe.", removed: "Exclusion par la modération",
+  eventBanned: "Tu ne peux plus rejoindre cet événement.", crewBanned: "Tu ne peux plus rejoindre cette équipe.", leftBefore: "Tu as quitté ce challenge, tu ne peux pas le rejoindre à nouveau. Choisis-en un autre.", removed: "Exclusion par la modération",
 };
 
 export const eventsAr: EventsCopy = {
@@ -92,11 +93,11 @@ export const eventsAr: EventsCopy = {
   joined: "المسجلون", checkins: "سجلوا اليوم", completed: "أكملوا", left: "غادروا",
   archiveConfirm: "هل تريد أرشفة الفعالية؟ ستختفي من قائمة الفعاليات.", archiveBlocked: "لا يزال في الفعالية مشاركون نشطون.",
   saveError: "تحقّق من التواريخ والترجمات والأهداف وحاول مجددًا.",
-  eventBanned: "لم يعد بإمكانك الانضمام إلى هذه الفعالية.", crewBanned: "لم يعد بإمكانك الانضمام إلى هذا الفريق.", removed: "إزالة بقرار الإشراف",
+  eventBanned: "لم يعد بإمكانك الانضمام إلى هذه الفعالية.", crewBanned: "لم يعد بإمكانك الانضمام إلى هذا الفريق.", leftBefore: "غادرت هذا التحدي، فلا يمكنك العودة إليه. اختر تحديًا آخر.", removed: "إزالة بقرار الإشراف",
 };
 
 export const eventsAeb: EventsCopy = {
-  ...eventsAr, goal: "شنوّة الهدف؟", preview: "شوف كيفاش تظهر للمشارك", saveDraft: "سجّل المسودة",
+  ...eventsAr, leftBefore: "خرجت من التحدّي هذا، ما تنجّمش ترجعلو. اختار واحد آخر.", goal: "شنوّة الهدف؟", preview: "شوف كيفاش تظهر للمشارك", saveDraft: "سجّل المسودة",
   tunis: "التواريخ بتوقيت تونس.", free: "المشاركة ببلاش", current: "إنت ديجا تشارك في {{name}}.",
   currentGeneric: "عندك فعالية جارية توّا.", viewEvent: "شوف فعاليتك", goToday: "امشي لليوم",
   keepPlaying: "كمّل فعاليتك وإلا اخرج منها قبل ما تدخل لفعالية أخرى.", early: "الفعالية هاذي ما بداتش.",

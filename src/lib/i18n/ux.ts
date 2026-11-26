@@ -1,5 +1,8 @@
 /** Copy for the "easy to use" pass (UX-01…UX-18). en is the typed source; fr/ar/aeb must match. */
 export const uxEn = {
+  youLeft: "You left this one",
+  youFinished: "You finished this one",
+  youreIn: "You’re in",
   joinChallenge: "Join {{name}}",
   confirmTitle: "Ready to join?",
   joiningStart: "You start on day 1 of {{total}}.",
@@ -23,6 +26,9 @@ export const uxEn = {
 export type UxCopy = typeof uxEn;
 
 export const uxFr: UxCopy = {
+  youLeft: "Tu as quitté celui-ci",
+  youFinished: "Tu l’as terminé",
+  youreIn: "Tu participes",
   joinChallenge: "Rejoindre {{name}}",
   confirmTitle: "Prêt·e à rejoindre ?",
   joiningStart: "Tu commences au jour 1 sur {{total}}.",
@@ -44,6 +50,9 @@ export const uxFr: UxCopy = {
 };
 
 export const uxAr: UxCopy = {
+  youLeft: "غادرت هذا التحدي",
+  youFinished: "أنهيت هذا التحدي",
+  youreIn: "أنت مشارك",
   joinChallenge: "انضم إلى {{name}}",
   confirmTitle: "جاهز للانضمام؟",
   joiningStart: "تبدأ من اليوم 1 من {{total}}.",
@@ -65,6 +74,9 @@ export const uxAr: UxCopy = {
 };
 
 export const uxAeb: UxCopy = {
+  youLeft: "خرجت من هذا",
+  youFinished: "كمّلت هذا",
+  youreIn: "إنتِ داخل",
   joinChallenge: "ادخل لـ {{name}}",
   confirmTitle: "حاضر تدخل؟",
   joiningStart: "تبدا من النهار 1 من {{total}}.",

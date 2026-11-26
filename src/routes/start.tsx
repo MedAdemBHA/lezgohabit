@@ -14,6 +14,7 @@ import { formatDayMonth, loc } from "@/lib/i18n";
 import { pageHead } from "@/lib/page-head";
 import { clearStartFlow, finishStartFlow, saveStartFlow, toggleStartHabit, type StartFlow } from "@/lib/start-flow";
 import { planFor } from "@/lib/challenge-plan";
+import { challengeHistoryQuery } from "@/lib/challenge-history";
 import { eventColor, joinErrorKey, myActiveEventQuery } from "@/lib/event-data";
 import type { CrewInvitePreview } from "@/lib/public-challenges.server";
 import { localDate } from "@/lib/time";
@@ -58,6 +59,9 @@ function StartPage() {
     },
   });
   const templates = useQuery(templatesQuery);
+  // The viewer's own status per challenge, so left/finished ones aren't offered again.
+  const history = useQuery({ ...challengeHistoryQuery(user?.id ?? ""), enabled: !!user });
+  const statusBySeason = new Map((history.data ?? []).map((entry) => [entry.season_id, entry.status]));
   const inviteQuery = useQuery({
     queryKey: ["startInvite", code],
     enabled: /^[A-Z0-9]{6}$/.test(code),
@@ -193,6 +197,12 @@ function StartPage() {
 
   async function continueCrewInvite() {
     if (!/^[A-Z0-9]{6}$/.test(code)) return;
+    if (user) {
+      // Already signed in: join here and keep any error on this screen.
+      setConfirm({ challenge: { kind: "crew_invite", code } });
+      setJoinError(null);
+      return;
+    }
     setBusy(true);
     try {
       saveStartFlow({ challenge: { kind: "crew_invite", code } });
@@ -247,7 +257,7 @@ function StartPage() {
           {catalog.isLoading || (code && inviteQuery.isLoading) ? <p>{t("common.loading")}</p> : catalog.isError ? <p>{t("common.error")}</p> : challengeSections.map((section) => section.cards.length > 0 && (
             <section key={section.label} className="space-y-2">
               <h2 className="text-[13px] font-extrabold uppercase tracking-wide">{section.label}</h2>
-              {section.cards.map((card) => <ChallengeChoice key={card.id} card={card} selected={selected?.id === card.id || (!!selected?.code && selected.code === card.code)} onSelect={() => { setPersonal(false); setSelected(card); }} />)}
+              {section.cards.map((card) => <ChallengeChoice key={card.id} card={card} status={statusBySeason.get(card.season_id)} selected={selected?.id === card.id || (!!selected?.code && selected.code === card.code)} onSelect={() => { setPersonal(false); setJoinError(null); setSelected(card); }} />)}
             </section>
           ))}
           {catalog.isSuccess && !allOfficial.length && <p>{t("events.noLive")}</p>}
@@ -302,9 +312,9 @@ function StartPage() {
       )}
       <BottomSheet open={confirm !== null} onClose={() => { if (!busy) setConfirm(null); }} title={t("ux.confirmTitle")}>
         {confirm && <JoinSummary
-          name={personal ? t("startFlow.personalName", { n: days }) : loc(selected?.name, i18n.language)}
-          startsOn={personal ? today : selected?.starts_on ?? today}
-          endsOn={personal ? addDaysIso(today, days - 1) : selected?.ends_on ?? today}
+          name={inviteQuery.data?.type === "crew" && !("play" in confirm) ? inviteQuery.data.crew.name : personal ? t("startFlow.personalName", { n: days }) : loc(selected?.name, i18n.language)}
+          startsOn={inviteQuery.data?.type === "crew" && !("play" in confirm) ? inviteQuery.data.crew.starts_on : personal ? today : selected?.starts_on ?? today}
+          endsOn={inviteQuery.data?.type === "crew" && !("play" in confirm) ? inviteQuery.data.crew.ends_on : personal ? addDaysIso(today, days - 1) : selected?.ends_on ?? today}
           today={today}
           habits={personal ? picked.length : selected?.habits.length ?? 0}
           mode={"play" in confirm ? confirm.play.mode : "code"}
@@ -354,11 +364,14 @@ function JoinSummary({ name, startsOn, endsOn, today, habits, mode, busy, error,
   );
 }
 
-function ChallengeChoice({ card, selected, onSelect }: { card: CatalogCard; selected: boolean; onSelect: () => void }) {
+function ChallengeChoice({ card, selected, onSelect, status }: { card: CatalogCard; selected: boolean; onSelect: () => void; status?: string | undefined }) {
   const { t, i18n } = useTranslation();
   const goal = loc(card.goal, i18n.language);
+  // Left or finished challenges can't be joined again: show them muted, with no action.
+  const closed = status === "surrendered" || status === "completed";
   return (
-    <button type="button" aria-pressed={selected} onClick={onSelect} style={{ borderInlineStart: `6px solid ${eventColor(card.color)}` }} className={`w-full rounded-[18px] border-2 p-3 text-start sticker-border ${selected ? "bg-lime shadow-hard" : "bg-card shadow-hard-sm"}`}>
+    <button type="button" aria-pressed={closed ? undefined : selected} aria-disabled={closed || undefined} onClick={closed ? undefined : onSelect} style={{ borderInlineStart: `6px solid ${eventColor(card.color)}` }} className={`w-full rounded-[18px] border-2 p-3 text-start sticker-border ${closed ? "cursor-default bg-card opacity-60" : selected ? "bg-lime shadow-hard" : "bg-card shadow-hard-sm"}`}>
+      {status && <span className={`mb-2 inline-block rounded-full px-2 py-0.5 text-[12px] font-extrabold ${status === "active" ? "bg-lime" : "bg-background"}`}>{t(status === "surrendered" ? "ux.youLeft" : status === "completed" ? "ux.youFinished" : "ux.youreIn")}</span>}
       <div className="flex items-start justify-between gap-2"><div className="min-w-0"><h3 className="truncate text-[16px] font-extrabold">{loc(card.name,i18n.language)}</h3>{card.kind === "creator" && <p className="text-[12px] font-semibold">{t("batch6.creatorLabel",{name:card.creator})}</p>}</div><span className="shrink-0 rounded-full bg-yellow px-2 py-1 text-[12px] font-extrabold"><Num>{card.days}</Num> {t("challengeHistory.dayUnit")}</span></div>
       <p className="mt-1 text-[12px] font-bold">{t("events.live")} · {formatDayMonth(card.starts_on, i18n.language)} – {formatDayMonth(card.ends_on, i18n.language)} · {t("events.free")}</p>
       {goal && <p className="mt-1 text-[13px] font-semibold">{goal}</p>}
