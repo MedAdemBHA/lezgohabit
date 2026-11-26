@@ -12,7 +12,7 @@ import { challengePreview, crewInvitePreview } from "@/lib/challenge-preview.fun
 import { supabase } from "@/integrations/supabase/client";
 import { errKey, templatesQuery, useBase, type Template } from "@/lib/data";
 import { AppShell } from "@/components/lezgo/app-shell";
-import { formatDayMonth, loc } from "@/lib/i18n";
+import { formatDayMonth, loc, numberLocale } from "@/lib/i18n";
 import { pageHead } from "@/lib/page-head";
 import { clearStartFlow, finishStartFlow, saveStartFlow, toggleStartHabit, type StartFlow } from "@/lib/start-flow";
 import { planFor } from "@/lib/challenge-plan";
@@ -420,7 +420,7 @@ function JoinSummary({ name, startsOn, endsOn, today, habits, mode, busy, error,
 }) {
   const { t, i18n } = useTranslation();
   const plan = planFor(startsOn, endsOn, today, habits);
-  const fmt = new Intl.NumberFormat(i18n.language === "aeb" ? "ar-TN" : i18n.language);
+  const fmt = new Intl.NumberFormat(numberLocale(i18n.language));
   return (
     <div className="space-y-3">
       <p className="text-[20px] font-extrabold">{name}</p>

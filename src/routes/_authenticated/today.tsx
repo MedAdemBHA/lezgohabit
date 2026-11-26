@@ -51,7 +51,7 @@ import { FitHeading } from "@/components/lezgo/fit-heading";
 import { TodayMoments } from "@/components/lezgo/signature/moments";
 import { ChallengeSurrenderSheet } from "@/components/lezgo/challenge-surrender-sheet";
 import { SurrenderRecapCard } from "@/components/lezgo/surrender-recap-card";
-import { loc } from "@/lib/i18n";
+import { formatNumber, loc } from "@/lib/i18n";
 import { bossQuery } from "@/lib/batch6-data";
 import { challengeHistoryQuery } from "@/lib/challenge-history";
 import { planFor } from "@/lib/challenge-plan";
@@ -499,7 +499,7 @@ function Today() {
         <div className="flex flex-wrap gap-2"><StickerButton variant="secondary" onClick={()=>setProofOpen(true)}>{t("todayDesign.proof")}</StickerButton>{tinyWin ? <Link to="/small-wins"><StickerButton variant="lime">{t("batch6.winTitle")}</StickerButton></Link> : <Link to="/small-wins"><StickerButton variant="secondary">{t("batch6.winTitle")}</StickerButton></Link>}</div>
       </BonusSection>}
       {showNew("ghost",2) && summary.data?.mode === "solo" && <NewFeature title={t("todayDesign.ghostNew")} onDismiss={()=>dismissNew("ghost")}><GhostBar uid={uid} sid={sid}/></NewFeature>}
-      {showNew("streak",2) && <NewFeature title={t("todayDesign.streakNew")} onDismiss={()=>dismissNew("streak")}><div className="streak-pill"><TodayFlame/><span><Num>{score?.streak ?? 0}</Num> {t("todayDesign.days")} · {t("ux.streakBonus", { m: new Intl.NumberFormat(i18n.language === "aeb" ? "ar-TN" : i18n.language, { maximumFractionDigits: 2 }).format(Number(score?.multiplier ?? 1)) })}</span></div></NewFeature>}
+      {showNew("streak",2) && <NewFeature title={t("todayDesign.streakNew")} onDismiss={()=>dismissNew("streak")}><div className="streak-pill"><TodayFlame/><span><Num>{score?.streak ?? 0}</Num> {t("todayDesign.days")} · {t("ux.streakBonus", { m: formatNumber(Number(score?.multiplier ?? 1), i18n.language, { maximumFractionDigits: 2 }) })}</span></div></NewFeature>}
       {showNew("boss",5) && bossOverview.data?.boss && <NewFeature title={t("batch6.boss")} onDismiss={()=>dismissNew("boss")}><BossMini overview={bossOverview.data}/></NewFeature>}
       {showNew("capsule",1) && hadPerfectDay && <NewFeature title={t("todayDesign.capsuleNew")} onDismiss={()=>dismissNew("capsule")}><Link to="/capsule"><StickerButton block variant="secondary">{t("batch8.capsule")}<ArrowRight size={18} className="rtl:-scale-x-100"/></StickerButton></Link></NewFeature>}
       <TodayCrewStrip uid={uid} seasonId={sid}/>

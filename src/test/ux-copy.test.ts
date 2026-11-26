@@ -11,3 +11,12 @@ describe("ux copy", () => {
     expect(ar("ux.members", { count: 3 })).toBe("3 أعضاء");
   });
 });
+
+describe("formatNumber", () => {
+  it("formats per locale, with ar-TN digits for Tunisian Arabic", async () => {
+    const { formatNumber } = await import("@/lib/i18n");
+    expect(formatNumber(1234, "en")).toBe("1,234");
+    expect(formatNumber(1234, "aeb")).toBe(new Intl.NumberFormat("ar-TN").format(1234));
+    expect(formatNumber(Number.NaN, "fr")).toBe("0");
+  });
+});

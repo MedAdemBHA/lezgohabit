@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { Num, StickerButton } from "@/components/lezgo/ui";
+import { numberLocale } from "@/lib/i18n";
 import {
   clearSurrenderRecap,
   readSurrenderRecap,
@@ -14,7 +15,7 @@ export function SurrenderRecapCard() {
   const [recap, setRecap] = useState<SurrenderRecap | null>(null);
   useEffect(() => setRecap(readSurrenderRecap()), []);
   if (!recap) return null;
-  const fmt = new Intl.NumberFormat(i18n.language === "aeb" ? "ar-TN" : i18n.language, {
+  const fmt = new Intl.NumberFormat(numberLocale(i18n.language), {
     maximumFractionDigits: 0,
   });
   const stats = [

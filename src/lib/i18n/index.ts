@@ -89,6 +89,14 @@ const MAGHREB_MONTHS = [
 ];
 
 /** Day + month with Western digits; Maghreb month names for ar/aeb. */
+/** Locale for numbers: Tunisian Arabic uses ar-TN; every other language its own tag. */
+export const numberLocale = (lang: string) => (lang === "aeb" ? "ar-TN" : lang);
+
+/** Formats a number for display in the player's language (display only — never for scoring). */
+export function formatNumber(n: number, lang: string, options?: Intl.NumberFormatOptions): string {
+  return new Intl.NumberFormat(numberLocale(lang), options).format(Number.isFinite(n) ? n : 0);
+}
+
 export function formatDayMonth(iso: string, lang: string): string {
   const [, m, d] = iso.split("-").map(Number);
   if (isRtl(lang)) return `${d} ${MAGHREB_MONTHS[(m ?? 1) - 1]}`;

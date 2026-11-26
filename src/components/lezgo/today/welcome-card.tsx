@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import type { ChallengePlan } from "@/lib/challenge-plan";
+import { numberLocale } from "@/lib/i18n";
 
 /** First-day card: what's left, what a good day is, and whether the trophy is still possible. */
 export function WelcomeCard({
@@ -14,7 +15,7 @@ export function WelcomeCard({
   onDismiss: () => void;
 }) {
   const { t, i18n } = useTranslation();
-  const fmt = new Intl.NumberFormat(i18n.language === "aeb" ? "ar-TN" : i18n.language);
+  const fmt = new Intl.NumberFormat(numberLocale(i18n.language));
   return (
     <section className="today-new-feature today-welcome" aria-labelledby="today-welcome-title">
       <div className="today-new-heading">

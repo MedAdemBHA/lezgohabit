@@ -18,7 +18,7 @@ import { movement } from "@/lib/community-rules";
 import { daysBetween } from "@/lib/time";
 import { cn } from "@/lib/utils";
 import { challengeHistoryQuery } from "@/lib/challenge-history";
-import { loc } from "@/lib/i18n";
+import { formatNumber, loc } from "@/lib/i18n";
 export const Route = createFileRoute("/_authenticated/ranks")({
   validateSearch: (
     search: Record<string, unknown>,
@@ -215,7 +215,7 @@ function Ranks() {
                     onClick={() => setSel(row)}
                   >
                     <strong>{row.rank}</strong>
-                    <Num>{row.points.toLocaleString("en-US")}</Num>
+                    <Num>{formatNumber(row.points, i18n.language)}</Num>
                   </StickerButton>
                 </div>
               ) : (
@@ -300,7 +300,7 @@ function Ranks() {
                   {t("common.pts")}
                 </p>
                 <p>{t("socialDesign.streakStat", { n: sel.streak })}</p>
-                <p>{t("ux.goodDays",{done:sel.completed_days ?? 0,played:sel.elapsed_days ?? 0})}</p>
+                <p>{t("ux.goodDays",{done:formatNumber(sel.completed_days ?? 0,i18n.language),played:formatNumber(sel.elapsed_days ?? 0,i18n.language)})}</p>
               </div>
             </div>
             {sel.is_me && (
@@ -331,7 +331,7 @@ async function inviteToChallenge(t: TFunction) {
 }
 
 function RankRow({ row, onClick }: { row: RankRowData; onClick: () => void }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const delta = movement(row.previous_rank, row.rank);
   return (
     <StickerButton
@@ -351,7 +351,7 @@ function RankRow({ row, onClick }: { row: RankRowData; onClick: () => void }) {
         <span className="rank-sub block truncate">
           {row.members != null
             ? t("ranks.members", { n: row.members })
-            : t("ux.goodDays", { done: row.completed_days ?? 0, played: row.elapsed_days ?? 0 })}
+            : t("ux.goodDays", { done: formatNumber(row.completed_days ?? 0, i18n.language), played: formatNumber(row.elapsed_days ?? 0, i18n.language) })}
         </span>
       </span>
       <span
@@ -362,7 +362,7 @@ function RankRow({ row, onClick }: { row: RankRowData; onClick: () => void }) {
       >
         <Num>{delta > 0 ? `▲${delta}` : delta < 0 ? `▼${-delta}` : "–"}</Num>
       </span>
-      <Num className="shrink-0 text-[16px] font-bold">{row.points.toLocaleString("en-US")}</Num>
+      <Num className="shrink-0 text-[16px] font-bold">{formatNumber(row.points, i18n.language)}</Num>
     </StickerButton>
   );
 }
