@@ -66,7 +66,7 @@ FOR EACH ROW EXECUTE FUNCTION public._guard_official_enrollment();
 -- Keep the stored status used by older game features in sync at the next integrity tick.
 CREATE OR REPLACE FUNCTION public.integrity_tick() RETURNS jsonb
 LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
-DECLARE purged int;
+DECLARE purged int; swaps int;
 BEGIN
   UPDATE public.seasons SET status='live'
   WHERE status='upcoming' AND published AND NOT archived AND NOT is_demo
@@ -74,7 +74,8 @@ BEGIN
   DELETE FROM public.guest_sessions WHERE created_at < now() - interval '7 days';
   GET DIAGNOSTICS purged = ROW_COUNT;
   DELETE FROM public.demo_login_limits WHERE window_start < now() - interval '1 day';
-  RETURN jsonb_build_object('finalized',public.finalize_due_days(),'frozen',public.freeze_due_seasons(),'guests_purged',purged);
+  swaps := public.apply_due_habit_swaps();
+  RETURN jsonb_build_object('finalized',public.finalize_due_days(),'frozen',public.freeze_due_seasons(),'guests_purged',purged,'swaps',swaps);
 END $$;
 
 CREATE OR REPLACE FUNCTION public.admin_official_events() RETURNS jsonb

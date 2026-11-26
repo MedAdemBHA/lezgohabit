@@ -119,6 +119,7 @@ export const moderationEn = {
   mute: "Mute posting", unmute: "Allow posting", ban: "Ban member", unban: "Lift ban",
   remove: "Remove member", transfer: "Transfer ownership", error: "This action couldn’t be saved. Refresh and try again.",
   mutedPost: "Posting is currently restricted in this community.",
+  noCrew: "This challenge talks inside crews. Join or find a crew to post.",
 };
 
 type ModCopy = typeof moderationEn;
@@ -137,6 +138,7 @@ export const moderationFr: ModCopy = {
   mute: "Suspendre les publications", unmute: "Autoriser les publications", ban: "Bannir", unban: "Lever le bannissement",
   remove: "Retirer le membre", transfer: "Transférer la gestion", error: "Impossible d’enregistrer. Actualise puis réessaie.",
   mutedPost: "Tu ne peux pas publier dans cette communauté pour le moment.",
+  noCrew: "Dans ce défi, on échange en équipe. Rejoins ou trouve une équipe pour publier.",
 };
 export const moderationAr: ModCopy = {
   eventManage: "إدارة مجتمع الفعالية", crewManage: "إدارة الفريق", members: "الأعضاء", reports: "البلاغات",
@@ -153,9 +155,11 @@ export const moderationAr: ModCopy = {
   mute: "تقييد النشر", unmute: "السماح بالنشر", ban: "حظر العضو", unban: "رفع الحظر",
   remove: "إزالة العضو", transfer: "نقل ملكية الفريق", error: "تعذر حفظ الإجراء. حدّث الصفحة وحاول مجددًا.",
   mutedPost: "النشر مقيّد حاليًا في هذا المجتمع.",
+  noCrew: "النقاش في هذا التحدي داخل الفرق. انضم إلى فريق أو ابحث عن فريق لتنشر.",
 };
 export const moderationAeb: ModCopy = {
   ...moderationAr, crewManage: "سيّر الفريق", empty: "ما فما شي للمراجعة.", appeal: "تنجم تطلب من دعم Lezgo يراجع القرار.",
   crewExit: "التقدّم متاعك يبقى محفوظ. تنجم تكمّل وحدك وإلا مع فريق آخر.",
   eventExit: "التقدّم متاعك يبقى في السجل. تنجم تدخل لفعالية أخرى.",
+  noCrew: "التحدي هذا الحكي فيه داخل الفرق. ادخل لفريق وإلا لوّج على فريق باش تنشر.",
 };
