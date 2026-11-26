@@ -19,5 +19,5 @@ export function RoutePending(){
   const client=useHydrated();
   const hasQueryClient=!!useContext(QueryClientContext);
   if(!client||!hasQueryClient||!signedIn||path.startsWith('/onboarding'))return <StickerLoading/>;
-  return <AppShell todayLayout={!path.startsWith('/crew')||path.startsWith('/crew-details')} hideTabs={noTabs.some(p=>path.startsWith(p))}><StickerLoading/></AppShell>;
+  return <AppShell todayLayout hideTabs={noTabs.some(p=>path.startsWith(p))}><StickerLoading/></AppShell>;
 }

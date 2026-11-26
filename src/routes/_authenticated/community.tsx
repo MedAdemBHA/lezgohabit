@@ -10,7 +10,8 @@ import { ChallengeEventCard } from "@/components/lezgo/community/challenge-event
 import { Compose } from "@/components/lezgo/community/compose";
 import { PostCard } from "@/components/lezgo/community/post-card";
 import { FitHeading } from "@/components/lezgo/fit-heading";
-import { Avatar, Segmented, StickerButton } from "@/components/lezgo/ui";
+import { Avatar, StickerButton } from "@/components/lezgo/ui";
+import { CommunitySwitch } from "@/components/lezgo/community/community-switch";
 import { useBase } from "@/lib/data";
 import { rolesQuery } from "@/lib/batch6-data";
 import { challengeEventsQuery, challengePulseQuery, fetchFeed } from "@/lib/feed-data";
@@ -40,7 +41,8 @@ function Community() {
   const { uid, season, profile } = useBase();
   const sid = season?.id ?? "";
   const qc = useQueryClient();
-  const [scope, setScope] = useState<Scope>("challenge");
+  // Crew posts live under My crew now; this screen is the whole challenge.
+  const scope: Scope = "challenge";
   const [compose, setCompose] = useState(false);
   const [nudging, setNudging] = useState("");
   const history = useQuery({ ...challengeHistoryQuery(uid), enabled: !!uid && !season });
@@ -62,10 +64,10 @@ function Community() {
       return data;
     },
   });
-  const crewScope = scope === "crew" ? pulse.data?.crew_id ?? undefined : undefined;
+  const crewScope: string | undefined = undefined;
   const modScope = { season: sid, crew: crewScope };
   const modAccess = useQuery({
-    ...moderationAccess(modScope, uid), enabled: !!uid && !!sid && (scope !== "crew" || !!crewScope),
+    ...moderationAccess(modScope, uid), enabled: !!uid && !!sid,
   });
   const rows = posts.data?.pages.flat() ?? [];
   const momentRows = events.data ?? [];
@@ -101,15 +103,8 @@ function Community() {
   return (
     <AppShell todayLayout>
       <header className="space-y-3">
+        <CommunitySwitch active="challenge" />
         <FitHeading className="feed-title" requestedSize={42} text={challengeName} />
-        <Segmented<Scope>
-          value={scope}
-          onChange={setScope}
-          options={[
-            { value: "crew", label: t("challengePulse.crewTab") },
-            { value: "challenge", label: t("challengePulse.challengeTab") },
-          ]}
-        />
       </header>
 
       <section className="rounded-[20px] bg-yellow p-4 sticker-border shadow-hard-lg" aria-label={t("challengePulse.title")}>
@@ -153,12 +148,12 @@ function Community() {
       {momentRows.map((event) => <ChallengeEventCard key={event.id} event={event} challengeName={challengeName} />)}
       {!momentRows.length && <p className="rounded-[18px] bg-card p-3 text-[14px] font-semibold sticker-border">{t("challengePulse.emptyMoments")}</p>}
 
-      <h2 className="text-[18px] font-extrabold">{t(scope === "crew" ? "challengePulse.crewPosts" : "challengePulse.challengePosts")}</h2>
-      {rows.map((post) => <PostCard key={post.id} post={post} uid={uid} start={season.starts_on} season={sid} canPin={canPin && scope === "challenge" && post.visibility === "everyone"}
-        reportCrew={crewScope} moderation={modAccess.data && (scope !== "crew" || crewScope) ? modScope : undefined} />)}
+      <h2 className="text-[18px] font-extrabold">{t("challengePulse.challengePosts")}</h2>
+      {rows.map((post) => <PostCard key={post.id} post={post} uid={uid} start={season.starts_on} season={sid} canPin={canPin && post.visibility === "everyone"}
+        reportCrew={crewScope} moderation={modAccess.data ? modScope : undefined} />)}
       {!rows.length && <div className="rounded-[18px] bg-card p-4 text-center text-[14px] font-semibold sticker-border">{t("challengePulse.emptyPosts")}</div>}
       {posts.hasNextPage && <StickerButton block variant="secondary" disabled={posts.isFetchingNextPage} onClick={() => void posts.fetchNextPage()}>{t(posts.isFetchingNextPage ? "common.loading" : "batch4.loadMore")}</StickerButton>}
-      <Compose open={compose} onClose={() => setCompose(false)} initialAudience={crewScope ? "crew" : "everyone"} />
+      <Compose open={compose} onClose={() => setCompose(false)} initialAudience="everyone" />
     </AppShell>
   );
 }

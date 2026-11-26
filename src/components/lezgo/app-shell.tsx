@@ -24,8 +24,8 @@ export function AppShell({ children, hideTabs, todayLayout = false }: { children
 
   const tabs = [
     { to: "/today" as const, label: t("nav.today"), kind: "today" as const },
+    { to: "/community" as const, label: t("nav.pulse"), kind: "community" as const },
     { to: "/ranks" as const, label: t("nav.board"), kind: "ranks" as const },
-    { to: "/crew" as const, label: t("nav.crew"), kind: "crew" as const },
     { to: "/profile" as const, label: t("nav.me"), kind: "profile" as const },
   ];
   return (
@@ -45,12 +45,12 @@ export function AppShell({ children, hideTabs, todayLayout = false }: { children
         <nav className="main-tab-wrap">
           <div className="main-tab-bar">
             {tabs.map(({ to, label, kind }) => {
-              const mePaths = ["/profile","/settings","/boss","/seasons","/wrapped","/trail","/challenges","/create-challenge","/small-wins","/admin","/capsule"];
-              const crewPaths = ["/community","/crew-details","/buddies"];
+              const mePaths = ["/profile","/settings","/boss","/seasons","/wrapped","/trail","/challenges","/create-challenge","/small-wins","/admin","/capsule","/buddies"];
+              const pulsePaths = ["/crew"];
               // Lift is opened from the Train habit, so it stays under Today.
               const active = loc.pathname.startsWith(to)
                 || (to === "/today" && loc.pathname.startsWith("/lift"))
-                || (to === "/crew" && crewPaths.some((path) => loc.pathname.startsWith(path)))
+                || (to === "/community" && pulsePaths.some((path) => loc.pathname.startsWith(path)))
                 || (to === "/profile" && mePaths.some((path) => loc.pathname.startsWith(path)))
                 || (to === "/ranks" && loc.pathname.startsWith("/scoring"));
               return (

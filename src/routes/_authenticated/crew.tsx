@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { ArrowRight, Copy, Hand, Plus, Share2, UserPlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { CommunitySwitch } from "@/components/lezgo/community/community-switch";
+import { CrewPosts } from "@/components/lezgo/community/crew-posts";
 import { AppShell } from "@/components/lezgo/app-shell";
 import { FlameIcon } from "@/components/lezgo/icons";
 import {
@@ -69,9 +70,12 @@ function CrewPage() {
   const {t}=useTranslation();
   const mine = useQuery({ ...myCrewQuery(uid, season?.id ?? ""), enabled: !!uid && !!season });
   return (
-    <AppShell>
+    <AppShell todayLayout>
       <CommunitySwitch active="crew" />
-      {mine.isLoading || !season ? null : mine.data ? <CrewToday crewId={mine.data} /> : <NoCrew />}
+      {mine.isLoading || !season ? null : mine.data ? <>
+        <CrewToday crewId={mine.data} />
+        <CrewPosts uid={uid} seasonId={season.id} startsOn={season.starts_on} crewId={mine.data} />
+      </> : <NoCrew />}
     </AppShell>
   );
 }

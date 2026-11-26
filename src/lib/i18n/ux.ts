@@ -1,5 +1,7 @@
 /** Copy for the "easy to use" pass (UX-01…UX-18). en is the typed source; fr/ar/aeb must match. */
 export const uxEn = {
+  pulseChallenge: "Challenge",
+  pulseCrew: "My crew",
   actHabit: "finished {{habit}}",
   actPerfect: "had a perfect day",
   actStreak: "hit a {{n}}-day streak",
@@ -50,6 +52,8 @@ export const uxEn = {
 export type UxCopy = typeof uxEn;
 
 export const uxFr: UxCopy = {
+  pulseChallenge: "Challenge",
+  pulseCrew: "Mon crew",
   actHabit: "a terminé {{habit}}",
   actPerfect: "a fait une journée parfaite",
   actStreak: "a atteint une série de {{n}} jours",
@@ -98,6 +102,8 @@ export const uxFr: UxCopy = {
 };
 
 export const uxAr: UxCopy = {
+  pulseChallenge: "التحدي",
+  pulseCrew: "فريقي",
   actHabit: "أنجز {{habit}}",
   actPerfect: "حقق يومًا مثاليًا",
   actStreak: "وصل إلى سلسلة {{n}} أيام",
@@ -146,6 +152,8 @@ export const uxAr: UxCopy = {
 };
 
 export const uxAeb: UxCopy = {
+  pulseChallenge: "التحدّي",
+  pulseCrew: "جماعتي",
   actHabit: "كمّل {{habit}}",
   actPerfect: "عمل نهار كامل",
   actStreak: "وصل لسلسلة {{n}} نهار",
