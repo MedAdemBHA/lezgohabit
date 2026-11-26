@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 
 export function CountUp({ value, className }: { value: number; className?: string }) {
-  const [shown, setShown] = useState(value);
+  const [shown, setShown] = useState(Math.round(value));
   const from = useRef(value);
   useEffect(() => {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduce) { setShown(value); from.current = value; return; }
+    if (reduce) { setShown(Math.round(value)); from.current = value; return; }
     const start = performance.now(); const a = from.current; let raf = 0;
     const tick = (now: number) => {
       const p = Math.min(1, (now - start) / 700);

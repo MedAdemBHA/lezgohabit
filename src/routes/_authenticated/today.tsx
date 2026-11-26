@@ -39,11 +39,10 @@ import {
   type HabitPoints,
   type UserHabit,
 } from "@/lib/data";
-import { completion, fmtVal, stepFor, type PrayerState } from "@/lib/habits";
+import { completion, fmtVal, isSleepHabit, stepFor, type PrayerState } from "@/lib/habits";
 import {
   canSpin,
   habitColor,
-  incrementCount,
   DAILY_DARE_COUNT,
   streakAtRisk,
 } from "@/lib/today-rules";
@@ -293,11 +292,9 @@ function Today() {
         ?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
-    const value = Number(byHabit.get(h.id)?.value ?? 0);
-    log(
-      h,
-      h.kind === "count" ? incrementCount(value) : completion(h, byHabit.get(h.id)) >= 1 ? 0 : 1,
-    );
+    // Counts open the sheet: one big "Done" saves the target, the stepper handles partial amounts.
+    if (h.kind === "count") { setStepper(h); return; }
+    log(h, completion(h, byHabit.get(h.id)) >= 1 ? 0 : 1);
   }
   async function toggleChaos() {
     if (bonusBusy || disabled) return;
@@ -597,7 +594,24 @@ function Today() {
         )}
         {stepper && stepper.kind === "count" && (
           <div className="space-y-4">
-            <p className="text-center font-semibold">{t("todayDesign.countTitle")}</p>
+            {stepper.template?.key !== "screen_limit" && (
+              <StickerButton
+                block
+                size="lg"
+                variant="lime"
+                onClick={() => {
+                  log(stepper, Number(stepper.target));
+                  setStepper(null);
+                }}
+              >
+                {isSleepHabit(stepper.template?.key)
+                  ? t("ux.sleptEnough", { n: fmtVal(Number(stepper.target)) })
+                  : t("ux.doneTarget", { target: fmtVal(Number(stepper.target)), unit: stepper.unit ?? "" })}
+              </StickerButton>
+            )}
+            <p className="text-center font-semibold">
+              {isSleepHabit(stepper.template?.key) ? t("ux.lastNight") : t("ux.orPartial")}
+            </p>
             <div className="flex items-center justify-center gap-5">
               <StickerButton
                 variant="secondary"
@@ -636,14 +650,8 @@ function Today() {
                 <RotateCcw size={18} />
                 {t("todayDesign.undo")}
               </StickerButton>
-              <StickerButton
-                block
-                onClick={() => {
-                  log(stepper, Number(stepper.target));
-                  setStepper(null);
-                }}
-              >
-                {t("todayDesign.complete")}
+              <StickerButton block variant="secondary" onClick={() => setStepper(null)}>
+                {t("common.done")}
               </StickerButton>
             </div>
           </div>

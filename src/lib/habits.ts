@@ -28,6 +28,14 @@ export function stepFor(unit: string | null, target: number) {
 export const CHAOS_KEYS = ["pushups", "mom", "nophone", "stairs", "compliment", "cold", "walk", "tidy", "fruit", "plank", "thanks", "sunrise"] as const;
 export const chaosFor = (dayIndex: number) => CHAOS_KEYS[((dayIndex % CHAOS_KEYS.length) + CHAOS_KEYS.length) % CHAOS_KEYS.length]!;
 
+/** Points are whole numbers on screen; the server keeps the exact values (display rounding only). */
+export function fmtPts(v: number | null | undefined) {
+  const n = Math.round(Number(v ?? 0));
+  return String(Object.is(n, -0) ? 0 : n);
+}
+
+export const isSleepHabit = (key: string | undefined) => key === "sleep7";
+
 export function fmtVal(v: number) {
   return Number.isInteger(v) ? String(v) : v.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
 }
