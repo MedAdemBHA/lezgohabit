@@ -1,5 +1,9 @@
 /** Copy for the "easy to use" pass (UX-01…UX-18). en is the typed source; fr/ar/aeb must match. */
 export const uxEn = {
+  actHabit: "finished {{habit}}",
+  actPerfect: "had a perfect day",
+  actStreak: "hit a {{n}}-day streak",
+  actJoined: "joined the crew",
   members_zero: "{{count}} members",
   members_one: "{{count}} member",
   members_two: "{{count}} members",
@@ -46,6 +50,10 @@ export const uxEn = {
 export type UxCopy = typeof uxEn;
 
 export const uxFr: UxCopy = {
+  actHabit: "a terminé {{habit}}",
+  actPerfect: "a fait une journée parfaite",
+  actStreak: "a atteint une série de {{n}} jours",
+  actJoined: "a rejoint le crew",
   members_zero: "{{count}} membre",
   members_one: "{{count}} membre",
   members_two: "{{count}} membres",
@@ -90,6 +98,10 @@ export const uxFr: UxCopy = {
 };
 
 export const uxAr: UxCopy = {
+  actHabit: "أنجز {{habit}}",
+  actPerfect: "حقق يومًا مثاليًا",
+  actStreak: "وصل إلى سلسلة {{n}} أيام",
+  actJoined: "انضم إلى الفريق",
   members_zero: "لا أعضاء",
   members_one: "عضو واحد",
   members_two: "عضوان",
@@ -134,6 +146,10 @@ export const uxAr: UxCopy = {
 };
 
 export const uxAeb: UxCopy = {
+  actHabit: "كمّل {{habit}}",
+  actPerfect: "عمل نهار كامل",
+  actStreak: "وصل لسلسلة {{n}} نهار",
+  actJoined: "دخل للجماعة",
   members_zero: "حتى عضو",
   members_one: "عضو واحد",
   members_two: "زوز أعضاء",

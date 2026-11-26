@@ -50,7 +50,9 @@ type CrewToday = {
   week: boolean[];
 };
 type Activity = {
-  id: string;
+  id: string | null;
+  kind?: "habit" | "perfect" | "streak" | "joined";
+  streak?: number | null;
   created_at: string;
   user_id: string;
   display_name: string;
@@ -291,6 +293,7 @@ function CrewToday({ crewId }: { crewId: string }) {
     void qc.invalidateQueries({ queryKey: ["crewToday", crewId] });
   }
   async function respect(a: Activity) {
+    if (!a.id) return;
     await supabase.rpc("toggle_respect", { _checkin_id: a.id });
     void qc.invalidateQueries({ queryKey: ["crewActivity", crewId] });
   }
@@ -430,17 +433,20 @@ function CrewToday({ crewId }: { crewId: string }) {
         )}
         {(act.data ?? []).map((a) => (
           <div
-            key={a.id}
+            key={`${a.kind ?? "habit"}-${a.id ?? a.user_id}-${a.created_at}`}
             className="flex min-h-[62px] items-center gap-3 rounded-[16px] bg-card px-3 sticker-border"
           >
             <Avatar id={a.user_id} name={a.display_name} url={a.avatar_url} size={36} />
             <p className="min-w-0 flex-1 truncate text-[15px] font-bold">
               {a.display_name} ·{" "}
               <span className="text-muted-foreground">
-                {a.habit ? loc(a.habit, i18n.language) : t("crew.private")}
+                {a.kind === "perfect" ? t("ux.actPerfect")
+                  : a.kind === "streak" ? t("ux.actStreak", { n: a.streak ?? 0 })
+                  : a.kind === "joined" ? t("ux.actJoined")
+                  : a.habit ? t("ux.actHabit", { habit: loc(a.habit, i18n.language) }) : t("crew.private")}
               </span>
             </p>
-            {a.user_id !== uid && (
+            {a.user_id !== uid && a.id && (
               <Chip active={a.respected} onClick={() => respect(a)}>
                 {t("crew.respect")}
                 {a.respects > 0 && <Num> {a.respects}</Num>}
