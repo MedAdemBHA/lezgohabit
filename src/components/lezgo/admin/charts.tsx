@@ -39,10 +39,9 @@ export function AdminOverview({ data }: { data: AdminDashboard }) {
     "checkins_today",
     "average_score",
     "retention7",
-    "passes",
     "reports",
   ] as const;
-  const colors = ["bg-lime", "bg-blue", "bg-yellow", "bg-purple", "bg-teal", "bg-pink"];
+  const colors = ["bg-lime", "bg-blue", "bg-yellow", "bg-purple", "bg-pink"];
   const previous = ["active_previous", "checkins_previous", "average_previous"];
   const shortDate = (day: string) => formatDayMonth(day, i18n.language);
   const countries = new Intl.DisplayNames([i18n.language === "aeb" ? "ar" : i18n.language], {
@@ -72,9 +71,7 @@ export function AdminOverview({ data }: { data: AdminDashboard }) {
                 {key === "retention7" ? "%" : ""}
               </Num>
               <span className="admin-delta">
-                {key === "passes" ? (
-                  t("batch7.paymentPending")
-                ) : delta !== null ? (
+                {delta !== null ? (
                   <>
                     <Num>
                       {delta > 0 ? "+" : ""}

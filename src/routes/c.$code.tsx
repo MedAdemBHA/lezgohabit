@@ -1,16 +1,19 @@
-import { ClientOnly, createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { ClientOnly, createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { LezgoMark } from "@/components/lezgo/brand";
 import { StickerButton, Num } from "@/components/lezgo/ui";
-import { useUser } from "@/lib/data";
+import { errKey, useUser } from "@/lib/data";
 import { pageHead } from "@/lib/page-head";
-import { challengePreview } from "@/lib/challenge-preview.functions";
-import { loc } from "@/lib/i18n";
+import { challengePreview, crewInvitePreview } from "@/lib/challenge-preview.functions";
+import { formatDayMonth, isRtl, loc } from "@/lib/i18n";
 import i18n from "@/lib/i18n";
+import { localDate } from "@/lib/time";
+import { joinErrorKey } from "@/lib/event-data";
 import { supabase } from "@/integrations/supabase/client";
+import { isGuestMode } from "@/lib/guest";
+import { useLeaveGuest } from "@/components/lezgo/guest";
 
 export type ChallengePreview = {
   id: string; season_id: string; name: string; days: number; audience: string; creator: string;
@@ -29,12 +32,14 @@ export const Route = createFileRoute("/c/$code")({
   loader: async ({ context, params, location }) => {
     const requestedLang = new URLSearchParams(location.searchStr).get("lang");
     const lang = requestedLang === "fr" || requestedLang === "ar" ? requestedLang : "en";
-    if (!/^[A-Z0-9]{6}$/i.test(params.code)) return { challenge: null, lang, issue: "batch6.notFound" } as const;
+    const code = params.code.toUpperCase();
+    if (!/^[A-Z0-9]{6}$/.test(code)) return { challenge: null, crew: null, unavailable: false, lang };
     try {
-      const challenge = await context.queryClient.ensureQueryData(preview(params.code.toUpperCase()));
-      return { challenge, lang, issue: null };
+      const challenge = await context.queryClient.ensureQueryData(preview(code));
+      const crew = challenge ? null : await crewInvitePreview({ data: code });
+      return { challenge, crew, unavailable: false, lang };
     } catch {
-      return { challenge: null, lang, issue: "common.error" } as const;
+      return { challenge: null, crew: null, unavailable: true, lang };
     }
   },
   head: ({ params, loaderData }) => {
@@ -44,7 +49,7 @@ export const Route = createFileRoute("/c/$code")({
     if (!challenge) return pageHead(
       lang === "fr" ? "Rejoignez votre crew sur lezgo" : lang === "ar" ? "انضم إلى فريقك على lezgo" : "Join a crew on lezgo",
       lang === "fr" ? "Rejoignez votre crew et soyez présents ensemble sur lezgo." : lang === "ar" ? "انضم إلى فريقك واظهروا معاً على lezgo." : "Join your crew and show up together on lezgo.",
-      { privatePage: !!loaderData?.issue, canonicalPath: `/c/${params.code}`, imagePath: `/og/challenge/${params.code}`, imageAlt: "Join a crew on lezgo", lang },
+      { privatePage: !loaderData?.crew, canonicalPath: `/c/${params.code}`, imagePath: `/og/challenge/${params.code}`, imageAlt: "Join a crew on lezgo", lang },
     );
     const creator = challenge.creator ? `@${challenge.creator.replace(/^@/, "")}` : "";
     const habits = challenge.habits.map((habit) => loc(habit.name, lang)).filter(Boolean);
@@ -87,21 +92,19 @@ export const Route = createFileRoute("/c/$code")({
 function Invite() {
   const { code: rawCode } = Route.useParams();
   const code = rawCode.toUpperCase();
-  const { lang, challenge, issue } = Route.useLoaderData();
+  const { lang, challenge, crew, unavailable } = Route.useLoaderData();
+  const preview = challenge ?? crew;
+  const blocked = preview?.ended ? "events.closed" : preview?.full ? (crew ? "events.crewFull" : "batch6.full")
+    : preview && preview.starts_on > localDate("Africa/Tunis") ? "events.early" : null;
   const t = i18n.getFixedT(lang);
 
   return (
-    <main className="challenge-public">
+    <main className="challenge-public" lang={lang} dir={isRtl(lang) ? "rtl" : "ltr"}>
       <LezgoMark size={64} />
-      {issue ? (
-        <>
-          <h1>{t(issue)}</h1>
-          <Link to="/start" className="font-extrabold underline">{t("challengeHistory.pickNext")}</Link>
-        </>
-      ) : challenge ? (
+      {challenge ? (
         <>
           <h1>{challenge.name}</h1>
-          <p>{t("batch6.days", { n: challenge.days })} · {challenge.starts_on} — {challenge.ends_on}</p>
+          <p>{t("batch6.days", { n: challenge.days })} · {formatDayMonth(challenge.starts_on, lang)} – {formatDayMonth(challenge.ends_on, lang)}</p>
           <p>{t("batch6.creatorLabel", { name: challenge.creator.startsWith("@") ? challenge.creator : `@${challenge.creator}` })}</p>
           <Num>{t("batch6.members", { n: challenge.members })}</Num>
           <div className="challenge-preview-habits">
@@ -110,26 +113,54 @@ function Invite() {
               <p className="text-[13px] font-semibold">{loc(habit.what_counts, lang)} · {habit.target}{habit.unit ? ` ${habit.unit}` : ""}</p>
             </article>)}
           </div>
-          <ClientOnly fallback={<p className="font-extrabold">Join this challenge on lezgo</p>}>
-            <InviteActions code={code} challenge={challenge} />
+          <ClientOnly fallback={<p className="font-extrabold">{t("events.joinOnLezgo")}</p>}>
+            <InviteActions code={code} challenge={challenge} blocked={blocked} />
+          </ClientOnly>
+        </>
+      ) : crew ? (
+        <>
+          <h1>{crew.name}</h1>
+          <p>{loc(crew.event, lang)} · {formatDayMonth(crew.starts_on, lang)} – {formatDayMonth(crew.ends_on, lang)}</p>
+          <Num>{code.toUpperCase()}</Num>
+          <p>{t("batch6.crewInviteNote")}</p>
+          <ClientOnly fallback={<p className="font-extrabold">{blocked ? t(blocked) : t("crew.joinBtn")}</p>}>
+            <InviteActions code={code} challenge={null} blocked={blocked} />
           </ClientOnly>
         </>
       ) : (
         <>
-          <h1>{t("crew.shareTitle")}</h1>
-          <Num>{code}</Num>
-          <p>{t("batch6.crewInviteNote")}</p>
-          <ClientOnly fallback={<p className="font-extrabold">Join this crew on lezgo</p>}>
-            <InviteActions code={code} challenge={null} />
-          </ClientOnly>
+          <h1 className="invite-error">{t(unavailable ? "events.inviteUnavailable" : "events.invalidCode")}</h1>
+          {unavailable && <RetryInvite label={t("batch9.retry")} />}
+          <Link to="/start"><StickerButton variant="secondary">{t("challengeHistory.pickNext")}</StickerButton></Link>
         </>
       )}
     </main>
   );
 }
 
-function InviteActions({ code, challenge }: { code: string; challenge: ChallengePreview | null }) {
+function RetryInvite({ label }: { label: string }) {
+  const router = useRouter();
+  const [busy, setBusy] = useState(false);
+  return <StickerButton variant="lime" disabled={busy} onClick={() => {
+    setBusy(true);
+    void router.invalidate().finally(() => setBusy(false));
+  }}>{label}</StickerButton>;
+}
+
+function InviteActions({ code, challenge, blocked }: { code: string; challenge: ChallengePreview | null; blocked: string | null }) {
   const user = useUser();
+  const leaveGuest = useLeaveGuest();
+  // The player's own entry in this challenge's season (any status), readable under RLS.
+  const entry = useQuery({
+    queryKey: ["inviteEntry", user?.id, challenge?.season_id],
+    enabled: !!user && !!challenge,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("season_entries").select("status")
+        .eq("user_id", user!.id).eq("season_id", challenge!.season_id).maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
   const userProfile = useQuery({
     queryKey: ["startProfile", user?.id],
     enabled: !!user,
@@ -143,36 +174,65 @@ function InviteActions({ code, challenge }: { code: string; challenge: Challenge
   const qc = useQueryClient();
   const nav = useNavigate();
   const [busy, setBusy] = useState(false);
+  const [joinIssue, setJoinIssue] = useState<string | null>(null);
 
   async function join() {
     if (!user || userProfile.data?.onboarded === false) {
       void nav({ to: "/start", search: { code } });
       return;
     }
+    if (busy) return;
+    if (isGuestMode()) { setJoinIssue("guest_read_only"); return; }
+    setJoinIssue(null);
     setBusy(true);
-    const result = challenge
-      ? await supabase.rpc("join_challenge", { _code: code })
-      : await supabase.rpc("join_crew", { _code: code });
-    setBusy(false);
-    if (result.error) {
-      const message = result.error.message;
-      const key = message.includes("active_challenge_exists") ? "batch6.activeChallengeExists"
-        : message.includes("challenge_full") || message.includes("crew_full") ? "batch6.full"
-        : message.includes("challenge_ended") || message.includes("challenge_complete") ? "batch6.challengeClosed"
-        : "common.error";
-      toast(t(key));
-      return;
+    try {
+      const result = challenge
+        ? await supabase.rpc("join_challenge", { _code: code })
+        : await supabase.rpc("join_crew", { _code: code });
+      if (result.error) {
+        setJoinIssue(errKey(result.error));
+        return;
+      }
+      sessionStorage.removeItem("lezgo_challenge_invite");
+      await qc.invalidateQueries();
+      void nav({ to: "/today" });
+    } catch {
+      setJoinIssue("");
+    } finally {
+      setBusy(false);
     }
-    sessionStorage.removeItem("lezgo_challenge_invite");
-    await qc.invalidateQueries();
-    void nav({ to: "/today" });
   }
 
+  function signUpFromGuest() {
+    // Bring the invite along so the new account lands back here after sign-in.
+    sessionStorage.setItem("lezgo_challenge_invite", code);
+    void leaveGuest();
+  }
+
+  // Members come first: an upcoming or full challenge still belongs to them (ended ones offer the recap).
+  const member = entry.data?.status === "active" && !challenge?.ended;
+  if (member) return <>
+    <p role="status" className="font-extrabold">{t("flows.youreIn")}</p>
+    <Link to="/today"><StickerButton block variant="lime">{t("events.goToday")}</StickerButton></Link>
+  </>;
+  if (blocked) return <>
+    <p role="status">{t(blocked)}</p>
+    {blocked === "events.closed" && challenge && entry.data && (
+      <Link to="/wrapped" search={{ season: challenge.season_id }}><StickerButton block variant="secondary">{t("flows.seeRecap")}</StickerButton></Link>
+    )}
+    {blocked !== "events.closed" && <Link to="/start"><StickerButton block variant="secondary">{t("challengeHistory.pickNext")}</StickerButton></Link>}
+  </>;
   const label = user ? (challenge ? t("batch6.join") : t("crew.joinBtn")) : t("batch6.signIn");
+  const issueText = joinIssue === "guest_read_only" ? t("flows.guestJoin")
+    : joinIssue === "already_in_crew" ? t("flows.alreadyInCrew")
+    : joinIssue !== null ? t(joinErrorKey(joinIssue)) : null;
   return <>
-    {challenge?.full || challenge?.ended
-      ? <p>{t("batch6.full")}</p>
-      : <StickerButton block disabled={busy || user === undefined || (!!user && userProfile.isLoading)} onClick={() => void join()}>{label}</StickerButton>}
+    {issueText && <p role="alert">{issueText}</p>}
+    {joinIssue === "guest_read_only"
+      ? <StickerButton block variant="lime" onClick={signUpFromGuest}>{t("guest.create")}</StickerButton>
+      : joinIssue === "active_challenge_exists" || joinIssue === "already_in_crew"
+      ? <Link to="/today"><StickerButton block variant="secondary">{t("events.goToday")}</StickerButton></Link>
+      : <StickerButton block disabled={busy || user === undefined || (!!user && userProfile.isLoading)} onClick={() => void join()}>{busy ? t("common.loading") : label}</StickerButton>}
     {!user && <Link to="/auth" className="sr-only">{t("batch6.signIn")}</Link>}
   </>;
 }

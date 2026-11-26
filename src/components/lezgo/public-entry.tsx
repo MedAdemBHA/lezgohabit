@@ -19,10 +19,13 @@ export function PublicHeader({
   lang,
   onLanguage,
   onBrowse,
+  signedIn,
 }: {
   lang: Lang;
   onLanguage: (lang: Lang) => void;
   onBrowse?: () => void;
+  /** true: show "Back to Today" instead of "Sign in"; undefined while the session is unknown. */
+  signedIn?: boolean | undefined;
 }) {
   const t = i18n.getFixedT(lang);
   return (
@@ -38,10 +41,16 @@ export function PublicHeader({
       </Link>
       <div className="flex items-center gap-1.5 sm:gap-3">
         <DesignLanguage lang={lang} onSelect={onLanguage} />
-        <Link to="/auth" className="public-sign-in">
-          <LogIn className="hidden size-4 rtl:rotate-180 sm:block" aria-hidden="true" />
-          {t("auth.signIn")}
-        </Link>
+        {signedIn ? (
+          <Link to="/today" className="public-sign-in">
+            {t("ux.backToToday")}
+          </Link>
+        ) : (
+          <Link to="/auth" className="public-sign-in">
+            <LogIn className="hidden size-4 rtl:rotate-180 sm:block" aria-hidden="true" />
+            {t("auth.signIn")}
+          </Link>
+        )}
       </div>
       <nav aria-label={t("landing.navigation")} className="public-nav">
         <Link to="/start" search={{ lang }} className="public-nav-link" onClick={onBrowse}>

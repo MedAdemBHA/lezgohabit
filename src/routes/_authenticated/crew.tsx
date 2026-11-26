@@ -3,10 +3,12 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 import { toast } from "sonner";
 import { ArrowRight, Copy, Hand, Plus, Share2, UserPlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { CommunitySwitch } from "@/components/lezgo/community/community-switch";
+import { CrewPosts } from "@/components/lezgo/community/crew-posts";
 import { AppShell } from "@/components/lezgo/app-shell";
 import { FlameIcon } from "@/components/lezgo/icons";
 import {
@@ -49,7 +51,9 @@ type CrewToday = {
   week: boolean[];
 };
 type Activity = {
-  id: string;
+  id: string | null;
+  kind?: "habit" | "perfect" | "streak" | "joined";
+  streak?: number | null;
   created_at: string;
   user_id: string;
   display_name: string;
@@ -63,14 +67,40 @@ const link = challengeLink;
 
 function CrewPage() {
   const { uid, season } = useBase();
-  const {t}=useTranslation();
+  const { t } = useTranslation();
   const mine = useQuery({ ...myCrewQuery(uid, season?.id ?? ""), enabled: !!uid && !!season });
   return (
-    <AppShell>
+    <AppShell todayLayout>
       <CommunitySwitch active="crew" />
-      {mine.isLoading || !season ? null : mine.data ? <CrewToday crewId={mine.data} /> : <NoCrew />}
+      {mine.isLoading || !season ? null : mine.data ? (
+        <>
+          <CrewToday crewId={mine.data} />
+          <CrewPosts
+            uid={uid}
+            seasonId={season.id}
+            startsOn={season.starts_on}
+            crewId={mine.data}
+          />
+        </>
+      ) : (
+        <NoCrew />
+      )}
     </AppShell>
   );
+}
+
+/** Web Share when available, clipboard otherwise; a cancelled share is not an error. */
+async function shareInvite(code: string, t: TFunction) {
+  const text = t("crew.inviteText", { code });
+  try {
+    if (navigator.share) await navigator.share({ text, url: link(code) });
+    else {
+      await navigator.clipboard.writeText(`${text} ${link(code)}`);
+      toast(t("crew.copied"));
+    }
+  } catch {
+    /* cancelled */
+  }
 }
 
 function ShareSheet({ code, open, onClose }: { code: string; open: boolean; onClose: () => void }) {
@@ -95,20 +125,7 @@ function ShareSheet({ code, open, onClose }: { code: string; open: boolean; onCl
           <Copy strokeWidth={2.5} className="size-5" />
           {t("crew.copy")}
         </StickerButton>
-        <StickerButton
-          onClick={async () => {
-            const text = t("crew.inviteText", { code });
-            try {
-              if (navigator.share) await navigator.share({ text, url: link(code) });
-              else {
-                await navigator.clipboard.writeText(`${text} ${link(code)}`);
-                toast(t("crew.copied"));
-              }
-            } catch {
-              /* cancelled */
-            }
-          }}
-        >
+        <StickerButton onClick={() => void shareInvite(code, t)}>
           <Share2 strokeWidth={2.5} className="size-5" />
           {t("crew.shareBtn")}
         </StickerButton>
@@ -250,7 +267,7 @@ function NoCrew() {
 function CrewToday({ crewId }: { crewId: string }) {
   const { t, i18n } = useTranslation();
   const qc = useQueryClient();
-  const { uid, tz } = useBase();
+  const { uid, tz, season } = useBase();
   const now = useNow();
   const [share, setShare] = useState(false);
   const q = useQuery({
@@ -287,6 +304,7 @@ function CrewToday({ crewId }: { crewId: string }) {
     void qc.invalidateQueries({ queryKey: ["crewToday", crewId] });
   }
   async function respect(a: Activity) {
+    if (!a.id) return;
     await supabase.rpc("toggle_respect", { _checkin_id: a.id });
     void qc.invalidateQueries({ queryKey: ["crewActivity", crewId] });
   }
@@ -300,7 +318,7 @@ function CrewToday({ crewId }: { crewId: string }) {
             to="/crew-details"
             className="block min-h-11 truncate text-[15px] font-bold text-muted-foreground underline"
           >
-            {crew.name} · {t("crew.membersCount", { n: members.length })}
+            {crew.name} · {t("ux.members", { count: members.length })}
           </Link>
         </div>
         <div className="flex shrink-0 flex-col items-end gap-2">
@@ -314,59 +332,80 @@ function CrewToday({ crewId }: { crewId: string }) {
         </div>
       </div>
 
-      <StickerCard className={cn("mt-4", allDone ? "bg-lime" : "bg-card")}>
-        <div className="flex items-center gap-2">
-          <FlameIcon size={30} dim={doneCount === 0} />
-          <p className="text-[24px] font-extrabold">
-            {t("crew.doneOf", { done: doneCount, total: members.length })}
+      {members.length === 1 ? (
+        <StickerCard className="mt-4 bg-yellow">
+          <p className="text-[20px] font-extrabold">{t("ux.aloneTitle")}</p>
+          <p className="mt-1 text-[15px] font-bold">
+            {t("ux.aloneBody", { challenge: season ? loc(season.name, i18n.language) : "" })}
           </p>
-        </div>
-        <p className="mt-1 text-[15px] font-bold">
-          {allDone
-            ? t("crew.allDone")
-            : members.length > 1
-              ? t("crew.oneMore", { n: members.length - doneCount })
-              : t("crew.shareBody")}
-        </p>
-        <div className="mt-3 flex gap-1.5">
-          {members.map((m) => {
-            const done = m.perfect || (m.total > 0 && m.done >= m.total);
-            return (
-              <span
-                key={m.user_id}
-                className={cn(
-                  "h-4 flex-1 rounded-full",
-                  done ? `${colorFor(m.user_id)} sticker-border` : "dashed-ink",
-                )}
-              />
-            );
-          })}
-        </div>
-        <p className="mt-4 text-[13px] font-extrabold uppercase text-muted-foreground">
-          {t("crew.allIn")}
-        </p>
-        <div className="mt-1.5 grid grid-cols-7 gap-1.5">
-          {week.map((w, i) => (
-            <div key={i} className="text-center">
-              <span
-                className={cn(
-                  "block aspect-square rounded-[8px]",
-                  w ? "bg-lime sticker-border" : "dashed-ink",
-                )}
-              />
-              <span className="text-[12px] font-bold">
-                {(t("crew.wd", { returnObjects: true }) as string[])[i]}
-              </span>
-            </div>
-          ))}
-        </div>
-        <p className="mt-3 text-[15px] font-bold">
-          {t("crew.closesIn")}{" "}
-          <Num className="font-bold">
-            {pad(left.h)}:{pad(left.m)}:{pad(left.s)}
-          </Num>
-        </p>
-      </StickerCard>
+          <div className="mt-3 rounded-[18px] bg-card p-3 text-center sticker-border">
+            <Num className="text-[32px] font-bold tracking-[0.25em]">{crew.code}</Num>
+          </div>
+          <StickerButton
+            block
+            variant="lime"
+            className="mt-3"
+            onClick={() => void shareInvite(crew.code, t)}
+          >
+            <Share2 strokeWidth={2.5} className="size-5" />
+            {t("crew.shareBtn")}
+          </StickerButton>
+        </StickerCard>
+      ) : (
+        <StickerCard className={cn("mt-4", allDone ? "bg-lime" : "bg-card")}>
+          <div className="flex items-center gap-2">
+            <FlameIcon size={30} dim={doneCount === 0} />
+            <p className="text-[24px] font-extrabold">
+              {t("crew.doneOf", { done: doneCount, total: members.length })}
+            </p>
+          </div>
+          <p className="mt-1 text-[15px] font-bold">
+            {allDone
+              ? t("crew.allDone")
+              : members.length > 1
+                ? t("crew.oneMore", { n: members.length - doneCount })
+                : t("crew.shareBody")}
+          </p>
+          <div className="mt-3 flex gap-1.5">
+            {members.map((m) => {
+              const done = m.perfect || (m.total > 0 && m.done >= m.total);
+              return (
+                <span
+                  key={m.user_id}
+                  className={cn(
+                    "h-4 flex-1 rounded-full",
+                    done ? `${colorFor(m.user_id)} sticker-border` : "dashed-ink",
+                  )}
+                />
+              );
+            })}
+          </div>
+          <p className="mt-4 text-[13px] font-extrabold uppercase text-muted-foreground">
+            {t("crew.allIn")}
+          </p>
+          <div className="mt-1.5 grid grid-cols-7 gap-1.5">
+            {week.map((w, i) => (
+              <div key={i} className="text-center">
+                <span
+                  className={cn(
+                    "block aspect-square rounded-[8px]",
+                    w ? "bg-lime sticker-border" : "dashed-ink",
+                  )}
+                />
+                <span className="text-[12px] font-bold">
+                  {(t("crew.wd", { returnObjects: true }) as string[])[i]}
+                </span>
+              </div>
+            ))}
+          </div>
+          <p className="mt-3 text-[15px] font-bold">
+            {t("crew.closesIn")}{" "}
+            <Num className="font-bold">
+              {pad(left.h)}:{pad(left.m)}:{pad(left.s)}
+            </Num>
+          </p>
+        </StickerCard>
+      )}
 
       <h2 className="mt-6 mb-2 text-[20px] font-extrabold">{t("crew.who")}</h2>
       <div className="space-y-3">
@@ -412,17 +451,25 @@ function CrewToday({ crewId }: { crewId: string }) {
         )}
         {(act.data ?? []).map((a) => (
           <div
-            key={a.id}
+            key={`${a.kind ?? "habit"}-${a.id ?? a.user_id}-${a.created_at}`}
             className="flex min-h-[62px] items-center gap-3 rounded-[16px] bg-card px-3 sticker-border"
           >
             <Avatar id={a.user_id} name={a.display_name} url={a.avatar_url} size={36} />
             <p className="min-w-0 flex-1 truncate text-[15px] font-bold">
               {a.display_name} ·{" "}
               <span className="text-muted-foreground">
-                {a.habit ? loc(a.habit, i18n.language) : t("crew.private")}
+                {a.kind === "perfect"
+                  ? t("ux.actPerfect")
+                  : a.kind === "streak"
+                    ? t("ux.actStreak", { n: a.streak ?? 0 })
+                    : a.kind === "joined"
+                      ? t("ux.actJoined")
+                      : a.habit
+                        ? t("ux.actHabit", { habit: loc(a.habit, i18n.language) })
+                        : t("crew.private")}
               </span>
             </p>
-            {a.user_id !== uid && (
+            {a.user_id !== uid && a.id && (
               <Chip active={a.respected} onClick={() => respect(a)}>
                 {t("crew.respect")}
                 {a.respects > 0 && <Num> {a.respects}</Num>}

@@ -29,18 +29,44 @@ function NotFoundComponent() {
   );
 }
 
+const STALE_RELOAD_KEY = "lezgo_stale_reload";
+
+/** A deploy replaced the hashed chunks this tab still points at. */
+function isStaleBuild(error: unknown) {
+  const message = String((error as { message?: string })?.message ?? error);
+  return /dynamically imported module|Importing a module script failed|error loading dynamically imported|Failed to fetch dynamically|ChunkLoadError|Unable to preload CSS/i.test(message);
+}
+
 function ErrorComponent({ error, reset }: ErrorComponentProps) {
   console.error(error);
   const router = useRouter();
+  const stale = isStaleBuild(error);
   useEffect(() => { reportLovableError(error, { boundary: "tanstack_root_error_component" }); }, [error]);
+  useEffect(() => {
+    if (!stale) return;
+    // Reload once to pick up the new build; a second failure stays on screen instead of looping.
+    try {
+      if (sessionStorage.getItem(STALE_RELOAD_KEY)) return;
+      sessionStorage.setItem(STALE_RELOAD_KEY, "1");
+      window.location.reload();
+    } catch { /* storage blocked: let the player tap Reload */ }
+  }, [stale]);
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+    <div className="flex min-h-screen items-center justify-center bg-background px-4" role="alert">
       <div className="max-w-md text-center">
         <h1 className="text-xl font-semibold tracking-tight text-foreground">{i18n.t("common.error")}</h1>
+        <p className="mt-3 text-[15px] font-semibold">{i18n.t(stale ? "flows.updated" : "flows.errorBody")}</p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
-          <StickerButton aria-label={i18n.t("batch9.retry")} onClick={() => { router.invalidate(); reset(); }}
-            className="inline-flex min-h-[48px] items-center rounded-[16px] bg-ink px-5 font-extrabold text-lime sticker-border">↻</StickerButton>
-          <a href="/" className="inline-flex min-h-[48px] items-center rounded-[16px] bg-card px-5 font-extrabold sticker-border">lezgo</a>
+          <StickerButton
+            onClick={() => {
+              if (stale) { window.location.reload(); return; }
+              router.invalidate();
+              reset();
+            }}
+            className="inline-flex min-h-[48px] items-center rounded-[16px] bg-ink px-5 font-extrabold text-lime sticker-border">
+            {i18n.t(stale ? "flows.reload" : "batch9.retry")}
+          </StickerButton>
+          <a href="/" className="inline-flex min-h-[48px] items-center rounded-[16px] bg-card px-5 font-extrabold sticker-border">{i18n.t("batch9.backHome")}</a>
         </div>
       </div>
     </div>
@@ -111,7 +137,9 @@ function RootComponent() {
       void router.invalidate();
       if (event !== "SIGNED_OUT") void queryClient.invalidateQueries();
     });
-    return () => data.subscription.unsubscribe();
+    // The app has run for a while on this build: allow one stale-chunk reload again later.
+    const settled = window.setTimeout(() => { try { sessionStorage.removeItem(STALE_RELOAD_KEY); } catch { /* ignore */ } }, 15_000);
+    return () => { window.clearTimeout(settled); data.subscription.unsubscribe(); };
   }, [router, queryClient]);
   return (
     <QueryClientProvider client={queryClient}>

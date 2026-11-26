@@ -13,9 +13,21 @@ import { batch8en, batch8fr, batch8ar, batch8aeb } from "./batch8";
 
 import { batch9en, batch9fr, batch9ar, batch9aeb } from "./batch9";
 import { integrityEn, integrityFr, integrityAr, integrityAeb } from "./integrity";
+import {
+  eventsEn,
+  eventsFr,
+  eventsAr,
+  eventsAeb,
+  moderationEn,
+  moderationFr,
+  moderationAr,
+  moderationAeb,
+} from "./events";
 import { guestEn, guestFr, guestAr, guestAeb } from "./guest";
-
 import { wrappedEn, wrappedFr, wrappedAr, wrappedAeb } from "./wrapped";
+import { flowsEn, flowsFr, flowsAr, flowsAeb } from "./flows";
+import { uxEn, uxFr, uxAr, uxAeb } from "./ux";
+
 
 export const LANGS = ["en", "fr", "ar", "aeb"] as const;
 export type Lang = (typeof LANGS)[number];
@@ -30,10 +42,78 @@ export function selectLang(value: unknown): Lang | undefined {
 if (!i18n.isInitialized) {
   void i18n.use(initReactI18next).init({
     resources: {
-      en: { translation: { ...en, batch4: batch4en, batch5: batch5en, batch6: batch6en, batch7: batch7en, batch8: batch8en, batch9: batch9en, integrity: integrityEn, guest: guestEn, wrapped: wrappedEn } },
-      fr: { translation: { ...fr, batch4: batch4fr, batch5: batch5fr, batch6: batch6fr, batch7: batch7fr, batch8: batch8fr, batch9: batch9fr, integrity: integrityFr, guest: guestFr, wrapped: wrappedFr } },
-      ar: { translation: { ...ar, batch4: batch4ar, batch5: batch5ar, batch6: batch6ar, batch7: batch7ar, batch8: batch8ar, batch9: batch9ar, integrity: integrityAr, guest: guestAr, wrapped: wrappedAr } },
-      aeb: { translation: { ...aeb, batch4: batch4aeb, batch5: batch5aeb, batch6: batch6aeb, batch7: batch7aeb, batch8: batch8aeb, batch9: batch9aeb, integrity: integrityAeb, guest: guestAeb, wrapped: wrappedAeb } },
+      en: {
+        translation: {
+          ...en,
+          batch4: batch4en,
+          batch5: batch5en,
+          batch6: batch6en,
+          batch7: batch7en,
+          batch8: batch8en,
+          batch9: batch9en,
+          integrity: integrityEn,
+          guest: guestEn,
+          events: eventsEn,
+          moderation: moderationEn,
+          wrapped: wrappedEn,
+          flows: flowsEn,
+          ux: uxEn,
+        },
+      },
+      fr: {
+        translation: {
+          ...fr,
+          batch4: batch4fr,
+          batch5: batch5fr,
+          batch6: batch6fr,
+          batch7: batch7fr,
+          batch8: batch8fr,
+          batch9: batch9fr,
+          integrity: integrityFr,
+          guest: guestFr,
+          events: eventsFr,
+          moderation: moderationFr,
+          wrapped: wrappedFr,
+          flows: flowsFr,
+          ux: uxFr,
+        },
+      },
+      ar: {
+        translation: {
+          ...ar,
+          batch4: batch4ar,
+          batch5: batch5ar,
+          batch6: batch6ar,
+          batch7: batch7ar,
+          batch8: batch8ar,
+          batch9: batch9ar,
+          integrity: integrityAr,
+          guest: guestAr,
+          events: eventsAr,
+          moderation: moderationAr,
+          wrapped: wrappedAr,
+          flows: flowsAr,
+          ux: uxAr,
+        },
+      },
+      aeb: {
+        translation: {
+          ...aeb,
+          batch4: batch4aeb,
+          batch5: batch5aeb,
+          batch6: batch6aeb,
+          batch7: batch7aeb,
+          batch8: batch8aeb,
+          batch9: batch9aeb,
+          integrity: integrityAeb,
+          guest: guestAeb,
+          events: eventsAeb,
+          moderation: moderationAeb,
+          wrapped: wrappedAeb,
+          flows: flowsAeb,
+          ux: uxAeb,
+        },
+      },
     },
     lng: "en",
     fallbackLng: { aeb: ["ar", "en"], fr: ["en"], default: ["en"] },
@@ -91,6 +171,14 @@ const MAGHREB_MONTHS = [
 ];
 
 /** Day + month with Western digits; Maghreb month names for ar/aeb. */
+/** Locale for numbers: Tunisian Arabic uses ar-TN; every other language its own tag. */
+export const numberLocale = (lang: string) => (lang === "aeb" ? "ar-TN" : lang);
+
+/** Formats a number for display in the player's language (display only — never for scoring). */
+export function formatNumber(n: number, lang: string, options?: Intl.NumberFormatOptions): string {
+  return new Intl.NumberFormat(numberLocale(lang), options).format(Number.isFinite(n) ? n : 0);
+}
+
 export function formatDayMonth(iso: string, lang: string): string {
   const [, m, d] = iso.split("-").map(Number);
   if (isRtl(lang)) return `${d} ${MAGHREB_MONTHS[(m ?? 1) - 1]}`;

@@ -182,7 +182,7 @@ export const ar: Dict = {
   common: {
     cta: "يلّا نبدأ", today: "اليوم", ranks: "الترتيب", crew: "الفريق", profile: "الملف", settings: "الإعدادات",
     back: "رجوع", save: "حفظ", cancel: "إلغاء", close: "إغلاق", done: "تم", loading: "جارٍ التحميل…",
-    error: "حدث خطأ. حاول مجدداً.", next: "التالي", skip: "تخطَّ", pts: "نقطة", language: "اللغة",
+    retry: "إعادة المحاولة", error: "حدث خطأ. حاول مجدداً.", next: "التالي", skip: "تخطَّ", pts: "نقطة", language: "اللغة",
     season1: "الموسم 1", live: "مباشر", openProfile: "افتح الملف",
   },
   nav: { today: "اليوم", board: "الترتيب", crew: "الفريق", me: "أنا", pulse: "نبض التحدّي" },

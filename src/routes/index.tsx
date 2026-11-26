@@ -14,6 +14,7 @@ import { publicChallengeCatalog } from "@/lib/challenge-preview.functions";
 import { guestDemoAvailable } from "@/lib/admin.functions";
 import { groupCatalog, type CatalogCard } from "@/lib/challenge-catalog";
 import { pageHead } from "@/lib/page-head";
+import { useUser } from "@/lib/data";
 import i18n, { isRtl, loc, selectLang, type Lang } from "@/lib/i18n";
 
 export const Route = createFileRoute("/")({
@@ -46,6 +47,7 @@ function Landing() {
   const { open, upcoming, demoAvailable } = Route.useLoaderData();
   const t = i18n.getFixedT(lang);
   const nav = useNavigate();
+  const user = useUser();
   const hash = useLocation({ select: (location) => location.hash });
   const current = open.find((card) => card.kind === "official") ?? open[0];
   const featured = current ?? upcoming[0];
@@ -70,6 +72,7 @@ function Landing() {
       <div className="public-wrap">
         <PublicHeader
           lang={lang}
+          signedIn={!!user}
           onLanguage={(next) => void nav({ to: "/", search: { lang: next }, hash, replace: true })}
         />
         <main>
@@ -97,6 +100,7 @@ function Landing() {
                   onSubmit={(code) => void nav({ to: "/start", search: { code, lang } })}
                 />
               </div>
+              <p className="mt-3 text-[14px] font-extrabold">{t("ux.trust")}</p>
             </div>
             <div className="home-photo">
               <img

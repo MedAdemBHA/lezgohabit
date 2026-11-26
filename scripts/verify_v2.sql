@@ -101,6 +101,11 @@ BEGIN
       v_template.default_target,v_template.unit,v_rule,v_template.is_faith,v_pos,false);
   END LOOP;
 
+  -- The competing event is valid on its own, so the uniqueness test reaches the index.
+  INSERT INTO public.challenge_habits(season_id,template_id,habit_key,name,what_counts,kind,target,unit,rule,is_faith,position,is_demo)
+  SELECT second_season,template_id,habit_key,name,what_counts,kind,target,unit,rule,is_faith,position,is_demo
+  FROM public.challenge_habits WHERE season_id=open_season AND position=0;
+
   -- A join copies the locked habit snapshot and its server rule into user_habits.
   PERFORM set_config('request.jwt.claims',jsonb_build_object('sub',u[1],'role','authenticated')::text,true);
   PERFORM public.join_season(open_season,'crew');
@@ -236,6 +241,8 @@ BEGIN
   INSERT INTO pg_temp.verify_v2_results(check_name,passed,detail)
   VALUES('Crew sees one calm surrender moment',v_count=1,format('%s matching surrender event(s)',v_count));
 
+  -- Historical fixtures model legacy rows seeded by a database operator, not a player join.
+  PERFORM set_config('request.jwt.claims','{}',true);
   -- A 7-day official challenge joined on day 2 has six elapsed participation days.
   local_day := public._local_today(u[9]);
   start_day := local_day-7;
@@ -273,6 +280,7 @@ BEGIN
   INSERT INTO pg_temp.verify_v2_results(check_name,passed,detail)
   VALUES('Completion threshold includes exactly 60 percent',v_boundary=5,format('%s days saved at completion=0.6',v_boundary));
 
+  PERFORM set_config('request.jwt.claims','{}',true);
   -- Five of seven qualifying days is below ceil(75%); it must not award a trophy.
   local_day := public._local_today(u[10]);
   start_day := local_day-7;

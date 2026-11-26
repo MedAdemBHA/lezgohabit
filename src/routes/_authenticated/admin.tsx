@@ -35,6 +35,9 @@ import { toast } from "sonner";
 import { Brand } from "@/components/lezgo/brand";
 import { Avatar, StickerButton, Switch, BottomSheet, Num, inputCls } from "@/components/lezgo/ui";
 import { AdminProofThumbnail } from "@/components/lezgo/admin/proof-thumbnail";
+import { ManageCommunity } from "@/components/lezgo/community/moderation";
+import { AdminModerationAppeals } from "@/components/lezgo/community/moderation-notices";
+import { OfficialEventsAdmin } from "@/components/lezgo/admin/official-events";
 import { AdminOverview } from "@/components/lezgo/admin/charts";
 import { AdminEditor, type EditorKind } from "@/components/lezgo/admin/editor";
 import { adminQuery, adminWrite, type AdminRow } from "@/lib/admin-data";
@@ -350,6 +353,8 @@ function AdminPage() {
             actionButton("newBroadcast", () => setEditor({ kind: "announcement" }))}
         </div>
         {section === "overview" && <AdminOverview data={data} />}
+        {section === "moderation" && !showDemo && <AdminModerationAppeals />}
+        {section === "seasons" && !showDemo && <OfficialEventsAdmin />}
         {section === "seasons" && (
           <>
             <div className="admin-section-title">
@@ -367,7 +372,7 @@ function AdminPage() {
                 ))}
               </select>
             </div>
-            {table(["season", "dates", "status", "players", "edit"], rows, (r, k) =>
+            {showDemo && table(["season", "dates", "status", "players", "edit"], rows, (r, k) =>
               k === "season" ? (
                 <strong>
                   {loc(r["name"], i18n.language)}
@@ -626,7 +631,7 @@ function AdminPage() {
         )}
         {section === "creators" && (
           <>
-            {table(["user", "code", "signups", "passes", "share", "action"], rows, (r, k) =>
+            {table(["user", "code", "signups", "share", "action"], rows, (r, k) =>
               k === "user" ? (
                 <strong>@{str(r, "handle")}</strong>
               ) : k === "share" ? (
@@ -639,18 +644,13 @@ function AdminPage() {
                   r["featured"] ? "featured" : "feature",
                   () => void save("feature_creator", str(r, "id"), { featured: !r["featured"] }),
                 )
-              ) : ["signups", "passes"].includes(k) ? (
+              ) : k === "signups" ? (
                 <Num>{str(r, k) || 0}</Num>
               ) : (
                 <bdi dir="ltr">{str(r, k)}</bdi>
               ),
             )}
             <div className="admin-pass-grid">
-              <article className="admin-kpi bg-lime">
-                <p>{a("passes")}</p>
-                <Num className="admin-kpi-value">0</Num>
-                <small>{a("paymentPending")}</small>
-              </article>
               <article className="admin-kpi bg-yellow">
                 <p>{a("sponsored")}</p>
                 <Num className="admin-kpi-value">
@@ -661,10 +661,10 @@ function AdminPage() {
             <h2 className="admin-section-title">{a("creator_challenges")}</h2>
             {table(["name", "status", "action"], data.challenges ?? [], (r, k) =>
               k === "action"
-                ? actionButton(
-                    r["approved"] ? "approved" : "approve",
-                    () => void save("approve_challenge", str(r, "id")),
-                  )
+                ? <div className="flex flex-wrap gap-2">
+                    {actionButton(r["approved"] ? "approved" : "approve", () => void save("approve_challenge", str(r, "id")))}
+                    {!showDemo && str(r, "season_id") && <ManageCommunity season={str(r, "season_id")} />}
+                  </div>
                 : k === "status"
                   ? a(r["approved"] ? "approved" : "open")
                   : str(r, k),
@@ -694,6 +694,7 @@ function AdminPage() {
               ) : k === "action" ? (
                 <div className="flex gap-2">
                   {actionButton("members", () => setTarget(str(r, "id")))}
+                  {!showDemo && str(r, "season_id") && <ManageCommunity season={str(r, "season_id")} crew={str(r, "id")} />}
                   {actionButton("disband", () => confirm("disband_crew", str(r, "id")), "danger")}
                 </div>
               ) : (

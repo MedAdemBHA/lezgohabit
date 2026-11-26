@@ -1,11 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
 
 export const challengePreview = createServerFn({ method: "GET" })
-  .inputValidator((code: string) => {
-    if (!/^[a-zA-Z0-9]{6}$/.test(code)) throw Error("invalid_code");
-    return code.toUpperCase();
-  })
+  .validator((code: string) => /^[a-zA-Z0-9]{6}$/.test(code) ? code.toUpperCase() : "")
   .handler(async ({ data: code }) => {
+    if (!code) return null;
     const { getPublicChallengePreview } = await import("@/lib/public-challenges.server");
     return getPublicChallengePreview(code);
   });
@@ -13,4 +11,17 @@ export const challengePreview = createServerFn({ method: "GET" })
 export const publicChallengeCatalog = createServerFn({ method: "GET" }).handler(async () => {
   const { getPublicChallengeCatalog } = await import("@/lib/public-challenges.server");
   return getPublicChallengeCatalog();
+});
+
+export const crewInvitePreview = createServerFn({ method: "GET" })
+  .validator((code: string) => /^[a-zA-Z0-9]{6}$/.test(code) ? code.toUpperCase() : "")
+  .handler(async ({ data }) => {
+    if (!data) return null;
+    const { getCrewInvitePreview } = await import("@/lib/public-challenges.server");
+    return getCrewInvitePreview(data);
+  });
+
+export const currentOfficialEvent = createServerFn({ method: "GET" }).handler(async () => {
+  const { getCurrentOfficialEvent } = await import("@/lib/public-challenges.server");
+  return getCurrentOfficialEvent();
 });

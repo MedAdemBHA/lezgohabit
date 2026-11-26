@@ -9,23 +9,33 @@ import { DesignLanguage } from "@/components/lezgo/design-language";
 import { useQuery } from "@tanstack/react-query";
 import { Mail } from "lucide-react";
 import { BottomSheet, Field, StickerButton, inputCls } from "@/components/lezgo/ui";
-import { finishStartFlow, readStartFlow } from "@/lib/start-flow";
-import { errKey } from "@/lib/data";
+import {
+  clearStartFlow,
+  finishStartFlow,
+  readStartFlow,
+  resumeStartFlow,
+  startFlowResumeToken,
+} from "@/lib/start-flow";
+import { joinErrorKey, myActiveEventQuery } from "@/lib/event-data";
+import { loc } from "@/lib/i18n";
+import { errKey, useUser } from "@/lib/data";
 import { guestDemoAvailable } from "@/lib/admin.functions";
 import { selectLang } from "@/lib/i18n";
-import { seasonSearch } from "@/lib/season-id";
+import {
+  AFTER_SIGN_IN,
+  LEGACY_WRAPPED_SIGN_IN,
+  authReturnError,
+  nextFromSearch,
+  takeStoredNext,
+} from "@/lib/safe-next";
 
-const WRAPPED_SIGN_IN = "lezgo_wrapped_sign_in";
 const publicEmailSignIn = import.meta.env["VITE_PUBLIC_EMAIL_SIGNIN"] === "true";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
-  validateSearch: (
-    search: Record<string, unknown>,
-  ): { next?: "/admin" | "/wrapped"; season?: string } => {
-    if (search["next"] === "/wrapped")
-      return { next: "/wrapped", season: seasonSearch(search["season"]) };
-    return search["next"] === "/admin" ? { next: "/admin" } : {};
+  validateSearch: (search: Record<string, unknown>): { next?: string } => {
+    const next = nextFromSearch(search);
+    return next ? { next } : {};
   },
   head: () => ({
     meta: [
@@ -73,8 +83,11 @@ function GoogleG() {
 function AuthPage() {
   const { t, i18n } = useTranslation();
   const nav = useNavigate();
-  const { next, season } = Route.useSearch();
-  const emailEnabled = publicEmailSignIn || next === "/admin";
+  const { next } = Route.useSearch();
+  const toWrapped = next?.startsWith("/wrapped") ?? false;
+  const toAdmin = next?.startsWith("/admin") ?? false;
+  // Email links are off for players unless enabled; the admin sign-in always offers them.
+  const emailEnabled = publicEmailSignIn || toAdmin;
   const [adult, setAdult] = useState(false);
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
@@ -83,13 +96,29 @@ function AuthPage() {
   >(null);
   const [busy, setBusy] = useState(false);
   const [emailOpen, setEmailOpen] = useState(false);
-  const [flowError, setFlowError] = useState("");
-  const completing = useRef(false);
-  const returningToWrapped = useRef(false);
   const demo = useQuery({
     queryKey: ["guest-demo-available"],
     queryFn: () => guestDemoAvailable(),
     enabled: !next,
+    staleTime: 60_000,
+  });
+  const [flowError, setFlowError] = useState<string | null>(null);
+  const [returnError, setReturnError] = useState<"cancelled" | "expired" | "failed" | null>(null);
+  const user = useUser();
+  const active = useQuery({
+    ...myActiveEventQuery(user?.id ?? ""),
+    enabled: !!user && flowError === "active_challenge_exists",
+  });
+  const activeName = loc(active.data?.seasons?.name, i18n.language);
+  const completing = useRef(false);
+  const leaving = useRef(false);
+  const countries = useQuery({
+    queryKey: ["participating-countries"],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("participating_countries");
+      if (error) throw error;
+      return data;
+    },
     staleTime: 60_000,
   });
 
@@ -97,16 +126,13 @@ function AuthPage() {
     if (completing.current) return;
     completing.current = true;
     setBusy(true);
-    setFlowError("");
+    setFlowError(null);
     try {
       await finishStartFlow();
       await nav({ to: "/today", replace: true });
     } catch (error) {
       const key = errKey(error);
-      const message =
-        key === "active_challenge_exists" ? t("batch6.activeChallengeExists") : t("common.error");
-      setFlowError(message);
-      toast(message);
+      setFlowError(key);
       completing.current = false;
     } finally {
       setBusy(false);
@@ -114,32 +140,34 @@ function AuthPage() {
   }
 
   useEffect(() => {
-    const fromLink = new URLSearchParams(window.location.search).get("code");
+    const params = new URLSearchParams(window.location.search);
+    const fromLink = params.get("code");
+    const resume = params.get("resume");
+    const missingFlow = !!resume && !resumeStartFlow(resume);
     if (fromLink && /^[A-Z0-9]{6}$/.test(fromLink))
       sessionStorage.setItem("lezgo_challenge_invite", fromLink);
+    // Cancelled Google consent or an expired/used magic link come back as error params.
+    const returned = authReturnError(window.location.search, window.location.hash);
+    if (returned) {
+      setReturnError(returned);
+      if (returned === "expired") setEmailOpen(true);
+      // Clear the error params but keep the destination, so a retry still lands in the right place.
+      const carried = next ?? takeStoredNext();
+      void nav({ to: "/auth", search: carried ? { next: carried } : {}, replace: true });
+    }
     let active = true;
-    let redirecting = false;
-    let timer: ReturnType<typeof setTimeout>;
     const go = () => {
-      if (!active || redirecting || returningToWrapped.current) return;
-      redirecting = true;
-      const wrappedSeason =
-        next === "/wrapped" ? (season ?? "") : sessionStorage.getItem(WRAPPED_SIGN_IN);
-      if (wrappedSeason !== null) {
-        returningToWrapped.current = true;
-        sessionStorage.removeItem(WRAPPED_SIGN_IN);
-        void nav({
-          to: "/wrapped",
-          search: { season: wrappedSeason },
-          replace: true,
-          reloadDocument: true,
-        });
+      if (!active || leaving.current) return;
+      // Destination saved before sign-in (URL first, then the OAuth round-trip copy) wins.
+      const stored = takeStoredNext();
+      const destination = next ?? stored;
+      if (destination) {
+        leaving.current = true;
+        window.location.replace(destination);
         return;
       }
-      const adminSignIn = sessionStorage.getItem("lezgo_admin_signin") === "1";
-      sessionStorage.removeItem("lezgo_admin_signin");
-      if (next === "/admin" || (adminSignIn && !readStartFlow())) {
-        void nav({ to: "/admin", replace: true });
+      if (missingFlow && !fromLink) {
+        void nav({ to: "/start", replace: true });
         return;
       }
       if (readStartFlow()) {
@@ -154,60 +182,72 @@ function AuthPage() {
     void supabase.auth.getUser().then(({ data }) => {
       if (data.user) go();
     });
-    const { data } = supabase.auth.onAuthStateChange((_e, s) => {
-      if (s) {
-        clearTimeout(timer);
-        timer = setTimeout(go, 0);
+    let pending: number | undefined;
+    const { data } = supabase.auth.onAuthStateChange((_e, session) => {
+      if (session) {
+        window.clearTimeout(pending);
+        pending = window.setTimeout(go, 0);
       }
     });
     return () => {
       active = false;
-      clearTimeout(timer);
+      window.clearTimeout(pending);
       data.subscription.unsubscribe();
     };
-  }, [nav, next, season, t]);
+  }, [nav, t, next]);
 
-  function rememberDestination() {
-    if (next === "/wrapped") sessionStorage.setItem(WRAPPED_SIGN_IN, season ?? "");
-    else sessionStorage.removeItem(WRAPPED_SIGN_IN);
-    if (next === "/admin") sessionStorage.setItem("lezgo_admin_signin", "1");
-    else sessionStorage.removeItem("lezgo_admin_signin");
+  function callbackUrl() {
+    const url = new URL("/auth", window.location.origin);
+    if (next) {
+      url.searchParams.set("next", next);
+      return url.href;
+    }
+    const resume = startFlowResumeToken();
+    const code = sessionStorage.getItem("lezgo_challenge_invite");
+    if (resume) url.searchParams.set("resume", resume);
+    if (code) url.searchParams.set("code", code);
+    return url.href;
   }
 
   async function google() {
-    if (!adult) return;
-    rememberDestination();
+    if (!adult || busy) return;
     setBusy(true);
-    // Keep the exact allowlisted callback across sign-in destinations.
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: window.location.origin + "/auth" },
-    });
-    if (error) {
-      sessionStorage.removeItem(WRAPPED_SIGN_IN);
-      toast(t("common.error"));
+    setReturnError(null);
+    sessionStorage.removeItem(LEGACY_WRAPPED_SIGN_IN);
+    if (next) sessionStorage.setItem(AFTER_SIGN_IN, next);
+    else sessionStorage.removeItem(AFTER_SIGN_IN);
+    // Keep the exact allowlisted callback; the destination travels in sessionStorage.
+    const redirectTo = new URL("/auth", window.location.origin).href;
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo },
+      });
+      if (error) throw error;
+    } catch {
+      sessionStorage.removeItem(AFTER_SIGN_IN);
+      toast(t("flows.signInFailed"));
       setBusy(false);
     }
   }
   async function magic(e: React.FormEvent) {
     e.preventDefault();
-    if (!emailEnabled || !email || !adult) return;
-    rememberDestination();
+    const address = email.trim();
+    if (!address || !adult || busy) return;
     setEmailError(null);
+    setReturnError(null);
     setBusy(true);
-    const callback = new URL("/auth", window.location.origin);
-    const code = sessionStorage.getItem("lezgo_challenge_invite");
-    if (next === "/wrapped") {
-      callback.searchParams.set("next", next);
-      if (season) callback.searchParams.set("season", season);
-    } else if (code) {
-      callback.searchParams.set("code", code);
+    let error: { code?: string | undefined; status?: number | undefined } | null = null;
+    try {
+      ({ error } = await supabase.auth.signInWithOtp({
+        email: address,
+        options: { emailRedirectTo: callbackUrl() },
+      }));
+    } catch {
+      error = {};
+    } finally {
+      setBusy(false);
     }
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: callback.href },
-    });
-    setBusy(false);
     if (error) {
       setEmailError(
         error.code === "email_address_not_authorized"
@@ -230,90 +270,184 @@ function AuthPage() {
         <DesignLanguage segmented />
       </header>
       <h1 className="mt-4 text-[36px] font-extrabold leading-tight">
-        {t(next === "/admin" ? "auth.adminSignIn" : "auth.signIn")}
+        {t(toAdmin ? "auth.adminSignIn" : "auth.signIn")}
       </h1>
       <p className="text-[16px] font-semibold leading-[1.5] text-design-body">
         {t(
-          next === "/wrapped"
+          toWrapped
             ? "wrapped.signIn"
-            : next === "/admin"
+            : toAdmin
               ? "auth.adminSignInHint"
-              : emailEnabled
-                ? "auth.existingEmail"
-                : "auth.googleSignInHint",
+              : next
+                ? "flows.continueTo"
+                : emailEnabled
+                  ? "auth.existingEmail"
+                  : "auth.googleSignInHint",
         )}
       </p>
-      {flowError && (
+      {returnError && !user && (
+        <p role="alert" className="rounded-[14px] bg-card p-3 text-[14px] font-bold sticker-border">
+          {t(
+            returnError === "cancelled"
+              ? "flows.oauthCancelled"
+              : returnError === "expired"
+                ? "flows.linkExpired"
+                : "flows.signInFailed",
+          )}
+        </p>
+      )}
+      {user && flowError === null && (
+        <p role="status" aria-live="polite" className="font-bold">
+          {t("flows.signingIn")}
+        </p>
+      )}
+      {flowError !== null && (
         <div
           role="alert"
-          className="space-y-2 rounded-[14px] bg-card p-3 text-[14px] font-bold text-destructive sticker-border"
+          className="space-y-2 rounded-[14px] bg-card p-3 text-[14px] font-bold sticker-border"
         >
-          <p>{flowError}</p>
-          <StickerButton block variant="secondary" onClick={() => void continueAfterAuth()}>
-            {t("common.retry")}
-          </StickerButton>
+          <p>
+            {flowError === "active_challenge_exists" && activeName
+              ? t("events.current", { name: activeName })
+              : t(joinErrorKey(flowError))}
+          </p>
+          {flowError === "active_challenge_exists" && <p>{t("events.keepPlaying")}</p>}
+          <div className="flex flex-wrap gap-2">
+            <Link to="/today" onClick={clearStartFlow}>
+              <StickerButton size="sm" variant="lime">
+                {t("events.goToday")}
+              </StickerButton>
+            </Link>
+            {active.data && (
+              <Link
+                to="/challenges"
+                search={{ season: active.data.season_id }}
+                onClick={clearStartFlow}
+              >
+                <StickerButton size="sm" variant="secondary">
+                  {t("events.viewEvent")}
+                </StickerButton>
+              </Link>
+            )}
+            {flowError === "crew_setup_pending" || !flowError ? (
+              <StickerButton size="sm" variant="secondary" onClick={() => void continueAfterAuth()}>
+                {t("common.retry")}
+              </StickerButton>
+            ) : (
+              flowError !== "active_challenge_exists" && (
+                <Link to="/start" onClick={clearStartFlow}>
+                  <StickerButton size="sm" variant="secondary">
+                    {t("challengeHistory.pickNext")}
+                  </StickerButton>
+                </Link>
+              )
+            )}
+          </div>
         </div>
       )}
-      <div className="login-actions">
-        <label className="flex min-h-11 items-center gap-3 text-[14px] font-bold">
-          <input
-            type="checkbox"
-            checked={adult}
-            onChange={(e) => setAdult(e.target.checked)}
-            className="size-5 accent-ink"
-          />
-          {t("batch9.adult")}
-        </label>
-        <StickerButton
-          block
-          variant="secondary"
-          className="google-button"
-          onClick={google}
-          disabled={busy || !adult}
-        >
-          <GoogleG />
-          {t("auth.google")}
-        </StickerButton>
-        {emailEnabled && (
+      {(countries.data ?? 0) >= 2 && (
+        <div className="flex items-center gap-3">
+          <div className="flex shrink-0" aria-hidden="true">
+            {(
+              [
+                ["bg-lime", "NR"],
+                ["bg-pink", "SK"],
+                ["bg-yellow", "YB"],
+                ["bg-teal", "AK"],
+              ] as const
+            ).map(([color, initials], i) => (
+              <span
+                key={color}
+                className={`grid size-[34px] place-items-center rounded-full text-[10px] font-extrabold sticker-border ${color} ${i ? "-ms-2" : ""}`}
+              >
+                {initials}
+              </span>
+            ))}
+          </div>
+          <p className="text-[13px] font-bold">{t("design.proof", { n: countries.data })}</p>
+        </div>
+      )}
+      {!user && (
+        <div className="login-actions">
+          <label className="flex min-h-11 items-center gap-3 text-[14px] font-bold">
+            <input
+              type="checkbox"
+              checked={adult}
+              onChange={(e) => setAdult(e.target.checked)}
+              className="size-5 accent-ink"
+            />
+            {t("batch9.adult")}
+          </label>
+          {!adult && (
+            <p id="adult-hint" className="text-[13px] font-semibold text-design-muted">
+              {t("flows.adultRequired")}
+            </p>
+          )}
           <StickerButton
             block
-            variant="ghost"
-            className="email-button"
-            onClick={() => setEmailOpen(true)}
+            variant="secondary"
+            className="google-button"
+            onClick={() => void google()}
             disabled={busy || !adult}
+            aria-describedby={adult ? undefined : "adult-hint"}
           >
-            <Mail size={20} strokeWidth={2.5} />
-            {t("design.email")}
+            <GoogleG />
+            {t("auth.google")}
           </StickerButton>
-        )}
-        {next === "/admin" && (
-          <Link to="/auth" className="min-h-11 self-center p-2 text-sm font-extrabold underline">
-            {t("auth.playerSignIn")}
-          </Link>
-        )}
-        {!next && demo.data && <ExploreAsGuest />}
-        <div className="flex justify-center gap-4">
-          <Link
-            to="/legal/$document"
-            params={{ document: "terms" }}
-            search={{ lang: selectLang(i18n.language) }}
-            className="inline-flex min-h-11 items-center px-2 text-sm font-extrabold underline"
-          >
-            {t("design.terms")}
-          </Link>
-          <Link
-            to="/legal/$document"
-            params={{ document: "privacy" }}
-            search={{ lang: selectLang(i18n.language) }}
-            className="inline-flex min-h-11 items-center px-2 text-sm font-extrabold underline"
-          >
-            {t("design.privacy")}
-          </Link>
+          {emailEnabled && (
+            <StickerButton
+              block
+              variant="ghost"
+              className="email-button"
+              onClick={() => setEmailOpen(true)}
+              disabled={busy || !adult}
+              aria-describedby={adult ? undefined : "adult-hint"}
+            >
+              <Mail size={20} strokeWidth={2.5} />
+              {t("design.email")}
+            </StickerButton>
+          )}
+          {toAdmin && (
+            <Link to="/auth" className="min-h-11 self-center p-2 text-sm font-extrabold underline">
+              {t("auth.playerSignIn")}
+            </Link>
+          )}
+          {!next && demo.data && <ExploreAsGuest />}
+          <div className="flex justify-center gap-4">
+            {(["terms", "privacy"] as const).map((document) => (
+              <Link
+                key={document}
+                to="/legal/$document"
+                params={{ document }}
+                search={{ lang: selectLang(i18n.language) }}
+                className="inline-flex min-h-11 items-center px-2 text-sm font-extrabold underline"
+              >
+                {t(`design.${document}`)}
+              </Link>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
       <BottomSheet open={emailOpen} onClose={() => setEmailOpen(false)} title={t("design.email")}>
         {sent ? (
-          <p className="sticker bg-lime p-4 font-bold">{t("auth.linkSent")}</p>
+          <div className="space-y-3">
+            <p role="status" className="sticker bg-lime p-4 font-bold">
+              {t("auth.linkSent")}
+            </p>
+            <p className="text-[14px] font-semibold">
+              {t("flows.sentTo", { email: email.trim() })}
+            </p>
+            <StickerButton
+              block
+              variant="secondary"
+              onClick={() => {
+                setSent(false);
+                setEmailError(null);
+              }}
+            >
+              {t("flows.otherEmail")}
+            </StickerButton>
+          </div>
         ) : (
           <form onSubmit={magic} className="space-y-4">
             <Field label={t("auth.email")}>
@@ -336,8 +470,8 @@ function AuthPage() {
                 {t(emailError)}
               </p>
             )}
-            <StickerButton block type="submit" disabled={busy}>
-              {t("design.email")}
+            <StickerButton block type="submit" disabled={busy || !adult}>
+              {t(busy ? "common.loading" : "design.email")}
             </StickerButton>
           </form>
         )}

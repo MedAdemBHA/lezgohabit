@@ -9,6 +9,10 @@ import { groupCatalog, type CatalogCard } from "@/lib/challenge-catalog";
 // Routing tests don't run Vite's PWA plugin or install a service worker.
 vi.mock("@/lib/launch/offline", () => ({}));
 
+vi.mock("@/lib/launch/offline", () => ({
+  queueGo: vi.fn(), readQueue: () => [], syncGoes: vi.fn(), registerOffline: vi.fn(),
+}));
+
 // Match routes without running loaders or rendering: loaders may need a server or
 // network the test run lacks, and jsdom never loads the stylesheets React waits on.
 describe("App routing", () => {

@@ -10,7 +10,16 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
-import { AlertTriangle, ArrowRight, Minus, Plus, Share2, RotateCcw, Lock, MoreHorizontal } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowRight,
+  Minus,
+  Plus,
+  Share2,
+  RotateCcw,
+  Lock,
+  MoreHorizontal,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/lezgo/app-shell";
 import { GlobeIcon, TodayFlame } from "@/components/icons/tab-icons";
@@ -39,20 +48,18 @@ import {
   type HabitPoints,
   type UserHabit,
 } from "@/lib/data";
-import { completion, fmtVal, stepFor, type PrayerState } from "@/lib/habits";
-import {
-  canSpin,
-  habitColor,
-  incrementCount,
-  DAILY_DARE_COUNT,
-  streakAtRisk,
-} from "@/lib/today-rules";
+import { completion, fmtVal, isSleepHabit, stepFor, type PrayerState } from "@/lib/habits";
+import { canSpin, habitColor, DAILY_DARE_COUNT, streakAtRisk } from "@/lib/today-rules";
 import { daysBetween, localHour, useNow } from "@/lib/time";
 import { FitHeading } from "@/components/lezgo/fit-heading";
 import { TodayMoments } from "@/components/lezgo/signature/moments";
 import { ChallengeSurrenderSheet } from "@/components/lezgo/challenge-surrender-sheet";
-import { loc } from "@/lib/i18n";
+import { SurrenderRecapCard } from "@/components/lezgo/surrender-recap-card";
+import { formatNumber, loc } from "@/lib/i18n";
 import { bossQuery } from "@/lib/batch6-data";
+import { challengeHistoryQuery } from "@/lib/challenge-history";
+import { planFor } from "@/lib/challenge-plan";
+import { WelcomeCard } from "@/components/lezgo/today/welcome-card";
 export const Route = createFileRoute("/_authenticated/today")({
   head: () => pageHead("Today — lezgo", "Log today's gos and keep your go streak alive."),
   component: Today,
@@ -63,7 +70,13 @@ type DayData = {
   extras: DayExtras | null;
   points: HabitPoints[];
 };
-type TimerSession = { id: string; tracked_seconds: number; target_minutes: number; started_at: string; habit: UserHabit };
+type TimerSession = {
+  id: string;
+  tracked_seconds: number;
+  target_minutes: number;
+  started_at: string;
+  habit: UserHabit;
+};
 
 function Today() {
   const { t, i18n } = useTranslation();
@@ -71,8 +84,8 @@ function Today() {
   const qc = useQueryClient();
   const { uid, season, today, tz, profile } = useBase();
   const sid = season?.id ?? "";
-  const summary=useQuery({...summaryQuery(uid,sid),enabled:!!uid&&!!sid});
-  const [tinyWin,setTinyWin]=useState(false);
+  const summary = useQuery({ ...summaryQuery(uid, sid), enabled: !!uid && !!sid });
+  const [tinyWin, setTinyWin] = useState(false);
   const habits = useQuery({ ...habitsQuery(uid, sid), enabled: !!uid && !!sid });
   const mine = useQuery({ ...myCrewQuery(uid, sid), enabled: !!uid && !!sid });
   const dq = dayQuery(uid, sid, today);
@@ -106,19 +119,52 @@ function Today() {
   const avg = list.length ? comps.reduce((a, b) => a + b, 0) / list.length : 0;
   const dayIndex = season ? daysBetween(season.starts_on, today) + 1 : 1;
   const seasonLength = season ? daysBetween(season.starts_on, season.ends_on) + 1 : 1;
+  // Features unlock by days *played* in this challenge, so a late joiner still gets a calm day 1.
+  const history = useQuery({ ...challengeHistoryQuery(uid), enabled: !!uid && !!sid });
+  const entry = history.data?.find((e) => e.season_id === sid);
+  const joinedOn = entry
+    ? new Intl.DateTimeFormat("en-CA", {
+        timeZone: tz,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }).format(new Date(entry.joined_at))
+    : null;
+  const playDay = joinedOn
+    ? Math.max(
+        1,
+        daysBetween(
+          joinedOn < (season?.starts_on ?? joinedOn) ? season!.starts_on : joinedOn,
+          today,
+        ) + 1,
+      )
+    : dayIndex;
+  const hadPerfectDay = (entry?.perfect_days ?? 0) > 0 || !!score?.perfect;
   const newKey = `lezgo_today_new_${uid}_${sid}`;
   useEffect(() => {
     if (!uid || !sid) return;
-    try { setNewDismissed(JSON.parse(localStorage.getItem(newKey) ?? "{}") as Record<string, boolean>); } catch { setNewDismissed({}); }
+    try {
+      setNewDismissed(JSON.parse(localStorage.getItem(newKey) ?? "{}") as Record<string, boolean>);
+    } catch {
+      setNewDismissed({});
+    }
     setNewReady(true);
   }, [uid, sid, newKey]);
-  const showNew = (key: string, minDay: number) => newReady && dayIndex >= minDay && !newDismissed[key];
+  const showNew = (key: string, minDay: number) =>
+    newReady && playDay >= minDay && !newDismissed[key];
   function dismissNew(key: string) {
     const next = { ...newDismissed, [key]: true };
     setNewDismissed(next);
-    try { localStorage.setItem(newKey, JSON.stringify(next)); } catch { /* storage can be unavailable */ }
+    try {
+      localStorage.setItem(newKey, JSON.stringify(next));
+    } catch {
+      /* storage can be unavailable */
+    }
   }
-  const bossOverview = useQuery({ ...bossQuery(uid, sid), enabled: !!uid && !!sid && showNew("boss", 3) });
+  const bossOverview = useQuery({
+    ...bossQuery(uid, sid),
+    enabled: !!uid && !!sid && showNew("boss", 5),
+  });
   const closed = !!season && (today < season.starts_on || today > season.ends_on);
   const atRisk = !!now && streakAtRisk(localHour(tz, now), avg, list.length > 0, closed);
   const salat = list.find((h) => h.kind === "salat");
@@ -157,9 +203,22 @@ function Today() {
       if (sending) return;
       sending = true;
       try {
-        const { data, error } = await supabase.rpc("habit_timer_heartbeat", { _session_id: sessionId, _visible: document.visibilityState === "visible" });
-        if (!error) setTimerSession((current) => current?.id === sessionId ? { ...current, ...(data as unknown as Pick<TimerSession, "tracked_seconds" | "target_minutes">) } : current);
-      } finally { sending = false; }
+        const { data, error } = await supabase.rpc("habit_timer_heartbeat", {
+          _session_id: sessionId,
+          _visible: document.visibilityState === "visible",
+        });
+        if (!error)
+          setTimerSession((current) =>
+            current?.id === sessionId
+              ? {
+                  ...current,
+                  ...(data as unknown as Pick<TimerSession, "tracked_seconds" | "target_minutes">),
+                }
+              : current,
+          );
+      } finally {
+        sending = false;
+      }
     };
     const interval = window.setInterval(() => void heartbeat(), 15_000);
     return () => window.clearInterval(interval);
@@ -206,7 +265,11 @@ function Today() {
       .catch(() => {})
       .then(async () => {
         try {
-          if (!navigator.onLine) { queueGo({uid,habit:h.id,day:today,value,detail}); toast(t("batch9.queued")); return; }
+          if (!navigator.onLine) {
+            queueGo({ uid, habit: h.id, day: today, value, detail });
+            toast(t("batch9.queued"));
+            return;
+          }
           const { data: serverScore, error } = await supabase.rpc("checkin_upsert", {
             _user_habit_id: h.id,
             _value: value,
@@ -226,14 +289,28 @@ function Today() {
             points: allocation.data as unknown as HabitPoints[],
           }));
           if (writeRevision === revision.current) await reconcile();
-          if(value>0)setTinyWin(true);
-          void qc.invalidateQueries({queryKey:["boss"]});
-          void qc.invalidateQueries({queryKey:["ghost"]});
-          void qc.invalidateQueries({queryKey:["signature"]});
-          void qc.invalidateQueries({queryKey:["profileSummary"]});
+          if (value > 0) setTinyWin(true);
+          void qc.invalidateQueries({ queryKey: ["boss"] });
+          void qc.invalidateQueries({ queryKey: ["ghost"] });
+          void qc.invalidateQueries({ queryKey: ["signature"] });
+          void qc.invalidateQueries({ queryKey: ["profileSummary"] });
         } catch (e) {
-          if (!navigator.onLine) { queueGo({uid,habit:h.id,day:today,value,detail}); toast(t("batch9.queued")); return; }
-          toast(errKey(e) === "outside_time_window" ? t("habitRules.outsideWindowError") : errKey(e) === "habit_locked" ? t("todayDesign.habitLocked") : errKey(e) === "day_final" ? t("integrity.dayFinal") : errKey(e) === "day_closed" ? t("today.closed") : t("common.error"));
+          if (!navigator.onLine) {
+            queueGo({ uid, habit: h.id, day: today, value, detail });
+            toast(t("batch9.queued"));
+            return;
+          }
+          toast(
+            errKey(e) === "outside_time_window"
+              ? t("habitRules.outsideWindowError")
+              : errKey(e) === "habit_locked"
+                ? t("todayDesign.habitLocked")
+                : errKey(e) === "day_final"
+                  ? t("integrity.dayFinal")
+                  : errKey(e) === "day_closed"
+                    ? t("today.closed")
+                    : t("common.error"),
+          );
           await qc.invalidateQueries({ queryKey: dq.queryKey });
         } finally {
           setPending((n) => n - 1);
@@ -247,33 +324,73 @@ function Today() {
   // Salat goes through mark_prayer: the server checks the city's prayer times and decides on time vs late.
   function markPrayer(h: UserHabit, prayer: string) {
     if (disabled) return;
-    if (!navigator.onLine) { toast(t("common.error")); return; }
+    if (!navigator.onLine) {
+      toast(t("common.error"));
+      return;
+    }
     setPending((n) => n + 1);
     queue.current = queue.current
       .catch(() => {})
       .then(async () => {
         try {
-          const { data: res, error } = await supabase.rpc("mark_prayer", { _user_habit_id: h.id, _prayer: prayer, _day: today });
+          const { data: res, error } = await supabase.rpc("mark_prayer", {
+            _user_habit_id: h.id,
+            _prayer: prayer,
+            _day: today,
+          });
           if (error) throw error;
-          const r = res as unknown as { prayers: Record<string, PrayerState>; marked_at: Record<string, string>; value: number };
+          const r = res as unknown as {
+            prayers: Record<string, PrayerState>;
+            marked_at: Record<string, string>;
+            value: number;
+          };
           patch((d) => {
             const prev = d.checkins.find((c) => c.user_habit_id === h.id);
             const row: Checkin = {
-              ...(prev ?? { id: `tmp-${h.id}`, user_id: uid, user_habit_id: h.id, is_demo: profile?.is_demo ?? false, day: today, created_at: new Date().toISOString(), done_at: null }),
+              ...(prev ?? {
+                id: `tmp-${h.id}`,
+                user_id: uid,
+                user_habit_id: h.id,
+                is_demo: profile?.is_demo ?? false,
+                day: today,
+                created_at: new Date().toISOString(),
+                done_at: null,
+              }),
               value: r.value,
               detail: { prayers: r.prayers, marked_at: r.marked_at },
             };
-            return { ...d, score: res as unknown as DailyScore, checkins: [...d.checkins.filter((c) => c.user_habit_id !== h.id), row] };
+            return {
+              ...d,
+              score: res as unknown as DailyScore,
+              checkins: [...d.checkins.filter((c) => c.user_habit_id !== h.id), row],
+            };
           });
-          if (completion(h, { value: r.value, detail: { prayers: r.prayers } }) >= 1) { setPopId(h.id); setTimeout(() => setPopId(null), 350); }
-          const allocation = await supabase.rpc("today_habit_points", { _season_id: sid, _day: today });
-          if (!allocation.error) patch((d) => ({ ...d, points: allocation.data as unknown as HabitPoints[] }));
+          if (completion(h, { value: r.value, detail: { prayers: r.prayers } }) >= 1) {
+            setPopId(h.id);
+            setTimeout(() => setPopId(null), 350);
+          }
+          const allocation = await supabase.rpc("today_habit_points", {
+            _season_id: sid,
+            _day: today,
+          });
+          if (!allocation.error)
+            patch((d) => ({ ...d, points: allocation.data as unknown as HabitPoints[] }));
           await reconcile();
           if (r.prayers[prayer]) setTinyWin(true);
           void qc.invalidateQueries({ queryKey: ["profileSummary"] });
         } catch (e) {
           const k = errKey(e);
-          toast(k === "prayer_not_yet" ? t("todayDesign.prayerNotYet") : k === "habit_locked" ? t("todayDesign.habitLocked") : k === "day_final" ? t("integrity.dayFinal") : k === "day_closed" ? t("today.closed") : t("common.error"));
+          toast(
+            k === "prayer_not_yet"
+              ? t("todayDesign.prayerNotYet")
+              : k === "habit_locked"
+                ? t("todayDesign.habitLocked")
+                : k === "day_final"
+                  ? t("integrity.dayFinal")
+                  : k === "day_closed"
+                    ? t("today.closed")
+                    : t("common.error"),
+          );
           await qc.invalidateQueries({ queryKey: dq.queryKey });
         } finally {
           setPending((n) => n - 1);
@@ -281,11 +398,16 @@ function Today() {
       });
   }
   function tap(h: UserHabit) {
-    if (h.kind === "timer") { void startTimer(h); return; }
-    if (h.kind === "quit") { setQuitHabit(h); return; }
-    if (h.template?.key === "train") { void navigate({ to: "/lift" }); return; }
-    if (h.template?.key === 'detox') {
-      void navigate({ to: '/detox' });
+    if (h.kind === "timer") {
+      void startTimer(h);
+      return;
+    }
+    if (h.kind === "quit") {
+      setQuitHabit(h);
+      return;
+    }
+    if (h.template?.key === "detox") {
+      void navigate({ to: "/detox" });
       return;
     }
     if (h.kind === "salat") {
@@ -294,11 +416,12 @@ function Today() {
         ?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
-    const value = Number(byHabit.get(h.id)?.value ?? 0);
-    log(
-      h,
-      h.kind === "count" ? incrementCount(value) : completion(h, byHabit.get(h.id)) >= 1 ? 0 : 1,
-    );
+    // Counts open the sheet: one big "Done" saves the target, the stepper handles partial amounts.
+    if (h.kind === "count") {
+      setStepper(h);
+      return;
+    }
+    log(h, completion(h, byHabit.get(h.id)) >= 1 ? 0 : 1);
   }
   async function toggleChaos() {
     if (bonusBusy || disabled) return;
@@ -349,14 +472,26 @@ function Today() {
   async function startTimer(h: UserHabit) {
     if (disabled) return;
     const { data, error } = await supabase.rpc("start_habit_timer", { _user_habit_id: h.id });
-    if (error) { toast(t("common.error")); return; }
+    if (error) {
+      toast(t("common.error"));
+      return;
+    }
     setTimerSession({ ...(data as unknown as Omit<TimerSession, "habit">), habit: h });
   }
   async function finishTimer() {
     if (!timerSession || timerSession.tracked_seconds < timerSession.target_minutes * 60) return;
     await queue.current;
     const { error } = await supabase.rpc("complete_habit_timer", { _session_id: timerSession.id });
-    if (error) { toast(errKey(error) === "timer_too_short" ? t("habitRules.timerTooShort") : errKey(error) === "habit_locked" ? t("todayDesign.habitLocked") : t("common.error")); return; }
+    if (error) {
+      toast(
+        errKey(error) === "timer_too_short"
+          ? t("habitRules.timerTooShort")
+          : errKey(error) === "habit_locked"
+            ? t("todayDesign.habitLocked")
+            : t("common.error"),
+      );
+      return;
+    }
     setTimerSession(null);
     await reconcile();
     void qc.invalidateQueries({ queryKey: ["profileSummary"] });
@@ -378,10 +513,12 @@ function Today() {
     log(quitHabit, 1);
     setQuitHabit(null);
   }
-  const progressHabits = list.map((habit,index) => ({
+  const progressHabits = list.map((habit, index) => ({
     id: habit.id,
-    name: habitName(habit,t,i18n.language),
-    color: habit.template?.color ?? habitColor(habit.template?.key ?? "",habit.template?.category ?? ""),
+    name: habitName(habit, t, i18n.language),
+    color:
+      habit.template?.color ??
+      habitColor(habit.template?.key ?? "", habit.template?.category ?? ""),
     completion: comps[index] ?? 0,
   }));
   if (!profile)
@@ -393,10 +530,24 @@ function Today() {
   if (!season)
     return (
       <AppShell todayLayout>
-        <FitHeading requestedSize={40} className="page-title" text={t("challengeHistory.noActive")} />
+        <FitHeading
+          requestedSize={40}
+          className="page-title"
+          text={t("challengeHistory.noActive")}
+        />
+        <AppStatus profile={profile} compact />
         <p className="font-semibold">{t("challengeHistory.noActiveBody")}</p>
-        <Link to="/challenges" search={{ season: "" }}><StickerButton block variant="lime">{t("challengeHistory.openHistory")}</StickerButton></Link>
-        <Link to="/start"><StickerButton block variant="secondary">{t("challengeHistory.pickNext")}</StickerButton></Link>
+        <SurrenderRecapCard />
+        <Link to="/start">
+          <StickerButton block variant="lime">
+            {t("challengeHistory.pickNext")}
+          </StickerButton>
+        </Link>
+        <Link to="/challenges" search={{ season: "" }}>
+          <StickerButton block variant="secondary">
+            {t("challengeHistory.openHistory")}
+          </StickerButton>
+        </Link>
       </AppShell>
     );
   return (
@@ -410,7 +561,9 @@ function Today() {
             className="today-settings"
             aria-label={t("challengeHistory.menu")}
             onClick={() => setChallengeMenuOpen(true)}
-          ><MoreHorizontal /></StickerButton>
+          >
+            <MoreHorizontal />
+          </StickerButton>
           <StickerButton
             variant="secondary"
             className="today-settings"
@@ -421,8 +574,26 @@ function Today() {
           </StickerButton>
         </div>
       </header>
-      {!!now && localHour(tz, now) < 3 && <p className="locks-note num" role="status"><Lock size={14} aria-hidden />{t("integrity.locksAt")}</p>}
-      <TodayScoreCard score={score} habits={progressHabits} busy={pending > 0} onOpen={() => setScoringOpen(true)} />
+      {!!now && localHour(tz, now) < 3 && (
+        <p className="locks-note num" role="status">
+          <Lock size={14} aria-hidden />
+          {t("integrity.locksAt")}
+        </p>
+      )}
+      {showNew("welcome", 1) && playDay === 1 && season && (
+        <WelcomeCard
+          name={loc(season.name, i18n.language)}
+          plan={planFor(season.starts_on, season.ends_on, today, list.length)}
+          habits={list.length}
+          onDismiss={() => dismissNew("welcome")}
+        />
+      )}
+      <TodayScoreCard
+        score={score}
+        habits={progressHabits}
+        busy={pending > 0}
+        onOpen={() => setScoringOpen(true)}
+      />
       {closed && <p className="today-banner bg-card">{t("todayDesign.dayClosed")}</p>}
       {day.error && (
         <StickerButton variant="secondary" onClick={() => void day.refetch()}>
@@ -431,19 +602,21 @@ function Today() {
       )}
       {list.length ? (
         <div className="today-habit-grid">
-          {list.filter((habit) => habit.kind !== "salat").map((h) => (
-            <HabitTile
-              key={h.id}
-              habit={h}
-              value={Number(byHabit.get(h.id)?.value ?? 0)}
-              completion={completion(h, byHabit.get(h.id))}
-              points={points.get(h.id)}
-              pop={popId === h.id}
-              onTap={() => tap(h)}
-              onStepper={() => setStepper(h)}
-              disabled={disabled}
-            />
-          ))}
+          {list
+            .filter((habit) => habit.kind !== "salat")
+            .map((h) => (
+              <HabitTile
+                key={h.id}
+                habit={h}
+                value={Number(byHabit.get(h.id)?.value ?? 0)}
+                completion={completion(h, byHabit.get(h.id))}
+                points={points.get(h.id)}
+                pop={popId === h.id}
+                onTap={() => tap(h)}
+                onStepper={() => setStepper(h)}
+                disabled={disabled}
+              />
+            ))}
         </div>
       ) : (
         <div className="today-banner bg-card">
@@ -475,19 +648,108 @@ function Today() {
           />
         </div>
       )}
-      {dayIndex >= 2 && <BonusSection uid={uid} seasonId={sid} points={Number(score?.stack_points ?? 0)}>
-        {score?.comeback && <section className="today-banner bg-blue"><h2 className="font-extrabold">{t("todayDesign.comeBack")}</h2><p>{t("todayDesign.comebackBody")}</p></section>}
-        {atRisk && <section className="today-banner bg-yellow"><h2 className="flex items-center gap-2 font-extrabold"><AlertTriangle size={20}/>{t("today.riskTitle")}</h2><p>{t("today.riskBody")}</p><div className="mt-2 flex flex-wrap gap-2">{missing.map((habit)=><StickerButton variant="secondary" size="sm" key={habit.id} onClick={()=>tap(habit)}>{habitName(habit,t,i18n.language)}</StickerButton>)}</div></section>}
-        <TodayMoments missing={missing} pending={pending} onDone={(habit)=>habit.kind==='salat'||habit.kind==='timer'||habit.kind==='quit'||habit.template?.key==='detox'?tap(habit):log(habit,Number(habit.target))} />
-        <DailyDare text={dares[chaosIndex] ?? ""} done={chaosDone} canSpin={canSpin(spins)} busy={disabled || bonusBusy} onSpin={() => void spin()} onToggle={() => void toggleChaos()} />
-        <div className="flex flex-wrap gap-2"><StickerButton variant="secondary" onClick={()=>setProofOpen(true)}>{t("todayDesign.proof")}</StickerButton>{tinyWin ? <Link to="/small-wins"><StickerButton variant="lime">{t("batch6.winTitle")}</StickerButton></Link> : <Link to="/small-wins"><StickerButton variant="secondary">{t("batch6.winTitle")}</StickerButton></Link>}</div>
-      </BonusSection>}
-      {showNew("ghost",2) && summary.data?.mode === "solo" && <NewFeature title={t("todayDesign.ghostNew")} onDismiss={()=>dismissNew("ghost")}><GhostBar uid={uid} sid={sid}/></NewFeature>}
-      {showNew("streak",2) && <NewFeature title={t("todayDesign.streakNew")} onDismiss={()=>dismissNew("streak")}><div className="streak-pill"><TodayFlame/><span><Num>{score?.streak ?? 0}</Num> {t("todayDesign.days")} · ×<Num>{Number(score?.multiplier ?? 1).toFixed(2)}</Num></span></div></NewFeature>}
-      {showNew("boss",3) && bossOverview.data?.boss && <NewFeature title={t("batch6.boss")} onDismiss={()=>dismissNew("boss")}><BossMini overview={bossOverview.data}/></NewFeature>}
-      {showNew("capsule",3) && <NewFeature title={t("todayDesign.capsuleNew")} onDismiss={()=>dismissNew("capsule")}><Link to="/capsule"><StickerButton block variant="secondary">{t("batch8.capsule")}<ArrowRight size={18} className="rtl:-scale-x-100"/></StickerButton></Link></NewFeature>}
-      {showNew("crew",2) && <NewFeature title={t("todayDesign.crew")} onDismiss={()=>dismissNew("crew")}><TodayCrewStrip uid={uid} seasonId={sid}/></NewFeature>}
-      {dayIndex >= 2 && missing.length === 0 && list.length > 0 && (
+      {playDay >= 3 && (
+        <BonusSection uid={uid} seasonId={sid} points={Number(score?.stack_points ?? 0)}>
+          {score?.comeback && (
+            <section className="today-banner bg-blue">
+              <h2 className="font-extrabold">{t("todayDesign.comeBack")}</h2>
+              <p>{t("todayDesign.comebackBody")}</p>
+            </section>
+          )}
+          {atRisk && (
+            <section className="today-banner bg-yellow">
+              <h2 className="flex items-center gap-2 font-extrabold">
+                <AlertTriangle size={20} />
+                {t("today.riskTitle")}
+              </h2>
+              <p>{t("today.riskBody")}</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {missing.map((habit) => (
+                  <StickerButton
+                    variant="secondary"
+                    size="sm"
+                    key={habit.id}
+                    onClick={() => tap(habit)}
+                  >
+                    {habitName(habit, t, i18n.language)}
+                  </StickerButton>
+                ))}
+              </div>
+            </section>
+          )}
+          <TodayMoments
+            missing={missing}
+            pending={pending}
+            onDone={(habit) =>
+              habit.kind === "salat" ||
+              habit.kind === "timer" ||
+              habit.kind === "quit" ||
+              habit.template?.key === "detox"
+                ? tap(habit)
+                : log(habit, Number(habit.target))
+            }
+          />
+          <DailyDare
+            text={dares[chaosIndex] ?? ""}
+            done={chaosDone}
+            canSpin={canSpin(spins)}
+            busy={disabled || bonusBusy}
+            onSpin={() => void spin()}
+            onToggle={() => void toggleChaos()}
+          />
+          <div className="flex flex-wrap gap-2">
+            <StickerButton variant="secondary" onClick={() => setProofOpen(true)}>
+              {t("todayDesign.proof")}
+            </StickerButton>
+            {tinyWin ? (
+              <Link to="/small-wins">
+                <StickerButton variant="lime">{t("batch6.winTitle")}</StickerButton>
+              </Link>
+            ) : (
+              <Link to="/small-wins">
+                <StickerButton variant="secondary">{t("batch6.winTitle")}</StickerButton>
+              </Link>
+            )}
+          </div>
+        </BonusSection>
+      )}
+      {showNew("ghost", 2) && summary.data?.mode === "solo" && (
+        <NewFeature title={t("todayDesign.ghostNew")} onDismiss={() => dismissNew("ghost")}>
+          <GhostBar uid={uid} sid={sid} />
+        </NewFeature>
+      )}
+      {showNew("streak", 2) && (
+        <NewFeature title={t("todayDesign.streakNew")} onDismiss={() => dismissNew("streak")}>
+          <div className="streak-pill">
+            <TodayFlame />
+            <span>
+              <Num>{score?.streak ?? 0}</Num> {t("todayDesign.days")} ·{" "}
+              {t("ux.streakBonus", {
+                m: formatNumber(Number(score?.multiplier ?? 1), i18n.language, {
+                  maximumFractionDigits: 2,
+                }),
+              })}
+            </span>
+          </div>
+        </NewFeature>
+      )}
+      {showNew("boss", 5) && bossOverview.data?.boss && (
+        <NewFeature title={t("batch6.boss")} onDismiss={() => dismissNew("boss")}>
+          <BossMini overview={bossOverview.data} />
+        </NewFeature>
+      )}
+      {showNew("capsule", 1) && hadPerfectDay && (
+        <NewFeature title={t("todayDesign.capsuleNew")} onDismiss={() => dismissNew("capsule")}>
+          <Link to="/capsule">
+            <StickerButton block variant="secondary">
+              {t("batch8.capsule")}
+              <ArrowRight size={18} className="rtl:-scale-x-100" />
+            </StickerButton>
+          </Link>
+        </NewFeature>
+      )}
+      <TodayCrewStrip uid={uid} seasonId={sid} />
+      {playDay >= 2 && missing.length === 0 && list.length > 0 && (
         <Link to="/ranks" className="today-next">
           {t("today.nextDone")}
           <ArrowRight size={18} className="rtl:-scale-x-100" />
@@ -499,19 +761,42 @@ function Today() {
         title={loc(season.name, i18n.language)}
       >
         <div className="space-y-3">
-          <Link to="/challenges" search={{ season: season.id }} onClick={() => setChallengeMenuOpen(false)} className="block">
-            <StickerButton block variant="secondary">{t("challengeHistory.details")}</StickerButton>
+          <Link
+            to="/challenges"
+            search={{ season: season.id }}
+            onClick={() => setChallengeMenuOpen(false)}
+            className="block"
+          >
+            <StickerButton block variant="secondary">
+              {t("challengeHistory.details")}
+            </StickerButton>
           </Link>
-          <Link to="/challenges" search={{ season: "" }} onClick={() => setChallengeMenuOpen(false)} className="block">
-            <StickerButton block variant="secondary">{t("challengeHistory.title")}</StickerButton>
+          <Link
+            to="/challenges"
+            search={{ season: "" }}
+            onClick={() => setChallengeMenuOpen(false)}
+            className="block"
+          >
+            <StickerButton block variant="secondary">
+              {t("challengeHistory.title")}
+            </StickerButton>
           </Link>
-          <StickerButton block variant="secondary" className="text-destructive" onClick={() => { setChallengeMenuOpen(false); setSurrenderOpen(true); }}>
+          <StickerButton
+            block
+            variant="secondary"
+            className="text-destructive"
+            onClick={() => {
+              setChallengeMenuOpen(false);
+              setSurrenderOpen(true);
+            }}
+          >
             {t("challengeHistory.surrender")}
           </StickerButton>
         </div>
       </BottomSheet>
       <ChallengeSurrenderSheet
         seasonId={season.id}
+        name={loc(season.name, i18n.language)}
         open={surrenderOpen}
         onClose={() => setSurrenderOpen(false)}
       />
@@ -531,7 +816,8 @@ function Today() {
         </Link>
         <LangGrid
           onPick={async (language) => {
-            if (!profile?.is_demo) await supabase.from("profiles").update({ language }).eq("id", uid);
+            if (!profile?.is_demo)
+              await supabase.from("profiles").update({ language }).eq("id", uid);
             await qc.invalidateQueries({ queryKey: profileQuery(uid).queryKey });
             setSettingsOpen(false);
           }}
@@ -561,20 +847,115 @@ function Today() {
           </StickerButton>
         </form>
       </BottomSheet>
-      <BottomSheet open={quitHabit !== null} onClose={() => setQuitHabit(null)} title={t("habitRules.cleanDay")}>
-        {quitHabit && <div className="space-y-3"><p>{t("habitRules.quitRule")}</p><StickerButton block variant="lime" onClick={logCleanDay}>{t("habitRules.cleanDay")}</StickerButton><StickerButton block variant="secondary" onClick={logSlip}>{t("habitRules.logSlip")}</StickerButton></div>}
+      <BottomSheet
+        open={quitHabit !== null}
+        onClose={() => setQuitHabit(null)}
+        title={t("habitRules.cleanDay")}
+      >
+        {quitHabit && (
+          <div className="space-y-3">
+            <p>{t("habitRules.quitRule")}</p>
+            <StickerButton block variant="lime" onClick={logCleanDay}>
+              {t("habitRules.cleanDay")}
+            </StickerButton>
+            <StickerButton block variant="secondary" onClick={logSlip}>
+              {t("habitRules.logSlip")}
+            </StickerButton>
+          </div>
+        )}
       </BottomSheet>
-      <BottomSheet open={timerSession !== null} onClose={() => void cancelTimer()} title={timerSession ? habitName(timerSession.habit,t,i18n.language) : t("habitRules.timerTitle")}>
-        {timerSession && <div className="space-y-4"><p className="text-center text-[14px] font-semibold">{t("habitRules.timerVisible")}</p><Num className="block text-center text-[32px]">{t("habitRules.timerProgress",{done:Math.floor(timerSession.tracked_seconds/60),total:timerSession.target_minutes})}</Num><progress className="block h-4 w-full accent-ink" value={Math.min(timerSession.tracked_seconds,timerSession.target_minutes*60)} max={timerSession.target_minutes*60}/><div className="flex gap-3"><StickerButton variant="secondary" onClick={() => void cancelTimer()}>{t("habitRules.timerCancel")}</StickerButton><StickerButton block variant="lime" disabled={timerSession.tracked_seconds<timerSession.target_minutes*60} onClick={() => void finishTimer()}>{t("habitRules.timerComplete")}</StickerButton></div></div>}
+      <BottomSheet
+        open={timerSession !== null}
+        onClose={() => void cancelTimer()}
+        title={
+          timerSession
+            ? habitName(timerSession.habit, t, i18n.language)
+            : t("habitRules.timerTitle")
+        }
+      >
+        {timerSession && (
+          <div className="space-y-4">
+            <p className="text-center text-[14px] font-semibold">{t("habitRules.timerVisible")}</p>
+            <Num className="block text-center text-[32px]">
+              {t("habitRules.timerProgress", {
+                done: Math.floor(timerSession.tracked_seconds / 60),
+                total: timerSession.target_minutes,
+              })}
+            </Num>
+            <progress
+              className="block h-4 w-full accent-ink"
+              value={Math.min(timerSession.tracked_seconds, timerSession.target_minutes * 60)}
+              max={timerSession.target_minutes * 60}
+            />
+            <div className="flex gap-3">
+              <StickerButton variant="secondary" onClick={() => void cancelTimer()}>
+                {t("habitRules.timerCancel")}
+              </StickerButton>
+              <StickerButton
+                block
+                variant="lime"
+                disabled={timerSession.tracked_seconds < timerSession.target_minutes * 60}
+                onClick={() => void finishTimer()}
+              >
+                {t("habitRules.timerComplete")}
+              </StickerButton>
+            </div>
+          </div>
+        )}
       </BottomSheet>
       <BottomSheet
         open={stepper !== null}
         onClose={() => setStepper(null)}
         title={stepper ? habitName(stepper, t, i18n.language) : ""}
       >
-        {stepper && (
+        {stepper && stepper.kind !== "count" && (
+          <div className="space-y-3">
+            {/* Train (and other one-tap checks): done/undone here too, with Lift as an optional extra. */}
+            <StickerButton
+              block
+              variant={completion(stepper, byHabit.get(stepper.id)) >= 1 ? "secondary" : "lime"}
+              onClick={() => {
+                tap(stepper);
+                setStepper(null);
+              }}
+            >
+              {t(
+                completion(stepper, byHabit.get(stepper.id)) >= 1 ? "ux.markUndone" : "ux.markDone",
+              )}
+            </StickerButton>
+            {stepper.template?.key === "train" && (
+              <Link to="/lift" className="block" onClick={() => setStepper(null)}>
+                <StickerButton block variant="secondary">
+                  {t("ux.logSets")}
+                  <ArrowRight size={18} className="rtl:-scale-x-100" />
+                </StickerButton>
+              </Link>
+            )}
+          </div>
+        )}
+        {stepper && stepper.kind === "count" && (
           <div className="space-y-4">
-            <p className="text-center font-semibold">{t("todayDesign.countTitle")}</p>
+            {stepper.template?.key !== "screen_limit" && (
+              <StickerButton
+                block
+                size="lg"
+                variant="lime"
+                onClick={() => {
+                  log(stepper, Number(stepper.target));
+                  setStepper(null);
+                }}
+              >
+                {isSleepHabit(stepper.template?.key)
+                  ? t("ux.sleptEnough", { n: fmtVal(Number(stepper.target)) })
+                  : t("ux.doneTarget", {
+                      target: fmtVal(Number(stepper.target)),
+                      unit: stepper.unit ?? "",
+                    })}
+              </StickerButton>
+            )}
+            <p className="text-center font-semibold">
+              {isSleepHabit(stepper.template?.key) ? t("ux.lastNight") : t("ux.orPartial")}
+            </p>
             <div className="flex items-center justify-center gap-5">
               <StickerButton
                 variant="secondary"
@@ -613,14 +994,8 @@ function Today() {
                 <RotateCcw size={18} />
                 {t("todayDesign.undo")}
               </StickerButton>
-              <StickerButton
-                block
-                onClick={() => {
-                  log(stepper, Number(stepper.target));
-                  setStepper(null);
-                }}
-              >
-                {t("todayDesign.complete")}
+              <StickerButton block variant="secondary" onClick={() => setStepper(null)}>
+                {t("common.done")}
               </StickerButton>
             </div>
           </div>
@@ -645,7 +1020,7 @@ function Today() {
           className="mt-4"
           onClick={() => {
             setPerfectOpen(false);
-            void navigate({to:"/small-wins"});
+            void navigate({ to: "/small-wins" });
           }}
         >
           {t("batch4.shareWin")}

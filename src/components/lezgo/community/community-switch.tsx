@@ -1,14 +1,16 @@
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { StickerButton } from "../ui";
-export function CommunitySwitch({ active }: { active: "feed" | "crew" | "buddies" }) {
+
+/** Pulse's one switch: the whole challenge, or my crew (crew today, activity, invites, crew posts). */
+export function CommunitySwitch({ active }: { active: "challenge" | "crew" }) {
   const { t } = useTranslation();
   return (
-    <div className="community-switch" role="navigation" aria-label={t("design.community")}>
-      {(["feed", "crew", "buddies"] as const).map((view) => (
+    <div className="community-switch" role="navigation" aria-label={t("nav.pulse")}>
+      {(["challenge", "crew"] as const).map((view) => (
         <Link
           key={view}
-          to={view === "feed" ? "/community" : view === "crew" ? "/crew" : "/buddies"}
+          to={view === "challenge" ? "/community" : "/crew"}
           aria-current={active === view ? "page" : undefined}
         >
           <StickerButton
@@ -16,7 +18,7 @@ export function CommunitySwitch({ active }: { active: "feed" | "crew" | "buddies
             tabIndex={-1}
             className={active === view ? "bg-ink text-lime" : "text-ink"}
           >
-            {view === "feed" ? t("nav.pulse") : t(`batch4.${view}`)}
+            {t(view === "challenge" ? "ux.pulseChallenge" : "ux.pulseCrew")}
           </StickerButton>
         </Link>
       ))}

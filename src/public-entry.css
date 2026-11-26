@@ -562,6 +562,25 @@
 .catalog-upcoming li:last-child {
   padding-block-end: 0;
 }
+/* Upcoming rows open a detail sheet (UX-15): the button carries the row layout. */
+.catalog-upcoming li:has(.catalog-upcoming-open) {
+  display: block;
+}
+.catalog-upcoming-open {
+  display: flex;
+  width: 100%;
+  min-height: 44px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 4px 12px;
+  text-align: start;
+  border-radius: 10px;
+}
+.catalog-upcoming-open:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
 .catalog-upcoming-date {
   display: block;
   margin-block-start: 4px;

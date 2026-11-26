@@ -1,5 +1,7 @@
-import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
@@ -21,14 +23,22 @@ import {
   usePublicLanguage,
 } from "@/components/lezgo/public-entry";
 import { HabitIcon } from "@/components/lezgo/habit-icon";
-import { Field, Num, StickerButton, Tile, inputCls } from "@/components/lezgo/ui";
+import { AppShell } from "@/components/lezgo/app-shell";
+import { BottomSheet, Field, Num, StickerButton, Tile, inputCls } from "@/components/lezgo/ui";
 import { challengePreview, publicChallengeCatalog } from "@/lib/challenge-preview.functions";
 import { groupCatalog, type CatalogCard } from "@/lib/challenge-catalog";
-import { templatesQuery, type Template } from "@/lib/data";
-import i18n, { formatDayMonth, loc, selectLang, type Lang } from "@/lib/i18n";
+import { errKey, templatesQuery, useBase, type Template } from "@/lib/data";
+import { supabase } from "@/integrations/supabase/client";
+import { planFor } from "@/lib/challenge-plan";
+import { challengeHistoryQuery } from "@/lib/challenge-history";
+import { joinErrorKey } from "@/lib/event-data";
+import { localDate } from "@/lib/time";
+import i18n, { formatDayMonth, loc, numberLocale, selectLang, type Lang } from "@/lib/i18n";
 import { pageHead } from "@/lib/page-head";
 import {
   MAX_CHALLENGE_HABITS,
+  clearStartFlow,
+  finishStartFlow,
   saveStartFlow,
   toggleStartHabit,
   type StartFlow,
@@ -84,6 +94,19 @@ function StartPage() {
   const [playMode, setPlayMode] = useState<PlayMode>("solo");
   const [crewCode, setCrewCode] = useState("");
   const [busy, setBusy] = useState(false);
+  const [confirm, setConfirm] = useState<StartFlow | null>(null);
+  const [joinError, setJoinError] = useState<string | null>(null);
+  const [upcomingCard, setUpcomingCard] = useState<CatalogCard | null>(null);
+  const qc = useQueryClient();
+  const { user, profile } = useBase();
+  // Signed-in, onboarded players stay inside the app: bottom nav, no "Sign in" button.
+  const inApp = !!user && !!profile?.onboarded;
+  // The viewer's own status per challenge, so left/finished ones aren't offered again.
+  const history = useQuery({ ...challengeHistoryQuery(user?.id ?? ""), enabled: !!user });
+  const statusBySeason = new Map(
+    (history.data ?? []).map((entry) => [entry.season_id, entry.status]),
+  );
+  const today = localDate("Africa/Tunis");
   const heading = useRef<HTMLHeadingElement>(null);
   const previousStep = useRef(step);
   const templates = useQuery({ ...templatesQuery, enabled: step === "personal" });
@@ -120,6 +143,12 @@ function StartPage() {
 
   async function continueToAuth(flow: StartFlow) {
     if (busy) return;
+    // Signed-in players never go through /auth: they confirm a summary and join right here.
+    if (user) {
+      setJoinError(null);
+      setConfirm(flow);
+      return;
+    }
     setBusy(true);
     try {
       saveStartFlow(flow);
@@ -159,6 +188,39 @@ function StartPage() {
             ? t("batch6.full")
             : "";
 
+  const joinLabel = (name: string) =>
+    user ? t("ux.joinChallenge", { name }) : t("startFlow.joinInvite");
+
+  async function confirmJoin() {
+    if (!confirm || busy) return;
+    setBusy(true);
+    setJoinError(null);
+    try {
+      saveStartFlow(confirm);
+      await finishStartFlow();
+      await qc.invalidateQueries();
+      setConfirm(null);
+      await nav({ to: "/today" });
+    } catch (error) {
+      const key = errKey(error) || (error as { message?: string })?.message || "";
+      clearStartFlow();
+      // crew_setup_pending: the challenge was joined; only the crew step failed.
+      if (key === "crew_setup_pending") await qc.invalidateQueries();
+      setJoinError(key);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const confirmCard = confirm && "play" in confirm ? selected : null;
+  const confirmName = confirm
+    ? confirm.challenge.kind === "personal"
+      ? t("startFlow.personalName", { n: days })
+      : confirm.challenge.kind === "crew_invite"
+        ? code
+        : loc(confirmCard?.name, lang)
+    : "";
+
   function startPersonalChallenge() {
     if (!pickedTemplates.length) return;
     void continueToAuth({
@@ -185,11 +247,12 @@ function StartPage() {
     }
   }
 
-  return (
-    <div className="public-site">
+  const page = (
+    <div className={`public-site${inApp ? " public-site-in-app" : ""}`}>
       <div className="public-wrap">
         <PublicHeader
           lang={lang}
+          signedIn={!!user}
           onBrowse={() => setStep("challenge")}
           onLanguage={(next) =>
             void nav({
@@ -249,6 +312,7 @@ function StartPage() {
                       card={card}
                       lang={lang}
                       invited={!!code && card.code === code && !!invite.data && !inviteError}
+                      status={statusBySeason.get(card.season_id)}
                       onSelect={() => selectCard(card)}
                     />
                   ))}
@@ -285,19 +349,25 @@ function StartPage() {
                       <ul>
                         {upcoming.map((card) => (
                           <li key={card.id}>
-                            <div>
-                              <div className="font-extrabold leading-tight">
-                                {loc(card.name, lang)}
+                            <button
+                              type="button"
+                              className="catalog-upcoming-open"
+                              onClick={() => setUpcomingCard(card)}
+                            >
+                              <div>
+                                <div className="font-extrabold leading-tight">
+                                  {loc(card.name, lang)}
+                                </div>
+                                <time dateTime={card.starts_on} className="catalog-upcoming-date">
+                                  {t("startFlow.opensOn", {
+                                    date: formatDayMonth(card.starts_on, lang),
+                                  })}
+                                </time>
                               </div>
-                              <time dateTime={card.starts_on} className="catalog-upcoming-date">
-                                {t("startFlow.opensOn", {
-                                  date: formatDayMonth(card.starts_on, lang),
-                                })}
-                              </time>
-                            </div>
-                            <span className="catalog-upcoming-length">
-                              {t("batch6.days", { n: card.days })}
-                            </span>
+                              <span className="catalog-upcoming-length">
+                                {t("batch6.days", { n: card.days })}
+                              </span>
+                            </button>
                           </li>
                         ))}
                       </ul>
@@ -322,7 +392,7 @@ function StartPage() {
                 disabled={busy || !INVITE_CODE.test(code)}
                 onClick={() => void continueToAuth({ challenge: { kind: "crew_invite", code } })}
               >
-                {t("startFlow.joinInvite")}
+                {joinLabel(code)}
                 <ArrowRight className="size-5 rtl:rotate-180" aria-hidden="true" />
               </StickerButton>
             </section>
@@ -407,7 +477,7 @@ function StartPage() {
                   disabled={busy || !pickedTemplates.length}
                   onClick={startPersonalChallenge}
                 >
-                  {t("startFlow.joinInvite")}
+                  {joinLabel(t("startFlow.personalName", { n: days }))}
                   <ArrowRight className="size-5 rtl:rotate-180" aria-hidden="true" />
                 </button>
               </div>
@@ -469,15 +539,55 @@ function StartPage() {
                 disabled={busy || (playMode === "code" && !INVITE_CODE.test(crewCode))}
                 onClick={joinSelectedChallenge}
               >
-                {t("startFlow.joinInvite")}
+                {joinLabel(loc(selected?.name, lang))}
                 <ArrowRight className="size-5 rtl:rotate-180" aria-hidden="true" />
               </button>
             </section>
           )}
         </main>
+        <BottomSheet
+          open={upcomingCard !== null}
+          onClose={() => setUpcomingCard(null)}
+          title={upcomingCard ? loc(upcomingCard.name, lang) : ""}
+        >
+          {upcomingCard && <UpcomingDetail card={upcomingCard} signedIn={!!user} />}
+        </BottomSheet>
+        <BottomSheet
+          open={confirm !== null}
+          onClose={() => {
+            if (!busy) setConfirm(null);
+          }}
+          title={t("ux.confirmTitle")}
+        >
+          {confirm && (
+            <JoinSummary
+              name={confirmName}
+              startsOn={
+                confirm.challenge.kind === "personal" ? today : (confirmCard?.starts_on ?? today)
+              }
+              endsOn={
+                confirm.challenge.kind === "personal"
+                  ? addDaysIso(today, days - 1)
+                  : (confirmCard?.ends_on ?? today)
+              }
+              today={today}
+              habits={
+                confirm.challenge.kind === "personal"
+                  ? picked.length
+                  : (confirmCard?.habits.length ?? 0)
+              }
+              mode={"play" in confirm ? confirm.play.mode : "code"}
+              busy={busy}
+              error={joinError}
+              onConfirm={() => void confirmJoin()}
+              onCancel={() => setConfirm(null)}
+            />
+          )}
+        </BottomSheet>
       </div>
     </div>
   );
+  return inApp ? <AppShell todayLayout>{page}</AppShell> : page;
 }
 
 function StepHeading({
@@ -513,16 +623,33 @@ function ChallengeChoice({
   invited,
   onSelect,
   lang,
+  status,
 }: {
   card: CatalogCard;
   invited: boolean;
   onSelect: () => void;
   lang: Lang;
+  status?: string | undefined;
 }) {
   const t = i18n.getFixedT(lang);
   const name = loc(card.name, lang);
+  // Left or finished challenges can't be joined again: show them muted, with no action.
+  const closed = status === "surrendered" || status === "completed";
   return (
-    <article className="catalog-card">
+    <article className={`catalog-card${closed ? " opacity-60" : ""}`}>
+      {status && (
+        <span
+          className={`mb-2 inline-block rounded-full px-2 py-0.5 text-[12px] font-extrabold ${status === "active" ? "bg-lime" : "bg-background"}`}
+        >
+          {t(
+            status === "surrendered"
+              ? "ux.youLeft"
+              : status === "completed"
+                ? "ux.youFinished"
+                : "ux.youreIn",
+          )}
+        </span>
+      )}
       <div className="catalog-card-heading">
         <div>
           <p className="public-caption">
@@ -548,16 +675,181 @@ function ChallengeChoice({
       </div>
       <div className="catalog-card-body">
         <ChallengeHabits card={card} lang={lang} />
-        <button
-          type="button"
-          className="public-action public-action-primary"
-          aria-label={t("startFlow.chooseNamed", { name })}
-          onClick={onSelect}
-        >
-          {t("startFlow.chooseMode")}{" "}
-          <ArrowRight className="size-5 rtl:rotate-180" aria-hidden="true" />
-        </button>
+        {status === "active" ? (
+          <Link to="/today" className="public-action public-action-primary">
+            {t("events.goToday")}
+          </Link>
+        ) : closed ? null : (
+          <button
+            type="button"
+            className="public-action public-action-primary"
+            aria-label={t("startFlow.chooseNamed", { name })}
+            onClick={onSelect}
+          >
+            {t("startFlow.chooseMode")}{" "}
+            <ArrowRight className="size-5 rtl:rotate-180" aria-hidden="true" />
+          </button>
+        )}
       </div>
     </article>
+  );
+}
+
+/** Upcoming event detail: habits, dates and a reminder (signed-in only; the server keeps the record). */
+function UpcomingDetail({ card, signedIn }: { card: CatalogCard; signedIn: boolean }) {
+  const { t, i18n } = useTranslation();
+  const qc = useQueryClient();
+  const [busy, setBusy] = useState(false);
+  const reminders = useQuery({
+    queryKey: ["myReminderIds"],
+    enabled: signedIn,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("my_season_reminder_ids");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  const on = !!reminders.data?.includes(card.season_id);
+  const goal = loc((card as CatalogCard & { goal?: unknown }).goal, i18n.language);
+  async function toggle() {
+    setBusy(true);
+    const { error } = await supabase.rpc("set_season_reminder_by_id", {
+      _season_id: card.season_id,
+      _on: !on,
+    });
+    setBusy(false);
+    if (error) {
+      toast(t(errKey(error) === "guest_read_only" ? "guest.readOnly" : "common.error"));
+      return;
+    }
+    await qc.invalidateQueries({ queryKey: ["myReminderIds"] });
+    toast(t(on ? "ux.reminderOff" : "ux.reminderOn"));
+  }
+  return (
+    <div className="space-y-3">
+      <p className="font-semibold">
+        {formatDayMonth(card.starts_on, i18n.language)} –{" "}
+        {formatDayMonth(card.ends_on, i18n.language)} · {t("batch6.days", { n: card.days })}
+      </p>
+      {goal && <p className="font-semibold">{goal}</p>}
+      <ul className="space-y-2">
+        {card.habits.map((habit) => (
+          <li key={habit.key} className="rounded-[14px] bg-card p-3 sticker-border">
+            <strong className="block">{loc(habit.name, i18n.language)}</strong>
+            <span className="text-[13px] font-semibold">
+              {loc(habit.what_counts, i18n.language)}
+            </span>
+          </li>
+        ))}
+      </ul>
+      {signedIn ? (
+        <StickerButton
+          block
+          size="lg"
+          variant={on ? "secondary" : "lime"}
+          disabled={busy || reminders.isPending}
+          aria-pressed={on}
+          onClick={() => void toggle()}
+        >
+          {t(on ? "ux.reminderSet" : "ux.remindMe")}
+        </StickerButton>
+      ) : (
+        <Link to="/auth" search={{ next: "/start" }} className="block">
+          <StickerButton block size="lg" variant="lime">
+            {t("ux.signInToRemind")}
+          </StickerButton>
+        </Link>
+      )}
+    </div>
+  );
+}
+
+function addDaysIso(iso: string, n: number) {
+  const d = new Date(`${iso}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+
+function JoinSummary({
+  name,
+  startsOn,
+  endsOn,
+  today,
+  habits,
+  mode,
+  busy,
+  error,
+  onConfirm,
+  onCancel,
+}: {
+  name: string;
+  startsOn: string;
+  endsOn: string;
+  today: string;
+  habits: number;
+  mode: string;
+  busy: boolean;
+  error: string | null;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  const { t, i18n } = useTranslation();
+  const plan = planFor(startsOn, endsOn, today, habits);
+  const fmt = new Intl.NumberFormat(numberLocale(i18n.language));
+  return (
+    <div className="space-y-3">
+      <p className="text-[20px] font-extrabold">{name}</p>
+      <p className="font-semibold">
+        {formatDayMonth(startsOn, i18n.language)} – {formatDayMonth(endsOn, i18n.language)}
+      </p>
+      <ul className="space-y-2 text-[15px] font-semibold">
+        <li>
+          {plan.day > 1
+            ? t("ux.joiningOn", {
+                day: fmt.format(plan.day),
+                total: fmt.format(plan.total),
+                left: fmt.format(plan.left),
+              })
+            : t("ux.joiningStart", { total: fmt.format(plan.total) })}
+        </li>
+        {habits > 0 && (
+          <li>{t("ux.goodDay", { x: fmt.format(plan.goodHabits), y: fmt.format(habits) })}</li>
+        )}
+        <li>
+          {t(plan.reachable ? "ux.trophyReachable" : "ux.trophyOut", {
+            need: fmt.format(plan.need),
+          })}
+        </li>
+        <li>{t("ux.modeLine", { mode: t(`startFlow.${mode}`) })}</li>
+        <li className="text-design-muted">{t("ux.oneActive")}</li>
+      </ul>
+      {error !== null && (
+        <div
+          role="alert"
+          className="space-y-2 rounded-[14px] bg-yellow p-3 font-bold sticker-border"
+        >
+          <p>{t(joinErrorKey(error))}</p>
+          {(error === "crew_setup_pending" || error === "active_challenge_exists") && (
+            <Link to="/today">
+              <StickerButton size="sm" variant="lime">
+                {t("events.goToday")}
+              </StickerButton>
+            </Link>
+          )}
+        </div>
+      )}
+      <StickerButton
+        block
+        size="lg"
+        variant="lime"
+        disabled={busy || error === "crew_setup_pending"}
+        onClick={onConfirm}
+      >
+        {t(busy ? "common.loading" : "ux.confirmJoin")}
+      </StickerButton>
+      <StickerButton block variant="secondary" disabled={busy} onClick={onCancel}>
+        {t("common.cancel")}
+      </StickerButton>
+    </div>
   );
 }

@@ -1,3 +1,5 @@
+import { ModerationForm } from "./moderation";
+import type { ModerationScope } from "@/lib/event-data";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
@@ -11,13 +13,14 @@ import { daysBetween, useNow } from "@/lib/time";
 import { cn } from "@/lib/utils";
 import { Avatar, BottomSheet, StickerButton, Num, inputCls } from "../ui";
 const reactionIcons = { respect: Hand, beast: Zap, lol: Smile, legend: Star };
-export function PostCard({ post, uid, start, canPin = false }: { post: Post; uid: string; start: string; canPin?: boolean }) {
+export function PostCard({ post, uid, start, season, canPin = false, reportCrew, moderation }: { post: Post; uid: string; start: string; season: string; canPin?: boolean; reportCrew?: string | undefined; moderation?: ModerationScope | undefined }) {
   const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const now = useNow(60_000);
   const [picker, setPicker] = useState(false);
   const [menu, setMenu] = useState(false);
-  const [report, setReport] = useState(false);
+  const [report, setReport] = useState<"post" | "member" | null>(null);
+  const [moderateOpen, setModerateOpen] = useState(false);
   const [reason, setReason] = useState("");
   const [busy, setBusy] = useState(false);
   const hold = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -54,18 +57,24 @@ export function PostCard({ post, uid, start, canPin = false }: { post: Post; uid
   async function action(a: string) {
     if (a === "delete" && !window.confirm(t("batch4.deleteConfirm"))) return;
     setBusy(true);
-    const { error } = await supabase.rpc("post_action", {
+    const request = a === "report" && report === "member"
+      ? supabase.rpc("report_community_member", { _season: season, _target: post.user_id, _reason: reason,
+          ...(reportCrew ? { _crew: reportCrew } : {}) })
+      : a === "report" && reportCrew
+      ? supabase.rpc("report_community_post", { _post: post.id, _reason: reason, _crew: reportCrew })
+      : supabase.rpc("post_action", {
       _post_id: post.id,
       _action: a,
       _reason: reason,
     });
+    const { error } = await request;
     setBusy(false);
     if (error) {
       toast(t("common.error"));
       return;
     }
     setMenu(false);
-    setReport(false);
+    setReport(null);
     await qc.invalidateQueries({ queryKey: ["feed"] });
     toast(t(a === "report" ? "batch4.reported" : "settings.saved"));
   }
@@ -198,6 +207,9 @@ export function PostCard({ post, uid, start, canPin = false }: { post: Post; uid
             {post.is_pinned ? <PinOff size={20} /> : <Pin size={20} />}
             {t(post.is_pinned ? "challengePulse.unpin" : "challengePulse.pin")}
           </StickerButton>}
+          {moderation && <StickerButton variant="secondary" block onClick={() => { setMenu(false); setModerateOpen(true); }}>
+            <EyeOff size={20} />{t("moderation.hide")} · {t(moderation.crew ? "moderation.crew" : "moderation.event")}
+          </StickerButton>}
           {post.user_id === uid ? (
             <StickerButton
               variant="danger"
@@ -215,11 +227,15 @@ export function PostCard({ post, uid, start, canPin = false }: { post: Post; uid
                 block
                 onClick={() => {
                   setMenu(false);
-                  setReport(true);
+                  setReason("");
+                  setReport("post");
                 }}
               >
                 <Flag size={20} />
                 {t("batch4.report")}
+              </StickerButton>
+              <StickerButton block variant="secondary" onClick={() => { setMenu(false); setReason(""); setReport("member"); }}>
+                <Flag size={20} />{t("moderation.reportMember")}
               </StickerButton>
               <StickerButton
                 variant="secondary"
@@ -234,7 +250,11 @@ export function PostCard({ post, uid, start, canPin = false }: { post: Post; uid
           )}
         </div>
       </BottomSheet>
-      <BottomSheet open={report} onClose={() => setReport(false)} title={t("batch4.report")}>
+      {moderation && <BottomSheet open={moderateOpen} onClose={() => setModerateOpen(false)} title={t("moderation.hide")}>
+        {moderateOpen && <ModerationForm scope={moderation} pending={{ action: "hide", id: post.id, label: `@${post.handle}` }}
+          onCancel={() => setModerateOpen(false)} onSaved={async () => { setModerateOpen(false); await qc.invalidateQueries(); }} />}
+      </BottomSheet>}
+      <BottomSheet open={!!report} onClose={() => setReport(null)} title={t(report === "member" ? "moderation.reportMember" : "batch4.report")}>
         <label className="block font-bold">
           {t("batch4.reason")}
           <textarea
@@ -247,7 +267,7 @@ export function PostCard({ post, uid, start, canPin = false }: { post: Post; uid
         <StickerButton
           className="mt-4"
           block
-          disabled={!reason.trim() || busy}
+          disabled={reason.trim().length < (report === "member" ? 3 : 1) || busy}
           onClick={() => void action("report")}
         >
           {t("batch4.report")}

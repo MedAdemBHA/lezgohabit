@@ -17,6 +17,8 @@ vi.mock("@/integrations/supabase/client", () => ({
 import {
   finishStartFlow,
   readStartFlow,
+  resumeStartFlow,
+  startFlowResumeToken,
   saveStartFlow,
   START_FLOW_KEY,
   toggleStartHabit,
@@ -79,6 +81,18 @@ describe("challenge start flow", () => {
       ["find_challenge_crew"],
     ]);
     expect(sessionStorage.getItem(START_FLOW_KEY)).toBeNull();
+  });
+
+  it("recovers the selected event when email opens the callback in another tab", () => {
+    const flow: StartFlow = { challenge: { kind: "crew_invite", code: "ABC123" } };
+    saveStartFlow(flow);
+    const token = startFlowResumeToken();
+    expect(token).toBeTruthy();
+    sessionStorage.clear();
+    expect(resumeStartFlow("different-invite")).toBe(false);
+    expect(readStartFlow()).toBeNull();
+    expect(resumeStartFlow(token!)).toBe(true);
+    expect(readStartFlow()).toEqual(flow);
   });
 
   it("uses an invite crew code without joining the default challenge first", async () => {

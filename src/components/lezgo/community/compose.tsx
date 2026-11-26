@@ -18,11 +18,13 @@ export function Compose({
   onClose,
   initialType = "proof",
   initialBody = "",
+  initialAudience = "everyone",
 }: {
   open: boolean;
   onClose: () => void;
   initialType?: "proof" | "thought" | "win";
   initialBody?: string;
+  initialAudience?: "crew" | "everyone";
 }) {
   const { t, i18n } = useTranslation();
   const { uid, season } = useBase();
@@ -53,7 +55,7 @@ export function Compose({
       setBody(initialBody);
       setKey(null);
       setPhoto(null);
-      setVisibility("everyone");
+      setVisibility(initialAudience);
       previousFocus.current =
         document.activeElement instanceof HTMLElement ? document.activeElement : null;
       const old = document.body.style.overflow;
@@ -65,7 +67,7 @@ export function Compose({
       };
     }
     return undefined;
-  }, [open, initialType, initialBody]);
+  }, [open, initialType, initialBody, initialAudience]);
   useEffect(() => {
     if (!photo) {
       setPreview("");
@@ -119,9 +121,10 @@ export function Compose({
       );
       toast(t("batch4.posted"));
       onClose();
-    } catch {
+    } catch (error) {
       if (path) await supabase.storage.from("proofs").remove([path]);
-      toast(t("common.error"));
+      const message = (error as Error)?.message ?? "";
+      toast(t(message.includes("moderation_mute") ? "moderation.mutedPost" : message.includes("no_crew") ? "moderation.noCrew" : "common.error"));
     } finally {
       setBusy(false);
     }
