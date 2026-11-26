@@ -78,6 +78,9 @@ export async function getCrewInvitePreview(code: string): Promise<CrewInvitePrev
 
 export type OfficialEventPreview = {
   id: string;
+  season_id?: string;
+  members?: number;
+  habits?: { key: string; name: Record<string, string>; what_counts: Record<string, string> }[];
   name: Record<string, string>;
   goal?: Record<string, string>;
   color?: string;

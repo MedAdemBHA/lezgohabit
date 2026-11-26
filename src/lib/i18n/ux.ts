@@ -1,5 +1,12 @@
 /** Copy for the "easy to use" pass (UX-01…UX-18). en is the typed source; fr/ar/aeb must match. */
 export const uxEn = {
+  trust: "Free · no ads · leave anytime",
+  playersJoined_zero: "{{count}} players joined",
+  playersJoined_one: "{{count}} player joined",
+  playersJoined_two: "{{count}} players joined",
+  playersJoined_few: "{{count}} players joined",
+  playersJoined_many: "{{count}} players joined",
+  playersJoined_other: "{{count}} players joined",
   remindMe: "Remind me when it starts",
   reminderSet: "Reminder on · tap to cancel",
   reminderOn: "We’ll remind you when it starts.",
@@ -73,6 +80,13 @@ export const uxEn = {
 export type UxCopy = typeof uxEn;
 
 export const uxFr: UxCopy = {
+  trust: "Gratuit · sans pub · tu arrêtes quand tu veux",
+  playersJoined_zero: "{{count}} joueur inscrit",
+  playersJoined_one: "{{count}} joueur inscrit",
+  playersJoined_two: "{{count}} joueurs inscrits",
+  playersJoined_few: "{{count}} joueurs inscrits",
+  playersJoined_many: "{{count}} joueurs inscrits",
+  playersJoined_other: "{{count}} joueurs inscrits",
   remindMe: "Me prévenir au lancement",
   reminderSet: "Rappel activé · touche pour annuler",
   reminderOn: "On te préviendra au lancement.",
@@ -145,6 +159,13 @@ export const uxFr: UxCopy = {
 };
 
 export const uxAr: UxCopy = {
+  trust: "مجاني · بلا إعلانات · غادر متى شئت",
+  playersJoined_zero: "لا مشاركين بعد",
+  playersJoined_one: "مشارك واحد",
+  playersJoined_two: "مشاركان",
+  playersJoined_few: "{{count}} مشاركين",
+  playersJoined_many: "{{count}} مشاركًا",
+  playersJoined_other: "{{count}} مشارك",
   remindMe: "ذكّرني عند البدء",
   reminderSet: "التذكير مفعّل · اضغط للإلغاء",
   reminderOn: "سنذكّرك عند البدء.",
@@ -215,6 +236,13 @@ export const uxAr: UxCopy = {
 };
 
 export const uxAeb: UxCopy = {
+  trust: "بلاش · بلا إشهار · تخرج وقت اللي تحب",
+  playersJoined_zero: "حتى حد مازال",
+  playersJoined_one: "لاعب واحد داخل",
+  playersJoined_two: "زوز لاعبين داخلين",
+  playersJoined_few: "{{count}} لاعبين داخلين",
+  playersJoined_many: "{{count}} لاعب داخل",
+  playersJoined_other: "{{count}} لاعب داخل",
   remindMe: "فكّرني كي يبدا",
   reminderSet: "التذكير خدّام · انزل باش تبطّلو",
   reminderOn: "باش نفكّروك كي يبدا.",

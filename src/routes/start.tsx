@@ -34,6 +34,7 @@ export const Route = createFileRoute("/start")({
   ssr: false,
   validateSearch: (s: Record<string, unknown>) => ({
     ...(typeof s["code"] === "string" ? { code: s["code"].toUpperCase() } : {}),
+    ...(typeof s["season"] === "string" && /^[0-9a-f-]{36}$/i.test(s["season"]) ? { season: s["season"] } : {}),
     ...(s["lang"] === "fr" || s["lang"] === "ar" ? { lang: s["lang"] } : {}),
   }),
   head: () => pageHead("Start a challenge — lezgo", "Choose a challenge and make your first check-in.", {
@@ -49,6 +50,7 @@ function StartPage() {
   const { t, i18n } = useTranslation();
   const nav = useNavigate();
   const code = Route.useSearch().code ?? "";
+  const preselect = Route.useSearch().season ?? "";
   const { user, profile } = useBase();
   // Signed-in, onboarded players stay inside the app: bottom nav, no "Sign in" button.
   const inApp = !!user && !!profile?.onboarded;
@@ -117,6 +119,15 @@ function StartPage() {
     if (inviteQuery.data.type === "challenge") setSelected(inviteQuery.data.challenge);
     else if (inviteQuery.data.type === "crew") setStep("invite");
   }, [code, inviteQuery.data]);
+
+  // /start?season=<id> (e.g. from the landing event card) opens with that challenge chosen.
+  const preselected = useRef(false);
+  useEffect(() => {
+    if (preselected.current || !preselect || !catalog.data) return;
+    preselected.current = true;
+    const card = catalog.data.find((item) => item.season_id === preselect && item.starts_on <= today && today <= item.ends_on);
+    if (card) { setPersonal(false); setSelected(card); }
+  }, [preselect, catalog.data, today]);
 
   function toggleHabit(tpl: Template) {
     setPicked((current) => toggleStartHabit(current, tpl.key));

@@ -10,7 +10,7 @@ import { officialEventEndsAt, pad, splitMs, useNow } from "@/lib/time";
 import { currentOfficialEvent, featuredCreatorChallenges } from "@/lib/challenge-preview.functions";
 import { eventColor } from "@/lib/event-data";
 import { pageHead } from "@/lib/page-head";
-import i18n, { loc } from "@/lib/i18n";
+import i18n, { formatDayMonth, loc } from "@/lib/i18n";
 
 export const Route = createFileRoute("/")({
   validateSearch: (search: Record<string, unknown>) =>
@@ -53,16 +53,23 @@ function Landing() {
         </div>
       </header>
       <div className="flex flex-col gap-2.5"><h1 className="join-hero">{t("landing.hero")}</h1><p className="text-[17px] font-semibold leading-[1.5] text-design-body">{t("landing.subtitle")}</p></div>
-      {event && <div className="join-season" style={{ borderInlineStart: `6px solid ${eventColor(event.color)}` }}>
-        <div className="flex items-center justify-between gap-2"><span className="text-[16px] font-extrabold">{loc(event.name, lang)}</span><span className="rounded-lg bg-lime px-2 py-[3px] text-[12px] font-extrabold text-ink">{t("common.live")}</span></div>
+      {event && <section className="join-season" style={{ borderInlineStart: `6px solid ${eventColor(event.color)}` }} aria-labelledby="live-event">
+        <div className="flex items-center justify-between gap-2"><h2 id="live-event" className="text-[16px] font-extrabold">{loc(event.name, lang)}</h2><span className="rounded-lg bg-lime px-2 py-[3px] text-[12px] font-extrabold text-ink">{t("common.live")}</span></div>
+        <p className="text-[13px] font-bold">
+          {formatDayMonth(event.starts_on, lang)} – {formatDayMonth(event.ends_on, lang)}
+          {typeof event.members === "number" && <> · {t("ux.playersJoined", { count: event.members })}</>}
+        </p>
+        {!!event.habits?.length && <ul className="flex flex-wrap gap-1.5">{event.habits.map((habit) => <li key={habit.key} className="rounded-full bg-background px-2 py-1 text-[12px] font-bold">{loc(habit.name, lang)}</li>)}</ul>}
         <ClientOnly fallback={null}><SeasonCountdown endsOn={event.ends_on} /></ClientOnly>
-      </div>}
+        <StickerButton block variant="lime" onClick={() => void nav({ to: "/start", search: event.season_id ? { season: event.season_id } : {} })}>{t("ux.joinChallenge", { name: loc(event.name, lang) })}<ArrowRight className="size-4 rtl:rotate-180" /></StickerButton>
+      </section>}
       <ol className="flex flex-col gap-3">{steps.map((step, i) => <li key={step} className="flex items-center gap-3"><span className={`num flex size-[34px] shrink-0 items-center justify-center rounded-[10px] text-[15px] font-bold sticker-border ${["bg-lime", "bg-yellow", "bg-blue"][i] ?? "bg-lime"}`}>{i + 1}</span><span className="text-[17px] font-bold leading-[1.35]">{step}</span></li>)}</ol>
       {featured.map((challenge) => <StickerButton key={challenge.code} variant="secondary" onClick={() => void nav({ to: "/c/$code", params: { code: challenge.code } })}>{challenge.name}<ArrowRight className="size-4 rtl:rotate-180" /></StickerButton>)}
       <div className="join-actions">
         <StickerButton block className="join-primary" onClick={() => nav({ to: "/start" })}>{t("common.cta")}</StickerButton>
         <StickerButton block variant="secondary" className="join-code" onClick={() => setCodeOpen(true)}>{t("landing.haveCode")}</StickerButton>
         <ClientOnly fallback={null}><ExploreAsGuest /></ClientOnly>
+        <p className="text-center text-[14px] font-extrabold">{t("ux.trust")}</p>
         <p className="text-center text-[13px] font-semibold text-design-muted">{t("landing.footer")} · <bdi>EN · FR · عربي · تونسي</bdi></p>
       </div>
       <BottomSheet open={codeOpen} onClose={() => setCodeOpen(false)} title={t("landing.codeTitle")}>
