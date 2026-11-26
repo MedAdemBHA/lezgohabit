@@ -7,7 +7,7 @@ import { StickerButton, Num } from "@/components/lezgo/ui";
 import { errKey, useUser } from "@/lib/data";
 import { pageHead } from "@/lib/page-head";
 import { challengePreview, crewInvitePreview } from "@/lib/challenge-preview.functions";
-import { formatDayMonth, loc } from "@/lib/i18n";
+import { formatDayMonth, isRtl, loc } from "@/lib/i18n";
 import i18n from "@/lib/i18n";
 import { localDate } from "@/lib/time";
 import { joinErrorKey, myActiveEventQuery } from "@/lib/event-data";
@@ -97,12 +97,12 @@ function Invite() {
   const t = i18n.getFixedT(lang);
 
   return (
-    <main className="challenge-public">
+    <main className="challenge-public" lang={lang} dir={isRtl(lang) ? "rtl" : "ltr"}>
       <LezgoMark size={64} />
       {challenge ? (
         <>
           <h1>{challenge.name}</h1>
-          <p>{t("batch6.days", { n: challenge.days })} · {challenge.starts_on} — {challenge.ends_on}</p>
+          <p>{t("batch6.days", { n: challenge.days })} · {formatDayMonth(challenge.starts_on, lang)} – {formatDayMonth(challenge.ends_on, lang)}</p>
           <p>{t("batch6.creatorLabel", { name: challenge.creator.startsWith("@") ? challenge.creator : `@${challenge.creator}` })}</p>
           <Num>{t("batch6.members", { n: challenge.members })}</Num>
           <div className="challenge-preview-habits">
@@ -111,7 +111,7 @@ function Invite() {
               <p className="text-[13px] font-semibold">{loc(habit.what_counts, lang)} · {habit.target}{habit.unit ? ` ${habit.unit}` : ""}</p>
             </article>)}
           </div>
-          <ClientOnly fallback={<p className="font-extrabold">Join this challenge on lezgo</p>}>
+          <ClientOnly fallback={<p className="font-extrabold">{t("events.joinOnLezgo")}</p>}>
             {blocked ? <p role="status">{t(blocked)}</p> : <InviteActions code={code} challenge={challenge} />}
           </ClientOnly>
         </>
@@ -127,7 +127,7 @@ function Invite() {
         </>
       ) : (
         <>
-          <h1>{t(unavailable ? "events.joinError" : "events.invalidCode")}</h1>
+          <h1 className="invite-error">{t(unavailable ? "events.inviteUnavailable" : "events.invalidCode")}</h1>
           <Link to="/start"><StickerButton variant="secondary">{t("challengeHistory.pickNext")}</StickerButton></Link>
         </>
       )}

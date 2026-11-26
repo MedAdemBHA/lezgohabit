@@ -97,6 +97,9 @@ function ChallengesPage() {
               {t("challengeHistory.openTrail")} <ArrowRight className="rtl:-scale-x-100" size={18} />
             </StickerButton>
           </Link>
+          <Link className="wrapped-action press" to="/wrapped" search={{ season: selected.season_id }}>
+            {t("batch6.wrapped")}
+          </Link>
           {selected.status === "active" && (
             <StickerButton block variant="secondary" className="mt-3 text-destructive" onClick={() => setSurrenderOpen(true)}>
               {t("challengeHistory.surrender")}

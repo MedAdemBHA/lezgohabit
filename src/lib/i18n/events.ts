@@ -31,6 +31,8 @@ export const eventsEn = {
   closed: "This event has ended.",
   early: "This event hasn’t opened yet.",
   invalidCode: "We couldn’t find that invite. Check the code or ask for a new one.",
+  inviteUnavailable: "This invite didn’t load. Check your connection and try again.",
+  joinOnLezgo: "Join this challenge on lezgo",
   crewFull: "This crew is full. Ask for another invite or play solo.",
   crewSetup: "You joined the event. Try setting up your crew again, or go to Today.",
   noLive: "No official event is open right now.",
@@ -61,6 +63,8 @@ export const eventsFr: EventsCopy = {
   joinError: "Impossible de rejoindre l’événement. Vérifie ta sélection et réessaie.",
   closed: "Cet événement est terminé.", early: "Cet événement n’a pas encore commencé.",
   invalidCode: "Invitation introuvable. Vérifie le code ou demande une nouvelle invitation.",
+  inviteUnavailable: "L’invitation n’a pas pu se charger. Vérifie ta connexion et réessaie.",
+  joinOnLezgo: "Rejoins ce défi sur lezgo",
   crewFull: "L’équipe est complète. Demande une autre invitation ou joue en solo.",
   crewSetup: "Tu as rejoint l’événement. Réessaie de configurer ton équipe ou va dans Aujourd’hui.",
   noLive: "Aucun événement officiel n’est ouvert.", sameHabits: "Les mêmes règles s’appliquent à tous dans un événement.",
@@ -80,6 +84,8 @@ export const eventsAr: EventsCopy = {
   goToday: "انتقل إلى اليوم", keepPlaying: "أكمل فعاليتك أو غادرها قبل الانضمام إلى فعالية أخرى.",
   joinError: "تعذر الانضمام. تحقّق من اختيارك وحاول مجددًا.", closed: "انتهت هذه الفعالية.", early: "لم تبدأ هذه الفعالية بعد.",
   invalidCode: "لم نجد الدعوة. تحقّق من الرمز أو اطلب دعوة جديدة.",
+  inviteUnavailable: "تعذّر تحميل الدعوة. تحقّق من اتصالك وحاول مجددًا.",
+  joinOnLezgo: "انضم إلى هذا التحدي على lezgo",
   crewFull: "الفريق مكتمل. اطلب دعوة أخرى أو شارك فرديًا.",
   crewSetup: "انضممت إلى الفعالية. حاول إعداد فريقك مجددًا أو انتقل إلى اليوم.",
   noLive: "لا توجد فعالية رسمية مفتوحة الآن.", sameHabits: "يتّبع المشاركون في الفعالية نفسها قواعد العادات ذاتها.",
@@ -96,6 +102,7 @@ export const eventsAeb: EventsCopy = {
   keepPlaying: "كمّل فعاليتك وإلا اخرج منها قبل ما تدخل لفعالية أخرى.", early: "الفعالية هاذي ما بداتش.",
   closed: "الفعالية هاذي وفات.", noLive: "ما فما حتى فعالية رسمية مفتوحة توّا.",
   sameHabits: "الناس الكل في نفس الفعالية يتبعوا نفس قواعد العادات.",
+  inviteUnavailable: "الدعوة ما تحلّتش. ثبّت في الكونكسيون وعاود.", joinOnLezgo: "ادخل للتحدي هذا على lezgo",
 };
 
 export const moderationEn = {
