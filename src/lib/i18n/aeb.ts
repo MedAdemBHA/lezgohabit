@@ -185,7 +185,7 @@ export const aeb: Dict = {
     retry: "عاود", error: "صار مشكل. عاود جرّب.", next: "اللي بعدو", skip: "فوت", pts: "نقطة", language: "اللغة",
     season1: "الموسم 1", live: "لايف", openProfile: "حل البروفيل",
   },
-  nav: { today: "اليوم", board: "الترتيب", crew: "الكرو", me: "أنا", pulse: "نبض التحدّي" },
+  nav: { today: "اليوم", board: "الترتيب", crew: "الكرو", me: "أنا", pulse: "الفيد" },
   landing: {
     headline: "عادات صغيرة.\nتقدّم بالحقّ.",
     freeChallenges: "تحدّيات عادات بلاش",

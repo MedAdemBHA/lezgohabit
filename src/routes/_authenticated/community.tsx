@@ -198,8 +198,9 @@ function Community() {
         </div>
       </section>
 
+      {/* The feed comes first: posts, then the automatic check-in moments. */}
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-[18px] font-extrabold">{t("challengePulse.moments")}</h2>
+        <h2 className="text-[18px] font-extrabold">{t("challengePulse.challengePosts")}</h2>
         <StickerButton
           variant="lime"
           size="sm"
@@ -210,16 +211,6 @@ function Community() {
           {t("challengePulse.shareProof")}
         </StickerButton>
       </div>
-      {momentRows.map((event) => (
-        <ChallengeEventCard key={event.id} event={event} challengeName={challengeName} />
-      ))}
-      {!momentRows.length && (
-        <p className="rounded-[18px] bg-card p-3 text-[14px] font-semibold sticker-border">
-          {t("challengePulse.emptyMoments")}
-        </p>
-      )}
-
-      <h2 className="text-[18px] font-extrabold">{t("challengePulse.challengePosts")}</h2>
       {rows.map((post) => (
         <PostCard
           key={post.id}
@@ -247,6 +238,16 @@ function Community() {
           {t(posts.isFetchingNextPage ? "common.loading" : "batch4.loadMore")}
         </StickerButton>
       )}
+      <h2 className="mt-2 text-[18px] font-extrabold">{t("challengePulse.moments")}</h2>
+      {momentRows.map((event) => (
+        <ChallengeEventCard key={event.id} event={event} challengeName={challengeName} />
+      ))}
+      {!momentRows.length && (
+        <p className="rounded-[18px] bg-card p-3 text-[14px] font-semibold sticker-border">
+          {t("challengePulse.emptyMoments")}
+        </p>
+      )}
+
       <Compose open={compose} onClose={() => setCompose(false)} initialAudience="everyone" />
     </AppShell>
   );

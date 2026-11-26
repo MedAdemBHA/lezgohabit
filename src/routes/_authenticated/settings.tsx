@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { ArrowLeft, ChevronRight, LogOut, Trash2, MapPin, ListChecks } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/lezgo/app-shell";
+import { LangFlag } from "@/components/icons";
 import {
   Segmented,
   StickerButton,
@@ -143,7 +144,7 @@ function SettingsPage() {
           {LANGS.map((lang, i) => (
             <StickerButton
               variant="secondary"
-              className={cn(i18n.language === lang ? "bg-yellow shadow-hard" : "shadow-none")}
+              className="shadow-none"
               key={lang}
               disabled={busy}
               aria-pressed={i18n.language === lang}
@@ -152,6 +153,7 @@ function SettingsPage() {
                 if (!profile.is_demo) void update({ language: lang });
               }}
             >
+              <LangFlag lang={lang} size={27} />
               {t(`batch4.${["english", "french", "arabic", "darja"][i]}`)}
             </StickerButton>
           ))}
