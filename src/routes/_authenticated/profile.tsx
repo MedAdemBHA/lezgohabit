@@ -12,7 +12,7 @@ import { StreakIcon, SalatIcon, BossIcon, NoSugarIcon } from "@/components/icons
 import { Avatar, BottomSheet, Num, StickerButton } from "@/components/lezgo/ui";
 import { FittedLabel } from "@/components/lezgo/fitted-label";
 import { useHabitStatLabel } from "@/components/lezgo/habit-stat";
-import { scoresQuery, useBase } from "@/lib/data";
+import { habitsQuery, scoresQuery, useBase } from "@/lib/data";
 import { buddyQuery, countryName, summaryQuery } from "@/lib/community-data";
 import { challengePulseQuery } from "@/lib/feed-data";
 import { COUNTRY_RANK_MIN_PLAYERS } from "@/lib/challenge-plan";
@@ -21,7 +21,7 @@ import { addDays, daysBetween } from "@/lib/time";
 import { loc } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
-import { rolesQuery, challengeLink } from "@/lib/batch6-data";
+import { bossQuery, rolesQuery, challengeLink } from "@/lib/batch6-data";
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () =>
     pageHead(
@@ -74,6 +74,20 @@ function ProfilePage() {
   const q = useQuery({ ...summaryQuery(uid, season?.id ?? ""), enabled: !!uid && !!season });
   const pulse = useQuery({ ...challengePulseQuery(uid, season?.id ?? ""), enabled: !!uid && !!season });
   const countryReady = (pulse.data?.participants ?? 0) >= COUNTRY_RANK_MIN_PLAYERS;
+  // Only badges this challenge can award (plus anything already earned) — no "Sugar-free week"
+  // in a challenge without a sugar habit.
+  const myHabits = useQuery({ ...habitsQuery(uid, season?.id ?? ""), enabled: !!uid && !!season });
+  const boss = useQuery({ ...bossQuery(uid, season?.id ?? ""), enabled: !!uid && !!season });
+  const habitKeys = new Set((myHabits.data ?? []).map((h) => (h.kind === "salat" ? "salat" : h.template?.key ?? "")));
+  const achievable: Record<(typeof BADGE_KEYS)[number], boolean> = {
+    first_go: true,
+    streak7: true,
+    perfect5: true,
+    salat5: habitKeys.has("salat"),
+    sugar7: habitKeys.has("no_sugar") || habitKeys.has("sugar_free_coffee"),
+    boss_ko: !!boss.data?.boss || (boss.data?.next.length ?? 0) > 0,
+  };
+  const visibleBadges = BADGE_KEYS.filter((b) => achievable[b] || q.data?.badges.includes(b));
   const shareQ = useQuery({
     ...summaryQuery(uid, season?.id ?? "", true),
     enabled: !!uid && !!season && share,
@@ -228,6 +242,21 @@ function ProfilePage() {
           ))}
         </div>
       )}
+      <h2 className="mt-3 text-[13px] font-extrabold">{t("ux.currentChallenge")}</h2>
+      <Link
+        to="/seasons"
+        className="flex items-center gap-3 rounded-[20px] bg-blue px-[18px] py-[14px] sticker-border shadow-hard-lg"
+      >
+        <span className="min-w-0 flex-1">
+          <span className="block text-[18px] font-extrabold">
+            {loc(season.name, i18n.language)} · {t("common.season1")}
+          </span>
+          <span className="block text-[15px] font-bold">
+            {t("socialDesign.inProgress", { day, total: length })}
+          </span>
+        </span>
+        <ChevronRight className="shrink-0 rtl:-scale-x-100" />
+      </Link>
       <Link to="/trail" search={{ season: season.id }} className="mt-2 block" aria-label={t('batch8.viewTrail')}>
         <h2 className="mb-2 text-[13px] font-extrabold">{t("profile.trail")}</h2>
         <div className="season-trail">
@@ -260,18 +289,18 @@ function ProfilePage() {
           })}
         </div>
       </Link>
+      <Link to="/lights-out" className="mt-3 block"><StickerButton block variant="secondary">{t('ux.closeMyDay')}</StickerButton></Link>
       <Link to="/challenges" search={{ season: "" }} className="mt-3 block">
         <StickerButton block variant="secondary">{t("challengeHistory.title")}</StickerButton>
       </Link>
-      <Link to="/lights-out"><StickerButton block variant="secondary">{t('batch8.lights')}</StickerButton></Link>
       <div className="mt-3 flex items-center justify-between">
         <h2 className="text-[13px] font-extrabold">
           {t("profile.badges").toLocaleUpperCase(i18n.language === "aeb" ? "ar" : i18n.language)}
         </h2>
-        <Num className="text-[13px] font-bold">{data?.badges.length ?? 0}/6</Num>
+        <Num className="text-[13px] font-bold">{visibleBadges.filter((b) => data?.badges.includes(b)).length}/{visibleBadges.length}</Num>
       </div>
       <div className="grid grid-cols-3 gap-3">
-        {BADGE_KEYS.map((b) => {
+        {visibleBadges.map((b) => {
           const earned = data?.badges.includes(b);
           return (
             <StickerButton
@@ -290,21 +319,10 @@ function ProfilePage() {
           );
         })}
       </div>
-      <h2 className="mt-3 text-[13px] font-extrabold">{t("socialDesign.seasons")}</h2>
-      <Link
-        to="/seasons"
-        className="flex items-center gap-3 rounded-[20px] bg-blue px-[18px] py-[14px] sticker-border shadow-hard-lg"
-      >
-        <span className="min-w-0 flex-1">
-          <span className="block text-[18px] font-extrabold">
-            {loc(season.name, i18n.language)} · {t("common.season1")}
-          </span>
-          <span className="block text-[15px] font-bold">
-            {t("socialDesign.inProgress", { day, total: length })}
-          </span>
-        </span>
-        <ChevronRight className="shrink-0 rtl:-scale-x-100" />
-      </Link>
+      <h2 className="mt-4 text-[13px] font-extrabold">{t("ux.more")}</h2>
+      <Link to="/create-challenge"><StickerButton block variant="lime">{t("batch6.create")}</StickerButton></Link>
+      <Link to="/wrapped" search={{season:season.id}}><StickerButton block variant="secondary">{t("batch6.wrapped")}</StickerButton></Link>
+      <Link to="/small-wins"><StickerButton block variant="secondary">{t("batch6.winTitle")}</StickerButton></Link>
       <div className="mt-3 grid grid-cols-2 gap-3">
         <Link to="/lift"><StickerButton block variant="secondary">{t("design.lift")}</StickerButton></Link>
         <Link to="/boss"><StickerButton block variant="secondary">{t("design.boss")}</StickerButton></Link>
@@ -333,10 +351,7 @@ function ProfilePage() {
         </span>
         <ChevronRight className="shrink-0 rtl:-scale-x-100" />
       </Link>
-      <Link to="/create-challenge"><StickerButton block variant="lime">{t("batch6.create")}</StickerButton></Link>
       {creatorPanel}
-      <Link to="/small-wins"><StickerButton block variant="secondary">{t("batch6.winTitle")}</StickerButton></Link>
-      <Link to="/wrapped" search={{season:season.id}}><StickerButton block variant="secondary">{t("batch6.wrapped")}</StickerButton></Link>
       {profile.is_admin && (
         <Link to="/admin">
           <StickerButton block variant="secondary">

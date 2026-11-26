@@ -1,5 +1,8 @@
 /** Copy for the "easy to use" pass (UX-01…UX-18). en is the typed source; fr/ar/aeb must match. */
 export const uxEn = {
+  closeMyDay: "Close my day",
+  currentChallenge: "Current challenge",
+  more: "More",
   boardEarly: "You’re early — the board fills up as players join.",
   boardInvite: "Join me on lezgo",
   goodDays: "{{done}} good days of {{played}}",
@@ -55,6 +58,9 @@ export const uxEn = {
 export type UxCopy = typeof uxEn;
 
 export const uxFr: UxCopy = {
+  closeMyDay: "Clôturer ma journée",
+  currentChallenge: "Challenge en cours",
+  more: "Plus",
   boardEarly: "Tu es en avance — le classement se remplit à mesure que les joueurs arrivent.",
   boardInvite: "Rejoins-moi sur lezgo",
   goodDays: "{{done}} bonnes journées sur {{played}}",
@@ -108,6 +114,9 @@ export const uxFr: UxCopy = {
 };
 
 export const uxAr: UxCopy = {
+  closeMyDay: "أغلق يومي",
+  currentChallenge: "التحدي الحالي",
+  more: "المزيد",
   boardEarly: "أنت مبكر — يمتلئ الترتيب كلما انضم لاعبون.",
   boardInvite: "انضم إليّ على lezgo",
   goodDays: "{{done}} أيام جيدة من {{played}}",
@@ -161,6 +170,9 @@ export const uxAr: UxCopy = {
 };
 
 export const uxAeb: UxCopy = {
+  closeMyDay: "سكّر نهاري",
+  currentChallenge: "التحدّي الحالي",
+  more: "زيد",
   boardEarly: "جيت بكري — الترتيب يتعمّر كي يدخلو لاعبين.",
   boardInvite: "تعالى معايا في lezgo",
   goodDays: "{{done}} نهارات باهين من {{played}}",
