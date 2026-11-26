@@ -13,14 +13,14 @@ import { clearStartFlow, finishStartFlow, readStartFlow, resumeStartFlow, startF
 import { joinErrorKey, myActiveEventQuery } from "@/lib/event-data";
 import { loc } from "@/lib/i18n";
 import { errKey, useUser } from "@/lib/data";
-import { seasonSearch } from "@/lib/season-id";
-
-const WRAPPED_SIGN_IN = "lezgo_wrapped_sign_in";
+import { AFTER_SIGN_IN, LEGACY_WRAPPED_SIGN_IN, authReturnError, nextFromSearch, takeStoredNext } from "@/lib/safe-next";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
-  validateSearch: (search: Record<string, unknown>): { next?: "/wrapped"; season?: string } =>
-    search["next"] === "/wrapped" ? { next: "/wrapped", season: seasonSearch(search["season"]) } : {},
+  validateSearch: (search: Record<string, unknown>): { next?: string } => {
+    const next = nextFromSearch(search);
+    return next ? { next } : {};
+  },
   head: () => ({ meta: [{ title: "Sign in — lezgo" }, { name: "description", content: "Sign in to start a challenge on lezgo." },
     { property: "og:title", content: "Sign in — lezgo" }, { property: "og:description", content: "Start a challenge on lezgo." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary_large_image" }, { name: "robots", content: "noindex, nofollow" }] }),
   component: AuthPage,
@@ -35,7 +35,8 @@ function GoogleG() {
 function AuthPage() {
   const { t, i18n } = useTranslation();
   const nav = useNavigate();
-  const { next, season } = Route.useSearch();
+  const { next } = Route.useSearch();
+  const toWrapped = next?.startsWith("/wrapped") ?? false;
   const [adult, setAdult] = useState(false);
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
@@ -44,11 +45,12 @@ function AuthPage() {
   const [emailOpen, setEmailOpen] = useState(false);
   const [legal, setLegal] = useState<"terms" | "privacy" | null>(null);
   const [flowError, setFlowError] = useState<string | null>(null);
+  const [returnError, setReturnError] = useState<"cancelled" | "expired" | "failed" | null>(null);
   const user = useUser();
   const active = useQuery({ ...myActiveEventQuery(user?.id ?? ""), enabled: !!user && flowError === "active_challenge_exists" });
   const activeName = loc(active.data?.seasons?.name, i18n.language);
   const completing = useRef(false);
-  const returningToWrapped = useRef(false);
+  const leaving = useRef(false);
   const countries = useQuery({ queryKey: ["participating-countries"], queryFn: async () => { const { data, error } = await supabase.rpc("participating_countries"); if (error) throw error; return data; }, staleTime: 60_000 });
 
   async function continueAfterAuth() {
@@ -74,14 +76,24 @@ function AuthPage() {
     const resume = params.get("resume");
     const missingFlow = !!resume && !resumeStartFlow(resume);
     if(fromLink&&/^[A-Z0-9]{6}$/.test(fromLink))sessionStorage.setItem("lezgo_challenge_invite",fromLink);
+    // Cancelled Google consent or an expired/used magic link come back as error params.
+    const returned = authReturnError(window.location.search, window.location.hash);
+    if (returned) {
+      setReturnError(returned);
+      if (returned === "expired") setEmailOpen(true);
+      // Clear the error params but keep the destination, so a retry still lands in the right place.
+      const carried = next ?? takeStoredNext();
+      void nav({ to: "/auth", search: carried ? { next: carried } : {}, replace: true });
+    }
     let active = true;
     const go=()=>{
-      if (!active || returningToWrapped.current) return;
-      const wrappedSeason = next === "/wrapped" ? season ?? "" : sessionStorage.getItem(WRAPPED_SIGN_IN);
-      if (wrappedSeason !== null) {
-        returningToWrapped.current = true;
-        sessionStorage.removeItem(WRAPPED_SIGN_IN);
-        void nav({ to: "/wrapped", search: { season: wrappedSeason }, replace: true, reloadDocument: true });
+      if (!active || leaving.current) return;
+      // Destination saved before sign-in (URL first, then the OAuth round-trip copy) wins.
+      const stored = takeStoredNext();
+      const destination = next ?? stored;
+      if (destination) {
+        leaving.current = true;
+        window.location.replace(destination);
         return;
       }
       if (missingFlow && !fromLink) { void nav({ to: "/start", replace: true }); return; }
@@ -99,13 +111,12 @@ function AuthPage() {
       }
     });
     return () => { active = false; window.clearTimeout(pending); data.subscription.unsubscribe(); };
-  }, [nav, t, next, season]);
+  }, [nav, t, next]);
 
   function callbackUrl() {
     const url = new URL("/auth", window.location.origin);
-    if (next === "/wrapped") {
+    if (next) {
       url.searchParams.set("next", next);
-      if (season) url.searchParams.set("season", season);
       return url.href;
     }
     const resume = startFlowResumeToken();
@@ -116,21 +127,37 @@ function AuthPage() {
   }
 
   async function google() {
-    if (!adult) return;
+    if (!adult || busy) return;
     setBusy(true);
-    if (next === "/wrapped") sessionStorage.setItem(WRAPPED_SIGN_IN, season ?? "");
-    else sessionStorage.removeItem(WRAPPED_SIGN_IN);
-    const redirectTo = next === "/wrapped" ? new URL("/auth", window.location.origin).href : callbackUrl();
-    const { error } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo } });
-    if (error) { sessionStorage.removeItem(WRAPPED_SIGN_IN); toast(t("common.error")); setBusy(false); }
+    setReturnError(null);
+    sessionStorage.removeItem(LEGACY_WRAPPED_SIGN_IN);
+    if (next) sessionStorage.setItem(AFTER_SIGN_IN, next);
+    else sessionStorage.removeItem(AFTER_SIGN_IN);
+    const redirectTo = next ? new URL("/auth", window.location.origin).href : callbackUrl();
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo } });
+      if (error) throw error;
+    } catch {
+      sessionStorage.removeItem(AFTER_SIGN_IN);
+      toast(t("flows.signInFailed"));
+      setBusy(false);
+    }
   }
   async function magic(e: React.FormEvent) {
     e.preventDefault();
-    if (!email || !adult) return;
+    const address = email.trim();
+    if (!address || !adult || busy) return;
     setEmailError(null);
+    setReturnError(null);
     setBusy(true);
-    const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: callbackUrl() } });
-    setBusy(false);
+    let error: { code?: string | undefined; status?: number | undefined } | null = null;
+    try {
+      ({ error } = await supabase.auth.signInWithOtp({ email: address, options: { emailRedirectTo: callbackUrl() } }));
+    } catch {
+      error = {};
+    } finally {
+      setBusy(false);
+    }
     if (error) {
       setEmailError(error.code === "email_address_not_authorized" ? "auth.emailNotAllowed"
         : error.status === 429 ? "auth.emailRateLimited" : "common.error");
@@ -143,8 +170,11 @@ function AuthPage() {
     <div className="design-screen login-screen">
       <header className="flex h-10 shrink-0 items-center justify-between gap-2"><div className="login-brand flex items-center gap-2" dir="ltr"><Brand size={34} /></div><DesignLanguage segmented /></header>
       <h1 className="mt-4 text-[36px] font-extrabold leading-tight">{t("auth.signIn")}</h1>
-      <p className="text-[16px] font-semibold leading-[1.5] text-design-body">{t(next === "/wrapped" ? "wrapped.signIn" : "auth.existingEmail")}</p>
-      {user && busy && <p role="status">{t("common.loading")}</p>}
+      <p className="text-[16px] font-semibold leading-[1.5] text-design-body">{t(toWrapped ? "wrapped.signIn" : next ? "flows.continueTo" : "auth.existingEmail")}</p>
+      {returnError && !user && <p role="alert" className="rounded-[14px] bg-card p-3 text-[14px] font-bold sticker-border">
+        {t(returnError === "cancelled" ? "flows.oauthCancelled" : returnError === "expired" ? "flows.linkExpired" : "flows.signInFailed")}
+      </p>}
+      {user && flowError === null && <p role="status" aria-live="polite" className="font-bold">{t("flows.signingIn")}</p>}
       {flowError !== null && <div role="alert" className="space-y-2 rounded-[14px] bg-card p-3 text-[14px] font-bold sticker-border">
         <p>{flowError === "active_challenge_exists" && activeName ? t("events.current", { name: activeName }) : t(joinErrorKey(flowError))}</p>
         {flowError === "active_challenge_exists" && <p>{t("events.keepPlaying")}</p>}
@@ -163,17 +193,22 @@ function AuthPage() {
       {(countries.data ?? 0) >= 2 && <div className="flex items-center gap-3"><div className="flex shrink-0" aria-hidden="true">{([ ["bg-lime", "NR"], ["bg-pink", "SK"], ["bg-yellow", "YB"], ["bg-teal", "AK"] ] as const).map(([color, initials],i) => <span key={color} className={`grid size-[34px] place-items-center rounded-full text-[10px] font-extrabold sticker-border ${color} ${i ? "-ms-2" : ""}`}>{initials}</span>)}</div><p className="text-[13px] font-bold">{t("design.proof", { n: countries.data })}</p></div>}
       {!user && <div className="login-actions">
         <label className="flex min-h-11 items-center gap-3 text-[14px] font-bold"><input type="checkbox" checked={adult} onChange={e=>setAdult(e.target.checked)} className="size-5 accent-ink"/>{t("batch9.adult")}</label>
-        <StickerButton block variant="secondary" className="google-button" onClick={google} disabled={busy || !adult}><GoogleG />{t("auth.google")}</StickerButton>
-        <StickerButton block variant="ghost" className="email-button" onClick={() => setEmailOpen(true)} disabled={busy || !adult}><Mail size={20} strokeWidth={2.5} />{t("design.email")}</StickerButton>
-        {next !== "/wrapped" && <ExploreAsGuest />}
+        {!adult && <p id="adult-hint" className="text-[13px] font-semibold text-design-muted">{t("flows.adultRequired")}</p>}
+        <StickerButton block variant="secondary" className="google-button" onClick={() => void google()} disabled={busy || !adult} aria-describedby={adult ? undefined : "adult-hint"}><GoogleG />{t("auth.google")}</StickerButton>
+        <StickerButton block variant="ghost" className="email-button" onClick={() => setEmailOpen(true)} disabled={busy || !adult} aria-describedby={adult ? undefined : "adult-hint"}><Mail size={20} strokeWidth={2.5} />{t("design.email")}</StickerButton>
+        {!next && <ExploreAsGuest />}
         <p className="text-center text-[12px] font-semibold leading-[1.5] text-design-muted">{t("design.legal")} <StickerButton variant="ghost" className="legal-link" onClick={() => setLegal("terms")}>{t("design.terms")}</StickerButton> {t("design.andWord")} <StickerButton variant="ghost" className="legal-link" onClick={() => setLegal("privacy")}>{t("design.privacy")}</StickerButton></p>
       </div>}
       <BottomSheet open={emailOpen} onClose={() => setEmailOpen(false)} title={t("design.email")}>
-        {sent ? <p className="sticker bg-lime p-4 font-bold">{t("auth.linkSent")}</p> : (
+        {sent ? <div className="space-y-3">
+          <p role="status" className="sticker bg-lime p-4 font-bold">{t("auth.linkSent")}</p>
+          <p className="text-[14px] font-semibold">{t("flows.sentTo", { email: email.trim() })}</p>
+          <StickerButton block variant="secondary" onClick={() => { setSent(false); setEmailError(null); }}>{t("flows.otherEmail")}</StickerButton>
+        </div> : (
           <form onSubmit={magic} className="space-y-4">
             <Field label={t("auth.email")}><input dir="ltr" type="email" autoComplete="email" required value={email} onChange={e => { setEmail(e.target.value); setEmailError(null); }} placeholder={t("auth.emailPh")} className={inputCls} /></Field>
             {emailError && <p role="alert" className="text-sm font-bold text-destructive">{t(emailError)}</p>}
-            <StickerButton block type="submit" disabled={busy}>{t("design.email")}</StickerButton>
+            <StickerButton block type="submit" disabled={busy || !adult}>{t(busy ? "common.loading" : "design.email")}</StickerButton>
           </form>
         )}
       </BottomSheet>

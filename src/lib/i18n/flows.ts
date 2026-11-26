@@ -1,0 +1,78 @@
+export const flowsEn = {
+  switchAccount: "Use another account",
+  signingIn: "Signing you in…",
+  oauthCancelled: "Google sign-in was cancelled. Try again when you’re ready.",
+  linkExpired: "That sign-in link has expired or was already used. Request a new one.",
+  signInFailed: "We couldn’t sign you in. Try again.",
+  adultRequired: "Confirm you’re 18 or older to continue.",
+  otherEmail: "Use a different email",
+  sentTo: "We sent a link to {{email}}.",
+  continueTo: "Sign in to continue where you left off.",
+  youreIn: "You’re in this challenge.",
+  seeRecap: "See your recap",
+  guestJoin: "Guest mode can’t join challenges. Create a free account to join this one.",
+  alreadyInCrew: "You’re already in a crew this season.",
+  errorBody: "This screen hit a snag. Try again, or head back to lezgo.",
+  updated: "lezgo was just updated. Reload to get the latest version.",
+  reload: "Reload",
+};
+
+type FlowsCopy = typeof flowsEn;
+
+export const flowsFr: FlowsCopy = {
+  switchAccount: "Utiliser un autre compte",
+  signingIn: "Connexion en cours…",
+  oauthCancelled: "La connexion Google a été annulée. Réessaie quand tu veux.",
+  linkExpired: "Ce lien de connexion a expiré ou a déjà été utilisé. Demandes-en un nouveau.",
+  signInFailed: "Impossible de te connecter. Réessaie.",
+  adultRequired: "Confirme que tu as au moins 18 ans pour continuer.",
+  otherEmail: "Utiliser une autre adresse",
+  sentTo: "Lien envoyé à {{email}}.",
+  continueTo: "Connecte-toi pour reprendre là où tu t’étais arrêté·e.",
+  youreIn: "Tu participes déjà à ce challenge.",
+  seeRecap: "Voir ton récap",
+  guestJoin:
+    "Le mode invité ne peut pas rejoindre de challenge. Crée un compte gratuit pour rejoindre celui-ci.",
+  alreadyInCrew: "Tu es déjà dans un crew cette saison.",
+  errorBody: "Cet écran a rencontré un souci. Réessaie ou retourne sur lezgo.",
+  updated: "lezgo vient d’être mis à jour. Recharge pour avoir la dernière version.",
+  reload: "Recharger",
+};
+
+export const flowsAr: FlowsCopy = {
+  switchAccount: "استخدم حسابًا آخر",
+  signingIn: "جارٍ تسجيل دخولك…",
+  oauthCancelled: "أُلغي تسجيل الدخول عبر Google. حاول مجددًا عندما تكون جاهزًا.",
+  linkExpired: "انتهت صلاحية رابط الدخول أو استُخدم من قبل. اطلب رابطًا جديدًا.",
+  signInFailed: "تعذّر تسجيل دخولك. حاول مجددًا.",
+  adultRequired: "أكّد أن عمرك 18 عامًا أو أكثر للمتابعة.",
+  otherEmail: "استخدم بريدًا آخر",
+  sentTo: "أرسلنا رابطًا إلى {{email}}.",
+  continueTo: "سجّل الدخول لتكمل من حيث توقفت.",
+  youreIn: "أنت مشارك في هذا التحدي.",
+  seeRecap: "اعرض ملخصك",
+  guestJoin: "لا يمكن لوضع الضيف الانضمام إلى التحديات. أنشئ حسابًا مجانيًا للانضمام.",
+  alreadyInCrew: "أنت في فريق بالفعل هذا الموسم.",
+  errorBody: "واجهت هذه الشاشة مشكلة. حاول مجددًا أو عد إلى lezgo.",
+  updated: "تم تحديث lezgo للتو. أعد التحميل للحصول على أحدث نسخة.",
+  reload: "إعادة التحميل",
+};
+
+export const flowsAeb: FlowsCopy = {
+  switchAccount: "استعمل حساب آخر",
+  signingIn: "قاعدين ندخّلوك…",
+  oauthCancelled: "الدخول بـ Google تبطّل. عاود جرّب وقت اللي تحب.",
+  linkExpired: "رابط الدخول هذا وفى وقتو ولا تستعمل قبل. اطلب واحد جديد.",
+  signInFailed: "ما نجّمناش ندخّلوك. عاود جرّب.",
+  adultRequired: "أكّد اللي عمرك 18 عام ولا أكثر باش تكمّل.",
+  otherEmail: "استعمل إيمايل آخر",
+  sentTo: "بعثنا رابط لـ {{email}}.",
+  continueTo: "ادخل باش تكمّل من وين وقفت.",
+  youreIn: "إنتِ داخل في التحدّي هذا.",
+  seeRecap: "شوف الملخّص متاعك",
+  guestJoin: "وضع الضيف ما ينجّمش يدخل للتحدّيات. اعمل حساب بلاش باش تدخل.",
+  alreadyInCrew: "إنتِ في جماعة من قبل الموسم هذا.",
+  errorBody: "الشاشة هاذي صارلها مشكل. عاود جرّب ولا ارجع لـ lezgo.",
+  updated: "lezgo تبدّل توّا. عاود حمّل باش تاخو آخر نسخة.",
+  reload: "عاود حمّل",
+};

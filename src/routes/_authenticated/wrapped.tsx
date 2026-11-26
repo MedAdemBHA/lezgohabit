@@ -24,6 +24,7 @@ import { pageHead } from "@/lib/page-head";
 import { isSeasonId, seasonSearch } from "@/lib/season-id";
 import { signatureQuery } from "@/lib/signature-data";
 import { daysBetween } from "@/lib/time";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/wrapped")({
   validateSearch: (s: Record<string, unknown>) => ({ season: seasonSearch(s["season"]) }),
@@ -123,6 +124,7 @@ function WrappedPage() {
             <Link className="wrapped-text-link" to="/start">
               {t("challengeHistory.pickNext")}
             </Link>
+            {sid && <SwitchAccount season={sid} />}
           </section>
         )}
 
@@ -159,6 +161,26 @@ function WrappedPage() {
         )}
       </div>
     </AppShell>
+  );
+}
+
+/** A recap shared with the wrong signed-in account: sign out and come straight back to it. */
+function SwitchAccount({ season }: { season: string }) {
+  const { t } = useTranslation();
+  const [busy, setBusy] = useState(false);
+  async function signOut() {
+    setBusy(true);
+    const next = isSeasonId(season) ? `/wrapped?season=${season}` : "/wrapped";
+    try {
+      await supabase.auth.signOut();
+    } finally {
+      window.location.replace(`/auth?next=${encodeURIComponent(next)}`);
+    }
+  }
+  return (
+    <button type="button" className="wrapped-text-link" disabled={busy} onClick={() => void signOut()}>
+      {t(busy ? "common.loading" : "flows.switchAccount")}
+    </button>
   );
 }
 

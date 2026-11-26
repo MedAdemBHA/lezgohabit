@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { RoutePending } from "@/components/lezgo/launch/loading";
+import { safeNext } from "@/lib/safe-next";
 
 // Onboarding only ever flips false -> true, so a confirmed "true" is safe to reuse for the session.
 const onboardedUsers = new Set<string>();
@@ -13,18 +14,20 @@ export const Route = createFileRoute("/_authenticated")({
     const { data } = await supabase.auth.getSession();
     const user = data.session?.user;
     if (!user) {
-      if (location.pathname === "/wrapped") {
-        const season = new URLSearchParams(location.searchStr).get("season") ?? "";
-        throw redirect({ to: "/auth", search: { next: "/wrapped", season }, reloadDocument: true });
-      }
-      throw redirect({ to: "/auth" });
+      // Keep where the player was headed (any signed-in screen, not just Wrapped) so a shared
+      // link or an expired session lands them back on the same page after sign-in.
+      const next = safeNext(location.href);
+      throw redirect({ to: "/auth", search: next ? { next } : {}, reloadDocument: location.pathname === "/wrapped" });
     }
     if (location.pathname !== "/onboarding" && !onboardedUsers.has(user.id)) {
-      const { data: p } = await supabase
+      const { data: p, error } = await supabase
         .from("profiles")
         .select("onboarded")
         .eq("id", user.id)
         .maybeSingle();
+      // A failed read (offline, timeout) must not push an onboarded player back into onboarding:
+      // surface it so the error screen can offer a retry instead.
+      if (error) throw error;
       if (!p?.onboarded) throw redirect({ to: "/onboarding" });
       onboardedUsers.add(user.id);
     }
