@@ -45,9 +45,11 @@ export function AppShell({ children, hideTabs, todayLayout = false }: { children
         <nav className="main-tab-wrap">
           <div className="main-tab-bar">
             {tabs.map(({ to, label, kind }) => {
-              const mePaths = ["/profile","/settings","/lift","/boss","/seasons","/wrapped","/trail","/challenges","/create-challenge","/small-wins","/admin","/capsule"];
+              const mePaths = ["/profile","/settings","/boss","/seasons","/wrapped","/trail","/challenges","/create-challenge","/small-wins","/admin","/capsule"];
               const crewPaths = ["/community","/crew-details","/buddies"];
+              // Lift is opened from the Train habit, so it stays under Today.
               const active = loc.pathname.startsWith(to)
+                || (to === "/today" && loc.pathname.startsWith("/lift"))
                 || (to === "/crew" && crewPaths.some((path) => loc.pathname.startsWith(path)))
                 || (to === "/profile" && mePaths.some((path) => loc.pathname.startsWith(path)))
                 || (to === "/ranks" && loc.pathname.startsWith("/scoring"));

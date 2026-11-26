@@ -3,7 +3,7 @@ import { useQuery, useQueryClient, useSuspenseQuery } from '@tanstack/react-quer
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { ArrowRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { TrainIcon } from '@/components/icons';
 import { AppShell } from '@/components/lezgo/app-shell';
 import { FitHeading } from '@/components/lezgo/fit-heading';
@@ -30,6 +30,7 @@ function Lift(){
  const kitText=kit.map(k=>k==='dumbbells'?t('batch5.perDumbbell',{n:displayWeight(max,unit),unit:t(`batch4.${unit}`)}):t(`batch4.${k}`)).join(' · ');
  const beats=q.data.sets.filter(s=>s.day===today&&s.result==='beat').length;
  return <AppShell todayLayout>
+  <Link to="/today" className="wrapped-back press" aria-label={t('common.back')}><ArrowLeft size={22} className="rtl:-scale-x-100" aria-hidden="true"/></Link>
   <header className="lift-header"><FitHeading requestedSize={56} className="batch5-title" text={t('batch5.lift')}/><span className="lift-session"><Num>{t('batch5.session',{n:session})}</Num></span><TrainIcon size={38}/></header>
   <p className="batch5-sub">{t('batch5.liftSub')}</p>
   <div className="lift-kit-row"><Link to="/settings" className="lift-kit"><span>{t('batch5.kit',{kit:kitText||t('batch5.noKit')})}</span><ArrowRight size={16} className="shrink-0 rtl:-scale-x-100"/></Link><Segmented value={unit} options={['kg','lb'].map(v=>({value:v,label:t(`batch4.${v}`)}))} onChange={async v=>{const r=await supabase.from('profiles').update({units:v}).eq('id',uid);if(r.error)toast(t('common.error'));else await qc.invalidateQueries({queryKey:['profile',uid]});}}/></div>

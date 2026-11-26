@@ -283,7 +283,6 @@ function Today() {
   function tap(h: UserHabit) {
     if (h.kind === "timer") { void startTimer(h); return; }
     if (h.kind === "quit") { setQuitHabit(h); return; }
-    if (h.template?.key === "train") { void navigate({ to: "/lift" }); return; }
     if (h.template?.key === 'detox') {
       void navigate({ to: '/detox' });
       return;
@@ -573,7 +572,30 @@ function Today() {
         onClose={() => setStepper(null)}
         title={stepper ? habitName(stepper, t, i18n.language) : ""}
       >
-        {stepper && (
+        {stepper && stepper.kind !== "count" && (
+          <div className="space-y-3">
+            {/* Train (and other one-tap checks): done/undone here too, with Lift as an optional extra. */}
+            <StickerButton
+              block
+              variant={completion(stepper, byHabit.get(stepper.id)) >= 1 ? "secondary" : "lime"}
+              onClick={() => {
+                tap(stepper);
+                setStepper(null);
+              }}
+            >
+              {t(completion(stepper, byHabit.get(stepper.id)) >= 1 ? "ux.markUndone" : "ux.markDone")}
+            </StickerButton>
+            {stepper.template?.key === "train" && (
+              <Link to="/lift" className="block" onClick={() => setStepper(null)}>
+                <StickerButton block variant="secondary">
+                  {t("ux.logSets")}
+                  <ArrowRight size={18} className="rtl:-scale-x-100" />
+                </StickerButton>
+              </Link>
+            )}
+          </div>
+        )}
+        {stepper && stepper.kind === "count" && (
           <div className="space-y-4">
             <p className="text-center font-semibold">{t("todayDesign.countTitle")}</p>
             <div className="flex items-center justify-center gap-5">

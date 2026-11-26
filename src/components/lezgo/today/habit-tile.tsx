@@ -32,10 +32,12 @@ export function HabitTile({ habit, value, completion, points, pop, onTap, onStep
   : key === 'screen_limit' ? t('habitRules.screenLimitCount', { value: fmtVal(value), target: fmtVal(Number(habit.target)) })
   : habit.kind === 'count' ? t('todayDesign.count', { value: fmtVal(value), target: fmtVal(Number(habit.target)), unit: habit.unit ?? '' })
   : (loc(habit.what_counts,i18n.language) || loc(habit.template?.what_counts,i18n.language) || loc(habit.template?.description,i18n.language));
+ // Long-press opens the habit sheet: the stepper for counts, the optional Lift log for Train.
+ const hasSheet = habit.kind === 'count' || key === 'train';
  function release() { if (timer.current) clearTimeout(timer.current); timer.current = null; }
  return <StickerButton variant="secondary" data-habit-id={habit.id} className={`today-habit ${done ? 'is-done' : ''} ${pop ? 'animate-pop' : ''}`} data-color={color} aria-pressed={done} aria-label={habitName(habit,t,i18n.language)} disabled={disabled}
-  onPointerDown={e => { if (e.button !== 0 || habit.kind !== 'count') return; held.current = false; timer.current = setTimeout(() => { held.current = true; onStepper(); },500); }} onPointerUp={release} onPointerCancel={release} onPointerLeave={release}
-  onContextMenu={e => { if (habit.kind === 'count') { e.preventDefault(); release(); held.current = true; onStepper(); } }}
+  onPointerDown={e => { if (e.button !== 0 || !hasSheet) return; held.current = false; timer.current = setTimeout(() => { held.current = true; onStepper(); },500); }} onPointerUp={release} onPointerCancel={release} onPointerLeave={release}
+  onContextMenu={e => { if (hasSheet) { e.preventDefault(); release(); held.current = true; onStepper(); } }}
   onClick={() => { if (held.current) { held.current = false; return; } onTap(); }}>
   <span className="today-habit-top"><span className="habit-icon-box"><HabitIcon name={habit.template?.icon ?? null} className="size-9" /></span><span className="habit-top-end"><Num className="habit-points">+{fmtVal(points?.earned ?? 0)}</Num><span className={`habit-check ${done ? 'is-checked' : ''}`}>{done && <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--lime)" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M5 12l5 5 9-10"/></svg>}</span></span></span>
   <span className="today-habit-bottom"><span className="habit-name">{habitName(habit,t,i18n.language)}</span><span className="habit-rule">{rule}</span></span>
