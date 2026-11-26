@@ -44,3 +44,11 @@ export const challengeHistoryQuery = (uid: string) =>
     },
     enabled: !!uid,
   });
+
+/** Days the player could actually play (from their join day), and the trophy target for the challenge. */
+export function possibleDays(entry: Pick<ChallengeHistoryEntry, "start_date" | "end_date" | "joined_at" | "length">) {
+  const joined = entry.joined_at.slice(0, 10);
+  const from = joined > entry.start_date ? joined : entry.start_date;
+  const possible = Math.max(1, Math.round((Date.parse(`${entry.end_date}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86400000) + 1);
+  return { possible: Math.min(possible, entry.length), trophy: Math.ceil(entry.length * 0.75) };
+}

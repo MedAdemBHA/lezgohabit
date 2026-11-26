@@ -1,5 +1,6 @@
 /** Copy for the "easy to use" pass (UX-01…UX-18). en is the typed source; fr/ar/aeb must match. */
 export const uxEn = {
+  trophyTarget: "Trophy at {{need}} good days",
   bonus: "bonus",
   streakBonus: "Streak bonus ×{{m}}",
   habitsDone: "{{done}} of {{total}} habits today",
@@ -35,6 +36,7 @@ export const uxEn = {
 export type UxCopy = typeof uxEn;
 
 export const uxFr: UxCopy = {
+  trophyTarget: "Trophée à {{need}} bonnes journées",
   bonus: "bonus",
   streakBonus: "Bonus de série ×{{m}}",
   habitsDone: "{{done}} habitude(s) sur {{total}} aujourd’hui",
@@ -68,6 +70,7 @@ export const uxFr: UxCopy = {
 };
 
 export const uxAr: UxCopy = {
+  trophyTarget: "الكأس عند {{need}} يومًا جيدًا",
   bonus: "مكافأة",
   streakBonus: "مكافأة السلسلة ×{{m}}",
   habitsDone: "{{done}} من {{total}} عادات اليوم",
@@ -101,6 +104,7 @@ export const uxAr: UxCopy = {
 };
 
 export const uxAeb: UxCopy = {
+  trophyTarget: "الكأس في {{need}} نهار باهي",
   bonus: "بونوس",
   streakBonus: "بونوس السلسلة ×{{m}}",
   habitsDone: "{{done}} من {{total}} عادات اليوم",

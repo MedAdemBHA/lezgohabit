@@ -8,7 +8,7 @@ import { ChallengeSurrenderSheet } from "@/components/lezgo/challenge-surrender-
 import { FitHeading } from "@/components/lezgo/fit-heading";
 import { Num, StickerButton } from "@/components/lezgo/ui";
 import { useBase } from "@/lib/data";
-import { challengeHistoryQuery, type ChallengeHistoryEntry } from "@/lib/challenge-history";
+import { challengeHistoryQuery, possibleDays, type ChallengeHistoryEntry } from "@/lib/challenge-history";
 import { loc, formatDayMonth } from "@/lib/i18n";
 import { pageHead } from "@/lib/page-head";
 
@@ -70,8 +70,9 @@ function ChallengesPage() {
             <div className="mt-4 flex items-center gap-2 text-[13px] font-bold">
               <CalendarDays size={18} />
               <span>{formatDayMonth(selected.start_date, i18n.language)} — {formatDayMonth(selected.end_date, i18n.language)}</span>
-              <span>·</span><Num>{t("challengeHistory.days", { done: selected.completed_days, total: selected.length })}</Num>
+              <span>·</span><Num>{t("challengeHistory.days", { done: selected.completed_days, total: possibleDays(selected).possible })}</Num>
             </div>
+            <p className="mt-2 text-[13px] font-bold">{t("ux.trophyTarget", { need: possibleDays(selected).trophy })}</p>
             {selected.crew && <p className="mt-3 text-[13px] font-bold">{t("challengeHistory.crew", { name: selected.crew.name })}</p>}
           </section>
 
@@ -141,7 +142,7 @@ function HistoryCard({ entry }: { entry: ChallengeHistoryEntry }) {
         <span className="shrink-0 rounded-full bg-yellow px-3 py-1 text-[13px] font-extrabold">{t(entry.end_reason === "moderation" ? "events.removed" : `challengeHistory.status_${entry.status}`)}</span>
       </div>
       <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[13px] font-bold">
-        <span>{t("challengeHistory.days", { done: entry.completed_days, total: entry.length })}</span>
+        <span>{t("challengeHistory.days", { done: entry.completed_days, total: possibleDays(entry).possible })}</span>
         <span>{Math.round(entry.consistency)}%</span>
         <span><Num>{entry.points}</Num> {t("challengeHistory.pointsShort")}</span>
         {entry.rank && <span>#{entry.rank}</span>}

@@ -53,6 +53,8 @@ import { ChallengeSurrenderSheet } from "@/components/lezgo/challenge-surrender-
 import { loc } from "@/lib/i18n";
 import { bossQuery } from "@/lib/batch6-data";
 import { challengeHistoryQuery } from "@/lib/challenge-history";
+import { planFor } from "@/lib/challenge-plan";
+import { WelcomeCard } from "@/components/lezgo/today/welcome-card";
 export const Route = createFileRoute("/_authenticated/today")({
   head: () => pageHead("Today — lezgo", "Log today's gos and keep your go streak alive."),
   component: Today,
@@ -426,6 +428,14 @@ function Today() {
         </div>
       </header>
       {!!now && localHour(tz, now) < 3 && <p className="locks-note num" role="status"><Lock size={14} aria-hidden />{t("integrity.locksAt")}</p>}
+      {showNew("welcome", 1) && playDay === 1 && season && (
+        <WelcomeCard
+          name={loc(season.name, i18n.language)}
+          plan={planFor(season.starts_on, season.ends_on, today, list.length)}
+          habits={list.length}
+          onDismiss={() => dismissNew("welcome")}
+        />
+      )}
       <TodayScoreCard score={score} habits={progressHabits} busy={pending > 0} onOpen={() => setScoringOpen(true)} />
       {closed && <p className="today-banner bg-card">{t("todayDesign.dayClosed")}</p>}
       {day.error && (
