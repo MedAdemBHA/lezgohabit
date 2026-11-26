@@ -286,13 +286,12 @@ function AuthPage() {
             {t("design.email")}
           </StickerButton>
         )}
-        {next ? (
+        {next === "/admin" && (
           <Link to="/auth" className="min-h-11 self-center p-2 text-sm font-extrabold underline">
             {t("auth.playerSignIn")}
           </Link>
-        ) : (
-          demo.data && <ExploreAsGuest />
         )}
+        {!next && demo.data && <ExploreAsGuest />}
         <div className="flex justify-center gap-4">
           <Link
             to="/legal/$document"
