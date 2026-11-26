@@ -451,14 +451,16 @@ export function LangFlag({
         )}
         {lang === "ar" && (
           <>
-            <rect width="30" height="20" fill="var(--teal)" />
+            {/* Neutral Arabic tile: "ع" measured in Alexandria (ink spans -0.53em…+0.38em around
+                the baseline), so baseline 11 at 13px centers it optically inside the 20-unit tile. */}
+            <rect width="30" height="20" fill="#007A3D" />
             <text
-              x="15"
-              y="15"
+              x="15.15"
+              y="11"
               textAnchor="middle"
               fontSize="13"
-              fontWeight="800"
-              fill="var(--ink)"
+              fontWeight="700"
+              fill="#fff"
               fontFamily="var(--font-arabic)"
             >
               ع

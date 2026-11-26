@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ExploreAsGuest } from "@/components/lezgo/guest";
+import { DEFAULT_SHARE_DESCRIPTION, DEFAULT_SHARE_TITLE, pageHead } from "@/lib/page-head";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -38,17 +39,12 @@ export const Route = createFileRoute("/auth")({
     const next = nextFromSearch(search);
     return next ? { next } : {};
   },
-  head: () => ({
-    meta: [
-      { title: "Sign in · lezgo" },
-      { name: "description", content: "Sign in to start a challenge on lezgo." },
-      { property: "og:title", content: "Sign in · lezgo" },
-      { property: "og:description", content: "Start a challenge on lezgo." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-      { name: "robots", content: "noindex, nofollow" },
-    ],
-  }),
+  head: () => {
+    // A shared sign-in link should sell the app, not say "Sign in": the preview uses the home card,
+    // while the browser tab still reads "Sign in". Stays noindex.
+    const head = pageHead(DEFAULT_SHARE_TITLE, DEFAULT_SHARE_DESCRIPTION);
+    return { ...head, meta: [{ title: "Sign in · lezgo" }, ...head.meta.slice(1)] };
+  },
   component: AuthPage,
 });
 
@@ -407,6 +403,7 @@ function AuthPage() {
             className="google-button"
             onClick={() => void google()}
             disabled={busy}
+            aria-describedby="adult-notice"
           >
             <GoogleG />
             {t("auth.google")}
@@ -418,11 +415,15 @@ function AuthPage() {
               className="email-button"
               onClick={() => setEmailOpen(true)}
               disabled={busy}
+              aria-describedby="adult-notice"
             >
               <Mail size={20} strokeWidth={2.5} />
               {t("design.email")}
             </StickerButton>
           )}
+          <p id="adult-notice" className="text-center text-[13px] font-semibold text-design-muted">
+            {t("flows.adultNotice")}
+          </p>
           {toAdmin && (
             <Link to="/auth" className="min-h-11 self-center p-2 text-sm font-extrabold underline">
               {t("auth.playerSignIn")}

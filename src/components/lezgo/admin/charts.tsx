@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 import type { CSSProperties } from "react";
 import type { AdminDashboard } from "@/lib/admin-data";
 import { Num } from "@/components/lezgo/ui";
-import { formatDayMonth } from "@/lib/i18n";
+import { formatDayMonth, formatNumber } from "@/lib/i18n";
 export function Bars({
   rows,
   today = false,
@@ -26,10 +26,21 @@ export function Bars({
               style={{ "--bar-height": `${Math.max(2, (r.value / max) * 100)}%` } as CSSProperties}
             />
           </div>
-          <Num className="admin-bar-label">{r.label}</Num>
+          <BarLabel label={r.label} />
         </div>
       ))}
     </div>
+  );
+}
+/** "26 Nov" / "26 نوفمبر": on phones only the day number fits under a bar, so the month hides. */
+function BarLabel({ label }: { label: string }) {
+  const match = /^(\d+) (.+)$/.exec(label);
+  if (!match) return <Num className="admin-bar-label">{label}</Num>;
+  return (
+    <Num className="admin-bar-label">
+      {match[1]}
+      <span className="admin-bar-month"> {match[2]}</span>
+    </Num>
   );
 }
 export function AdminOverview({ data }: { data: AdminDashboard }) {
@@ -67,24 +78,24 @@ export function AdminOverview({ data }: { data: AdminDashboard }) {
             <article className={`admin-kpi ${colors[i] ?? "bg-card"}`} key={key}>
               <p>{t(`batch7.${key}`)}</p>
               <Num className="admin-kpi-value">
-                {value}
+                {formatNumber(value, i18n.language)}
                 {key === "retention7" ? "%" : ""}
               </Num>
-              <span className="admin-delta">
-                {delta !== null ? (
-                  <>
-                    <Num>
-                      {delta > 0 ? "+" : ""}
-                      {delta}
-                    </Num>{" "}
-                    {t("batch7.vsYesterday")}
-                  </>
-                ) : key === "retention7" ? (
-                  <Num>D7</Num>
-                ) : (
-                  <Num>—</Num>
-                )}
-              </span>
+              {key !== "reports" && (
+                <span className="admin-delta">
+                  {delta !== null ? (
+                    <>
+                      <Num>
+                        {delta > 0 ? "+" : ""}
+                        {delta}
+                      </Num>{" "}
+                      {t("batch7.vsYesterday")}
+                    </>
+                  ) : key === "retention7" ? (
+                    <Num>D7</Num>
+                  ) : null}
+                </span>
+              )}
             </article>
           );
         })}

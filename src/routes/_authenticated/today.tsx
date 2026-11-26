@@ -48,7 +48,14 @@ import {
   type HabitPoints,
   type UserHabit,
 } from "@/lib/data";
-import { completion, fmtVal, isSleepHabit, stepFor, unitLabel, type PrayerState } from "@/lib/habits";
+import {
+  completion,
+  fmtVal,
+  isSleepHabit,
+  stepFor,
+  unitLabel,
+  type PrayerState,
+} from "@/lib/habits";
 import { canSpin, habitColor, DAILY_DARE_COUNT, streakAtRisk } from "@/lib/today-rules";
 import { daysBetween, localHour, useNow } from "@/lib/time";
 import { FitHeading } from "@/components/lezgo/fit-heading";
@@ -82,7 +89,7 @@ function Today() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const qc = useQueryClient();
-  const { uid, season, today, tz, profile } = useBase();
+  const { uid, season, today, tz, profile, loading } = useBase();
   const sid = season?.id ?? "";
   const summary = useQuery({ ...summaryQuery(uid, sid), enabled: !!uid && !!sid });
   const [tinyWin, setTinyWin] = useState(false);
@@ -521,7 +528,7 @@ function Today() {
       habitColor(habit.template?.key ?? "", habit.template?.category ?? ""),
     completion: comps[index] ?? 0,
   }));
-  if (!profile)
+  if (!profile || loading)
     return (
       <AppShell todayLayout>
         <StickerLoading />

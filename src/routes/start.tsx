@@ -38,7 +38,7 @@ import { planFor } from "@/lib/challenge-plan";
 import { challengeHistoryQuery } from "@/lib/challenge-history";
 import { joinErrorKey } from "@/lib/event-data";
 import i18n, { formatDayMonth, loc, numberLocale, selectLang, type Lang } from "@/lib/i18n";
-import { pageHead } from "@/lib/page-head";
+import { pageHead, shareImage } from "@/lib/page-head";
 import {
   MAX_CHALLENGE_HABITS,
   clearStartFlow,
@@ -77,12 +77,13 @@ export const Route = createFileRoute("/start")({
     }
   },
   head: ({ match }) => {
-    const lang = match.search.lang ?? "en";
+    // No ?lang in a shared link: the preview is Tunisian, our default audience.
+    const lang = match.search.lang ?? "aeb";
     const t = i18n.getFixedT(lang);
     return pageHead(`${t("startFlow.pickTitle")} · lezgo`, t("startFlow.pickSub"), {
       privatePage: false,
       canonicalPath: "/start",
-      imagePath: "/og-home.png",
+      imagePath: shareImage(lang),
       imageAlt: t("landing.hero").replace(/\n/g, " "),
       lang,
     });

@@ -101,7 +101,16 @@ function AdminPage() {
   const [wordLang, setWordLang] = useState("en");
   const [showDemo, setShowDemo] = useState(false);
   const q = useQuery(adminQuery(user.id, section, search, page, target, showDemo));
-  const guests = useQuery({ queryKey: ["admin-guest-sessions", user.id], enabled: !!q.data, refetchInterval: 60_000, queryFn: async () => { const { data, error } = await supabase.rpc("admin_guest_sessions"); if (error) throw error; return data as unknown as { today: number; week: number }; } });
+  const guests = useQuery({
+    queryKey: ["admin-guest-sessions", user.id],
+    enabled: !!q.data,
+    refetchInterval: 60_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("admin_guest_sessions");
+      if (error) throw error;
+      return data as unknown as { today: number; week: number };
+    },
+  });
   const creatorRequests = useQuery({
     queryKey: ["creator-requests", user.id],
     enabled: section === "creators" && !!q.data,
@@ -139,10 +148,17 @@ function AdminPage() {
   }
   async function reviewCreator(id: string, approve: boolean) {
     setBusy(true);
-    const { error } = await supabase.rpc("review_creator_request", { _request_id: id, _approve: approve, _note: "" });
+    const { error } = await supabase.rpc("review_creator_request", {
+      _request_id: id,
+      _approve: approve,
+      _note: "",
+    });
     setBusy(false);
     if (error) toast.error(t("batch7.actionFailed"));
-    else { toast.success(t("batch7.saved")); await refresh(); }
+    else {
+      toast.success(t("batch7.saved"));
+      await refresh();
+    }
   }
   async function demoAction(action: "seed" | "clear" | "reseed") {
     setBusy(true);
@@ -187,13 +203,21 @@ function AdminPage() {
       </div>
     );
   if (q.error || !q.data) {
-    const forbidden = q.error?.message === "forbidden" || (q.error as { code?: string })?.code === "42501";
+    const forbidden =
+      q.error?.message === "forbidden" || (q.error as { code?: string })?.code === "42501";
     return (
       <div className="admin-loading">
         <ShieldAlert className="size-12" />
         <h1>{forbidden ? a("noAccess") : t("common.error")}</h1>
-        {!forbidden && <StickerButton disabled={q.isFetching} onClick={() => void q.refetch()}>{t("common.retry")}</StickerButton>}
-        <Link to="/" className="inline-flex min-h-12 items-center gap-2 rounded-2xl bg-ink px-5 font-extrabold text-lime sticker-border">
+        {!forbidden && (
+          <StickerButton disabled={q.isFetching} onClick={() => void q.refetch()}>
+            {t("common.retry")}
+          </StickerButton>
+        )}
+        <Link
+          to="/"
+          className="inline-flex min-h-12 items-center gap-2 rounded-2xl bg-ink px-5 font-extrabold text-lime sticker-border"
+        >
           <ArrowLeft className="rtl:rotate-180" />
           {a("back")}
         </Link>
@@ -201,7 +225,9 @@ function AdminPage() {
     );
   }
   const data = q.data;
-  const seasonPlan = data.season ? planFor(data.season.starts_on, data.season.ends_on, data.day) : null;
+  const seasonPlan = data.season
+    ? planFor(data.season.starts_on, data.season.ends_on, data.day)
+    : null;
   const number = new Intl.NumberFormat(numberLocale(i18n.language));
   const table = (
     columns: string[],
@@ -209,7 +235,7 @@ function AdminPage() {
     render: (r: AdminRow, key: string) => React.ReactNode,
   ) => (
     <div className="admin-table-wrap">
-      <table className="admin-table">
+      <table className="admin-table admin-table-cards">
         <thead>
           <tr>
             {columns.map((k) => (
@@ -221,7 +247,13 @@ function AdminPage() {
           {rows.map((r, i) => (
             <tr key={str(r, "id") || i}>
               {columns.map((k) => (
-                <td key={k}>{render(r, k)}</td>
+                <td
+                  key={k}
+                  data-label={a(k)}
+                  className={k === "action" || k === "edit" ? "admin-cell-actions" : undefined}
+                >
+                  {render(r, k)}
+                </td>
               ))}
             </tr>
           ))}
@@ -292,14 +324,17 @@ function AdminPage() {
           <div className="admin-top-actions">
             {data.season && seasonPlan && (
               <span className="admin-season-pill">
-                {loc(data.season.name, i18n.language)} · <Num>{number.format(seasonPlan.day)}/{number.format(seasonPlan.total)}</Num>
+                {loc(data.season.name, i18n.language)} · {a("day")}{" "}
+                <Num>
+                  {number.format(seasonPlan.day)}/{number.format(seasonPlan.total)}
+                </Num>
               </span>
             )}
             {data.sample && (
               <StickerButton
                 variant="ghost"
                 size="sm"
-                className="admin-sample-pill num"
+                className="admin-sample-pill"
                 aria-pressed={showDemo}
                 aria-label={t("integrity.showDemo")}
                 onClick={() => setShowDemo((v) => !v)}
@@ -307,7 +342,11 @@ function AdminPage() {
                 {showDemo ? a("sample") : t("integrity.realPlayers")}
               </StickerButton>
             )}
-            {guests.data && <span className="admin-season-pill">{t("guest.sessionsToday")} · <Num>{guests.data.today}</Num></span>}
+            {guests.data && (
+              <span className="admin-season-pill">
+                {t("guest.sessionsToday")} · <Num>{guests.data.today}</Num>
+              </span>
+            )}
             <div className="admin-language">
               {(["en", "ar"] as const).map((l) => (
                 <StickerButton
@@ -321,10 +360,6 @@ function AdminPage() {
                 </StickerButton>
               ))}
             </div>
-            <StickerButton size="sm" onClick={() => setEditor({ kind: "season" })}>
-              <Plus className="size-4" />
-              {a("newSeason")}
-            </StickerButton>
           </div>
         </header>
         <div className="admin-page-actions">
@@ -341,6 +376,12 @@ function AdminPage() {
             <StickerButton size="sm" variant="ghost" disabled={busy} onClick={() => void refresh()}>
               <RefreshCw className="size-4" />
               {a("refresh")}
+            </StickerButton>
+          )}
+          {(section === "overview" || section === "seasons") && (
+            <StickerButton size="sm" onClick={() => setEditor({ kind: "season" })}>
+              <Plus className="size-4" />
+              {a("newSeason")}
             </StickerButton>
           )}
           {section === "seasons" && actionButton("newBoss", () => setEditor({ kind: "boss" }))}
@@ -370,29 +411,34 @@ function AdminPage() {
                 ))}
               </select>
             </div>
-            {showDemo && table(["season", "dates", "status", "players", "edit"], rows, (r, k) =>
-              k === "season" ? (
-                <strong>
-                  {loc(r["name"], i18n.language)}
-                  {r["is_demo"] === true && (
-                    <span className="admin-inline-demo">{a("demoSticker")}</span>
-                  )}
-                </strong>
-              ) : k === "dates" ? (
-                <Num>
-                  {str(r, "starts_on")} → {str(r, "ends_on")}
-                </Num>
-              ) : k === "status" ? (
-                <span className="admin-status bg-lime">{a(str(r, "status"))}</span>
-              ) : k === "players" ? (
-                <Num>{str(r, "players")}</Num>
-              ) : (
-                <div className="flex gap-2">
-                  {actionButton("edit", () => setEditor({ kind: "season", row: r }))}
-                  {actionButton("archive", () => confirm("archive_season", str(r, "id")), "ghost")}
-                </div>
-              ),
-            )}
+            {showDemo &&
+              table(["season", "dates", "status", "players", "edit"], rows, (r, k) =>
+                k === "season" ? (
+                  <strong>
+                    {loc(r["name"], i18n.language)}
+                    {r["is_demo"] === true && (
+                      <span className="admin-inline-demo">{a("demoSticker")}</span>
+                    )}
+                  </strong>
+                ) : k === "dates" ? (
+                  <Num>
+                    {str(r, "starts_on")} → {str(r, "ends_on")}
+                  </Num>
+                ) : k === "status" ? (
+                  <span className="admin-status bg-lime">{a(str(r, "status"))}</span>
+                ) : k === "players" ? (
+                  <Num>{str(r, "players")}</Num>
+                ) : (
+                  <div className="flex gap-2">
+                    {actionButton("edit", () => setEditor({ kind: "season", row: r }))}
+                    {actionButton(
+                      "archive",
+                      () => confirm("archive_season", str(r, "id")),
+                      "ghost",
+                    )}
+                  </div>
+                ),
+              )}
             <h2 className="admin-section-title">
               {a("bosses")} ·{" "}
               {loc(
@@ -454,7 +500,9 @@ function AdminPage() {
                   <p className="my-6 whitespace-pre-wrap break-words text-[16px] font-semibold">
                     {str(r, "body")}
                   </p>
-                  {typeof r["image_url"] === "string" && <AdminProofThumbnail post={str(r, "id")} />}
+                  {typeof r["image_url"] === "string" && (
+                    <AdminProofThumbnail post={str(r, "id")} />
+                  )}
                   <div className="flex flex-wrap gap-2">
                     {actionButton("keep", () => void save("keep_post", str(r, "id")), "lime")}
                     {actionButton("remove", () => confirm("remove_post", str(r, "id")))}
@@ -658,23 +706,48 @@ function AdminPage() {
             </div>
             <h2 className="admin-section-title">{a("creator_challenges")}</h2>
             {table(["name", "status", "action"], data.challenges ?? [], (r, k) =>
-              k === "action"
-                ? <div className="flex flex-wrap gap-2">
-                    {actionButton(r["approved"] ? "approved" : "approve", () => void save("approve_challenge", str(r, "id")))}
-                    {!showDemo && str(r, "season_id") && <ManageCommunity season={str(r, "season_id")} />}
-                  </div>
-                : k === "status"
-                  ? a(r["approved"] ? "approved" : "open")
-                  : str(r, k),
+              k === "action" ? (
+                <div className="flex flex-wrap gap-2">
+                  {actionButton(
+                    r["approved"] ? "approved" : "approve",
+                    () => void save("approve_challenge", str(r, "id")),
+                  )}
+                  {!showDemo && str(r, "season_id") && (
+                    <ManageCommunity season={str(r, "season_id")} />
+                  )}
+                </div>
+              ) : k === "status" ? (
+                a(r["approved"] ? "approved" : "open")
+              ) : (
+                str(r, k)
+              ),
             )}
             <h2 className="admin-section-title">{t("batch6.creatorRequests")}</h2>
             {table(["handle", "created_at", "action"], creatorRequests.data ?? [], (r, k) =>
-              k === "handle" ? <strong>@{str(r, k)}</strong>
-                : k === "action" ? <div className="flex gap-2">
-                  <StickerButton size="sm" variant="lime" disabled={busy} onClick={() => void reviewCreator(str(r, "id"), true)}>{t("batch6.approveCreator")}</StickerButton>
-                  <StickerButton size="sm" variant="secondary" disabled={busy} onClick={() => void reviewCreator(str(r, "id"), false)}>{t("batch6.rejectCreator")}</StickerButton>
+              k === "handle" ? (
+                <strong>@{str(r, k)}</strong>
+              ) : k === "action" ? (
+                <div className="flex gap-2">
+                  <StickerButton
+                    size="sm"
+                    variant="lime"
+                    disabled={busy}
+                    onClick={() => void reviewCreator(str(r, "id"), true)}
+                  >
+                    {t("batch6.approveCreator")}
+                  </StickerButton>
+                  <StickerButton
+                    size="sm"
+                    variant="secondary"
+                    disabled={busy}
+                    onClick={() => void reviewCreator(str(r, "id"), false)}
+                  >
+                    {t("batch6.rejectCreator")}
+                  </StickerButton>
                 </div>
-                : str(r, k),
+              ) : (
+                str(r, k)
+              ),
             )}
           </>
         )}
@@ -692,7 +765,9 @@ function AdminPage() {
               ) : k === "action" ? (
                 <div className="flex gap-2">
                   {actionButton("members", () => setTarget(str(r, "id")))}
-                  {!showDemo && str(r, "season_id") && <ManageCommunity season={str(r, "season_id")} crew={str(r, "id")} />}
+                  {!showDemo && str(r, "season_id") && (
+                    <ManageCommunity season={str(r, "season_id")} crew={str(r, "id")} />
+                  )}
                   {actionButton("disband", () => confirm("disband_crew", str(r, "id")), "danger")}
                 </div>
               ) : (

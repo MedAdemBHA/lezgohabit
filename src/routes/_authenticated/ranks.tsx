@@ -1,4 +1,5 @@
 import { pageHead } from "@/lib/page-head";
+import { StickerLoading } from "@/components/lezgo/launch/loading";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useRef, useEffect } from "react";
@@ -31,7 +32,7 @@ export const Route = createFileRoute("/_authenticated/ranks")({
 type Scope = "crew" | "challenge" | "country";
 function Ranks() {
   const { t, i18n } = useTranslation();
-  const { season, profile, uid, today } = useBase();
+  const { season, profile, uid, today, loading } = useBase();
   const search = Route.useSearch();
   const [scope, setScope] = useState<Scope>(search.scope ?? "challenge");
   const [sel, setSel] = useState<RankRowData | null>(null);
@@ -128,6 +129,12 @@ function Ranks() {
       setScope("challenge");
   }, [official, scope, countryReady, pulse.isSuccess]);
 
+  if (loading)
+    return (
+      <AppShell todayLayout>
+        <StickerLoading />
+      </AppShell>
+    );
   if (!season)
     return (
       <AppShell todayLayout>

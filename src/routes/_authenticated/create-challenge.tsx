@@ -13,7 +13,7 @@ import { rolesQuery, challengeLink } from "@/lib/batch6-data";
 import { loc } from "@/lib/i18n";
 import { pageHead } from "@/lib/page-head";
 import { supabase } from "@/integrations/supabase/client";
-import { stepFor } from "@/lib/habits";
+import { stepFor, unitLabel } from "@/lib/habits";
 import type { Json } from "@/integrations/supabase/types";
 
 export const Route = createFileRoute("/_authenticated/create-challenge")({
@@ -254,7 +254,7 @@ function CreateChallenge() {
                       <span className="block truncate">{loc(h.name, i18n.language)}</span>
                       {target !== undefined && h.kind === "count" && (
                         <Num className="text-[12px]">
-                          {target} {h.unit ?? ""}
+                          {target} {unitLabel(t, h.unit)}
                         </Num>
                       )}
                     </span>
@@ -263,7 +263,7 @@ function CreateChallenge() {
                   {target !== undefined && (h.kind === "count" || h.kind === "timer") && (
                     <div className="mt-1 flex items-center justify-center gap-2">
                       <Num>
-                        {target} {h.unit ?? ""}
+                        {target} {unitLabel(t, h.unit)}
                       </Num>
                       <StickerButton
                         size="sm"

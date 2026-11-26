@@ -1,4 +1,5 @@
 import { ManageCommunity } from "@/components/lezgo/community/moderation";
+import { StickerLoading } from "@/components/lezgo/launch/loading";
 import { pageHead } from "@/lib/page-head";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
@@ -56,7 +57,7 @@ function BadgeIcon({ badge }: { badge: (typeof BADGE_KEYS)[number] }) {
 }
 function ProfilePage() {
   const { t, i18n } = useTranslation();
-  const { uid, profile, season, today } = useBase();
+  const { uid, profile, season, today, loading } = useBase();
   const roles = useQuery({ ...rolesQuery(uid), enabled: !!uid });
   const creatorDashboard = useQuery({
     queryKey: ["creatorDashboard", uid],
@@ -190,6 +191,12 @@ function ProfilePage() {
     </section>
   );
 
+  if (loading)
+    return (
+      <AppShell todayLayout>
+        <StickerLoading />
+      </AppShell>
+    );
   if (!season)
     return (
       <AppShell todayLayout>
@@ -593,5 +600,3 @@ function ProfilePage() {
     </AppShell>
   );
 }
-
-

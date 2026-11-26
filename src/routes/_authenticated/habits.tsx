@@ -6,6 +6,7 @@ import { HabitIcon } from "@/components/lezgo/habit-icon";
 import { Num, StickerButton } from "@/components/lezgo/ui";
 import { habitsQuery, useBase } from "@/lib/data";
 import { loc } from "@/lib/i18n";
+import { unitLabel } from "@/lib/habits";
 import { pageHead } from "@/lib/page-head";
 
 export const Route = createFileRoute("/_authenticated/habits")({
@@ -29,7 +30,7 @@ function HabitsPage() {
               <h2 className="truncate font-extrabold">{habit.custom_name || loc(habit.template?.name, i18n.language)}</h2>
               <p className="text-[13px] font-semibold text-design-muted">{loc(habit.what_counts, i18n.language) || loc(habit.template?.what_counts, i18n.language)}</p>
             </div>
-            <Num className="shrink-0 rounded-full bg-yellow px-3 py-1 text-[13px] font-bold">{habit.target}{habit.unit ? ` ${habit.unit}` : ""}</Num>
+            <Num className="shrink-0 rounded-full bg-yellow px-3 py-1 text-[13px] font-bold">{habit.target}{habit.unit ? ` ${unitLabel(t, habit.unit)}` : ""}</Num>
           </article>
         ))}
         {!query.isLoading && !query.data?.length && <p className="rounded-[18px] bg-card p-4 font-semibold sticker-border">{t("common.error")}</p>}

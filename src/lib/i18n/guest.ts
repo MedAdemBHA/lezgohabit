@@ -36,14 +36,14 @@ export const guestAr: GuestDict = {
   sessionsToday: "جلسات الضيوف اليوم",
 };
 export const guestAeb: GuestDict = {
-  explore: "دخل كضيف",
-  entering: "قاعدين نحلّو العالم التجريبي…",
+  explore: "ادخل كضيف",
+  entering: "قاعدين نحلّوا العالم التجريبي…",
   banner: "وضع الضيف · داتا تجريبية",
-  signUp: "سجّل",
+  signUp: "اعمل حساب",
   sheetTitle: "وضع الضيف",
   sheetBody: "راك داخل كضيف. اعمل حساب بلاش باش تبدا Winter Arc متاعك.",
-  create: "اعمل حساب",
+  create: "اعمل حساب جديد",
   keep: "كمّل تفرّج",
   readOnly: "وضع الضيف للقراية برك.",
-  sessionsToday: "ضيوف اليوم",
+  sessionsToday: "دخلات الضيوف اليوم",
 };

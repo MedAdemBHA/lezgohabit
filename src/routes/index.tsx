@@ -13,7 +13,7 @@ import {
 import { publicChallengeCatalog } from "@/lib/challenge-preview.functions";
 import { guestDemoAvailable } from "@/lib/admin.functions";
 import { groupCatalog, type CatalogCard } from "@/lib/challenge-catalog";
-import { pageHead } from "@/lib/page-head";
+import { pageHead, shareImage } from "@/lib/page-head";
 import { useUser } from "@/lib/data";
 import i18n, { isRtl, loc, selectLang, type Lang } from "@/lib/i18n";
 
@@ -29,12 +29,13 @@ export const Route = createFileRoute("/")({
     return { ...groupCatalog(cards), demoAvailable };
   },
   head: ({ match }) => {
-    const lang = match.search.lang ?? "en";
+    // No ?lang in a shared link: the preview is Tunisian, our default audience.
+    const lang = match.search.lang ?? "aeb";
     const t = i18n.getFixedT(lang);
     return pageHead(`${t("landing.headline").replace(/\n/g, " ")} · lezgo`, t("landing.subtitle"), {
       privatePage: false,
       canonicalPath: "/",
-      imagePath: "/og-home.png",
+      imagePath: shareImage(lang),
       imageAlt: t("landing.hero").replace(/\n/g, " "),
       lang,
     });

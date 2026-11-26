@@ -1,4 +1,5 @@
 import { moderationAccess } from "@/lib/event-data";
+import { StickerLoading } from "@/components/lezgo/launch/loading";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   infiniteQueryOptions,
@@ -44,7 +45,7 @@ export const Route = createFileRoute("/_authenticated/community")({
 
 function Community() {
   const { t, i18n } = useTranslation();
-  const { uid, season, profile } = useBase();
+  const { uid, season, profile, loading } = useBase();
   const sid = season?.id ?? "";
   const qc = useQueryClient();
   // Crew posts live under My crew now; this screen is the whole challenge.
@@ -103,6 +104,12 @@ function Community() {
     }
   }
 
+  if (loading)
+    return (
+      <AppShell todayLayout>
+        <StickerLoading />
+      </AppShell>
+    );
   if (!season) {
     return (
       <AppShell todayLayout>

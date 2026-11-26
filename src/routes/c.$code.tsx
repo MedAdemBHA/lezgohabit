@@ -10,6 +10,7 @@ import { formatDayMonth, isRtl, loc, selectLang, type Lang } from "@/lib/i18n";
 import i18n from "@/lib/i18n";
 import { inviteBlock } from "@/lib/challenge-catalog";
 import { joinErrorKey } from "@/lib/event-data";
+import { unitLabel } from "@/lib/habits";
 import { supabase } from "@/integrations/supabase/client";
 import { isGuestMode } from "@/lib/guest";
 import { useLeaveGuest } from "@/components/lezgo/guest";
@@ -110,7 +111,7 @@ function Invite() {
           <div className="challenge-preview-habits">
             {challenge.habits.map((habit) => <article key={habit.key} className="sticker rounded-[14px] bg-card p-3 text-start">
               <strong>{loc(habit.name, lang)}</strong>
-              <p className="text-[13px] font-semibold">{loc(habit.what_counts, lang)} · {habit.target}{habit.unit ? ` ${habit.unit}` : ""}</p>
+              <p className="text-[13px] font-semibold">{loc(habit.what_counts, lang)} · {habit.target}{habit.unit ? ` ${unitLabel(t, habit.unit)}` : ""}</p>
             </article>)}
           </div>
           <ClientOnly fallback={<p className="font-extrabold">{t(blocked ?? "events.joinOnLezgo")}</p>}>

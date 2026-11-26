@@ -391,6 +391,21 @@
   font-size: 0.875rem;
 }
 
+/* Phones: the language pill shows only its flag (its aria-label keeps the name) so the logo never
+   gets covered, and the two hero actions stack instead of wrapping onto two uneven lines. */
+@media (max-width: 440px) {
+  .public-header .language-pill > span {
+    display: none;
+  }
+  .home-hero-copy .public-actions {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .home-hero-copy .public-action {
+    min-height: 52px;
+    font-size: 0.95rem;
+  }
+}
+
 @media (max-width: 380px) {
   .public-header .join-language {
     padding-inline: 8px;

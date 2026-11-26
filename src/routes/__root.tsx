@@ -109,21 +109,26 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { name: "theme-color", content: "#FFF6E5" },
-      { title: "lezgo · Show up. Lezgo." },
+      { title: "lezgo · Small habits. Real progress." },
       {
         name: "description",
-        content: "A 40-day habit season with friends or solo. Check in under a minute a day.",
+        content:
+          "Free habit challenges. Check in each day and grow your streak, solo or with your crew.",
       },
-      { property: "og:title", content: "lezgo · Show up. Lezgo." },
-      { property: "og:description", content: "A 40-day habit season with friends or solo." },
+      { property: "og:title", content: "lezgo · بالشوية بالشوية… توصل" },
+      {
+        property: "og:description",
+        content: "دقيقة في النهار، وحدك ولا مع صحابك. بلاش.",
+      },
+      { property: "og:locale", content: "ar_TN" },
       { property: "og:type", content: "website" },
       { property: "og:site_name", content: "lezgo" },
-      { property: "og:image", content: publicUrl("/og-home.png") },
-      { property: "og:image:type", content: "image/png" },
+      { property: "og:image", content: publicUrl("/og-home.jpg") },
+      { property: "og:image:type", content: "image/jpeg" },
       { property: "og:image:width", content: "1200" },
       { property: "og:image:height", content: "630" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:image", content: publicUrl("/og-home.png") },
+      { name: "twitter:image", content: publicUrl("/og-home.jpg") },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -178,8 +183,17 @@ function RootComponent() {
     } catch {
       /* ignore */
     }
-    const { data } = supabase.auth.onAuthStateChange((event) => {
+    // auth-js re-emits SIGNED_IN every time the tab becomes visible again. Refetch everything only
+    // when the signed-in account really changes, not on each return to the app.
+    let lastUserId: string | null | undefined;
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+      const userId = session?.user?.id ?? null;
+      const changed = lastUserId !== undefined && userId !== lastUserId;
+      const first = lastUserId === undefined;
+      lastUserId = userId;
+      if (event === "INITIAL_SESSION") return;
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
+      if (event === "SIGNED_IN" && !changed && !first) return;
       void router.invalidate();
       if (event !== "SIGNED_OUT") void queryClient.invalidateQueries();
     });

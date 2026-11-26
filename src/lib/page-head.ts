@@ -13,8 +13,13 @@ type PublicHeadOptions = {
 };
 
 const OG_LOCALES = { en: "en_US", fr: "fr_FR", ar: "ar_AR", aeb: "ar_TN" } as const;
-/** Every page shares with a preview image; the home card is the default. */
-const DEFAULT_IMAGE = "/og-home.png";
+/** Every page shares with a preview image. The default card is Tunisian (our main audience);
+ *  pages explicitly in English or French get the English card. */
+const DEFAULT_IMAGE = "/og-home.jpg";
+export const shareImage = (lang?: Lang) =>
+  lang === "en" || lang === "fr" ? "/og-home-en.jpg" : DEFAULT_IMAGE;
+export const DEFAULT_SHARE_TITLE = "lezgo · بالشوية بالشوية… توصل";
+export const DEFAULT_SHARE_DESCRIPTION = "دقيقة في النهار، وحدك ولا مع صحابك. بلاش.";
 
 /** App routes are private by default; public routes must opt in explicitly. */
 export function pageHead(
@@ -26,8 +31,8 @@ export function pageHead(
   const privatePage = normalized.privatePage ?? true;
   const canonical = normalized.canonicalPath ? publicUrl(normalized.canonicalPath) : undefined;
   const image = publicUrl(normalized.imagePath ?? DEFAULT_IMAGE);
-  const imageAlt = normalized.imagePath ? (normalized.imageAlt ?? title) : "Show up. Lezgo.";
-  const locale = OG_LOCALES[normalized.lang ?? "en"];
+  const imageAlt = normalized.imagePath ? (normalized.imageAlt ?? title) : "بالشوية بالشوية… توصل.";
+  const locale = OG_LOCALES[normalized.lang ?? "aeb"];
   const links = canonical
     ? [
         { rel: "canonical", href: canonical },
@@ -56,7 +61,7 @@ export function pageHead(
       { name: "twitter:description", content: description },
       { property: "og:image", content: image },
       ...(image.startsWith("https:") ? [{ property: "og:image:secure_url", content: image }] : []),
-      { property: "og:image:type", content: "image/png" },
+      { property: "og:image:type", content: image.endsWith(".png") ? "image/png" : "image/jpeg" },
       { property: "og:image:width", content: "1200" },
       { property: "og:image:height", content: "630" },
       { property: "og:image:alt", content: imageAlt },
