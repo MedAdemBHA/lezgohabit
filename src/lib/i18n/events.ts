@@ -218,6 +218,7 @@ export const moderationEn = {
   transfer: "Transfer ownership",
   error: "This action couldn’t be saved. Refresh and try again.",
   mutedPost: "Posting is currently restricted in this community.",
+  noCrew: "This challenge talks inside crews. Join or find a crew to post.",
 };
 
 type ModCopy = typeof moderationEn;
@@ -258,6 +259,7 @@ export const moderationFr: ModCopy = {
   transfer: "Transférer la gestion",
   error: "Impossible d’enregistrer. Actualise puis réessaie.",
   mutedPost: "Tu ne peux pas publier dans cette communauté pour le moment.",
+  noCrew: "Dans ce défi, on échange en équipe. Rejoins ou trouve une équipe pour publier.",
 };
 export const moderationAr: ModCopy = {
   eventManage: "إدارة مجتمع الفعالية",
@@ -296,6 +298,7 @@ export const moderationAr: ModCopy = {
   transfer: "نقل ملكية الفريق",
   error: "تعذر حفظ الإجراء. حدّث الصفحة وحاول مجددًا.",
   mutedPost: "النشر مقيّد حاليًا في هذا المجتمع.",
+  noCrew: "النقاش في هذا التحدي داخل الفرق. انضم إلى فريق أو ابحث عن فريق لتنشر.",
 };
 export const moderationAeb: ModCopy = {
   ...moderationAr,
@@ -304,4 +307,5 @@ export const moderationAeb: ModCopy = {
   appeal: "تنجم تطلب من دعم Lezgo يراجع القرار.",
   crewExit: "التقدّم متاعك يبقى محفوظ. تنجم تكمّل وحدك وإلا مع فريق آخر.",
   eventExit: "التقدّم متاعك يبقى في السجل. تنجم تدخل لفعالية أخرى.",
+  noCrew: "التحدي هذا الحكي فيه داخل الفرق. ادخل لفريق وإلا لوّج على فريق باش تنشر.",
 };

@@ -1019,6 +1019,245 @@ export type Database = {
           },
         ]
       }
+      community_appeals: {
+        Row: {
+          body: string
+          created_at: string
+          notice_id: string
+          response: string | null
+          reviewed_at: string | null
+          reviewer_id: string | null
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          notice_id: string
+          response?: string | null
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          notice_id?: string
+          response?: string | null
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_appeals_notice_id_fkey"
+            columns: ["notice_id"]
+            isOneToOne: true
+            referencedRelation: "community_moderation_log"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_appeals_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_member_reports: {
+        Row: {
+          created_at: string
+          crew_id: string | null
+          id: string
+          reason: string
+          reporter: string
+          reviewed_at: string | null
+          season_id: string
+          target_id: string
+        }
+        Insert: {
+          created_at?: string
+          crew_id?: string | null
+          id?: string
+          reason: string
+          reporter: string
+          reviewed_at?: string | null
+          season_id: string
+          target_id: string
+        }
+        Update: {
+          created_at?: string
+          crew_id?: string | null
+          id?: string
+          reason?: string
+          reporter?: string
+          reviewed_at?: string | null
+          season_id?: string
+          target_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_member_reports_crew_id_fkey"
+            columns: ["crew_id"]
+            isOneToOne: false
+            referencedRelation: "crews"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_member_reports_reporter_fkey"
+            columns: ["reporter"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_member_reports_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_member_reports_target_id_fkey"
+            columns: ["target_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_moderation_log: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          id: string
+          notice_seen_at: string | null
+          post_id: string | null
+          reason: string
+          scope: string
+          scope_id: string
+          season_id: string
+          target_id: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          notice_seen_at?: string | null
+          post_id?: string | null
+          reason: string
+          scope: string
+          scope_id: string
+          season_id: string
+          target_id?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          notice_seen_at?: string | null
+          post_id?: string | null
+          reason?: string
+          scope?: string
+          scope_id?: string
+          season_id?: string
+          target_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_moderation_log_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_moderation_log_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_moderation_log_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_moderation_log_target_id_fkey"
+            columns: ["target_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_post_moderation: {
+        Row: {
+          hidden: boolean
+          post_id: string
+          reviewed_at: string
+          scope: string
+          scope_id: string
+        }
+        Insert: {
+          hidden?: boolean
+          post_id: string
+          reviewed_at?: string
+          scope: string
+          scope_id: string
+        }
+        Update: {
+          hidden?: boolean
+          post_id?: string
+          reviewed_at?: string
+          scope?: string
+          scope_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_post_moderation_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_restrictions: {
+        Row: {
+          reason: string
+          restriction: string
+          scope: string
+          scope_id: string
+          user_id: string
+        }
+        Insert: {
+          reason: string
+          restriction: string
+          scope: string
+          scope_id: string
+          user_id: string
+        }
+        Update: {
+          reason?: string
+          restriction?: string
+          scope?: string
+          scope_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_restrictions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       creator_referrals: {
         Row: {
           code: string
@@ -2310,6 +2549,7 @@ export type Database = {
         Row: {
           created_at: string
           is_demo: boolean
+          moderation_crew_id: string | null
           post_id: string
           reason: string
           reporter: string
@@ -2317,6 +2557,7 @@ export type Database = {
         Insert: {
           created_at?: string
           is_demo?: boolean
+          moderation_crew_id?: string | null
           post_id: string
           reason: string
           reporter: string
@@ -2324,6 +2565,7 @@ export type Database = {
         Update: {
           created_at?: string
           is_demo?: boolean
+          moderation_crew_id?: string | null
           post_id?: string
           reason?: string
           reporter?: string
@@ -2334,6 +2576,13 @@ export type Database = {
             columns: ["reporter"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reports_moderation_crew_id_fkey"
+            columns: ["moderation_crew_id"]
+            isOneToOne: false
+            referencedRelation: "crews"
             referencedColumns: ["id"]
           },
           {
@@ -2620,11 +2869,13 @@ export type Database = {
           archived: boolean
           challenge_owned: boolean
           ends_on: string
+          event_goal: Json
           featured_habits: string[]
           frozen_at: string | null
           id: string
           is_demo: boolean
           name: Json
+          published: boolean
           slug: string
           starts_on: string
           status: string
@@ -2634,11 +2885,13 @@ export type Database = {
           archived?: boolean
           challenge_owned?: boolean
           ends_on: string
+          event_goal?: Json
           featured_habits?: string[]
           frozen_at?: string | null
           id?: string
           is_demo?: boolean
           name: Json
+          published?: boolean
           slug: string
           starts_on: string
           status?: string
@@ -2648,11 +2901,13 @@ export type Database = {
           archived?: boolean
           challenge_owned?: boolean
           ends_on?: string
+          event_goal?: Json
           featured_habits?: string[]
           frozen_at?: string | null
           id?: string
           is_demo?: boolean
           name?: Json
+          published?: boolean
           slug?: string
           starts_on?: string
           status?: string
@@ -2868,12 +3123,39 @@ export type Database = {
         Returns: Json
       }
       _caller_is_admin: { Args: never; Returns: boolean }
+      _can_moderate_community: {
+        Args: { _crew: string; _season: string }
+        Returns: boolean
+      }
+      _can_read_private_season: { Args: { _season: string }; Returns: boolean }
       _check_day_window: {
         Args: { _day: string; _user_id: string }
         Returns: undefined
       }
+      _community_post_in_scope: {
+        Args: {
+          _crew: string
+          _post: Database["public"]["Tables"]["posts"]["Row"]
+          _season: string
+        }
+        Returns: boolean
+      }
+      _community_restricted: {
+        Args: {
+          _id: string
+          _restriction: string
+          _scope: string
+          _user: string
+        }
+        Returns: boolean
+      }
       _day_is_final: { Args: { _day: string; _uid: string }; Returns: boolean }
       _effective_tz: { Args: { _uid: string }; Returns: string }
+      _event_target_copy: {
+        Args: { _after: number; _before: number; _copy: Json }
+        Returns: Json
+      }
+      _event_today: { Args: never; Returns: string }
       _final_override: { Args: never; Returns: boolean }
       _finalize_user_day: {
         Args: { _day: string; _sid: string; _uid: string }
@@ -2938,12 +3220,20 @@ export type Database = {
         Args: { _day: string; _season_id: string; _user_id: string }
         Returns: undefined
       }
+      _reinstate_moderated_entry: {
+        Args: { _season: string; _user: string }
+        Returns: boolean
+      }
       _require_active_participation: {
         Args: { _season: string; _user: string }
         Returns: undefined
       }
       _require_admin: { Args: never; Returns: string }
       _require_feature: { Args: { _key: string }; Returns: undefined }
+      _snapshot_moderated_entry: {
+        Args: { _season: string; _user: string }
+        Returns: undefined
+      }
       _sync_boss: { Args: { _bid: string; _uid: string }; Returns: undefined }
       _time_window_allows: {
         Args: { _local_time: string; _rule: Json }
@@ -2979,6 +3269,8 @@ export type Database = {
         Returns: Json
       }
       admin_guest_sessions: { Args: never; Returns: Json }
+      admin_moderation_appeals: { Args: never; Returns: Json }
+      admin_official_events: { Args: never; Returns: Json }
       admin_overview: { Args: never; Returns: Json }
       admin_recompute_final_day: {
         Args: { _day: string; _reason: string; _season: string; _user: string }
@@ -2988,11 +3280,19 @@ export type Database = {
         Args: { _post: string; _reason: string }
         Returns: undefined
       }
+      admin_resolve_moderation_appeal: {
+        Args: { _notice: string; _response: string }
+        Returns: undefined
+      }
       admin_review_points: {
         Args: { _decision: string; _id: string; _reason: string }
         Returns: undefined
       }
       admin_review_queue: { Args: never; Returns: Json }
+      admin_save_official_event: {
+        Args: { _event: Json; _habits: Json; _id: string | null }
+        Returns: string
+      }
       admin_security_presence: {
         Args: { _device: string; _network: string }
         Returns: undefined
@@ -3096,6 +3396,18 @@ export type Database = {
         Args: { _mood: string; _tomorrow?: string }
         Returns: undefined
       }
+      community_member_reports_queue: {
+        Args: { _crew?: string; _season: string }
+        Returns: Json
+      }
+      community_moderation_access: {
+        Args: { _crew?: string; _season: string }
+        Returns: boolean
+      }
+      community_moderation_queue: {
+        Args: { _crew?: string; _search?: string; _season: string }
+        Returns: Json
+      }
       complete_habit_timer: { Args: { _session_id: string }; Returns: Json }
       create_boss_lesson: {
         Args: { _body: string; _boss_id: string; _seconds: number }
@@ -3154,6 +3466,7 @@ export type Database = {
       creator_requests_admin: { Args: never; Returns: Json }
       crew_activity: { Args: { _crew_id: string }; Returns: Json }
       crew_details: { Args: { _crew_id: string }; Returns: Json }
+      crew_invite_preview: { Args: { _code: string }; Returns: Json }
       crew_today: { Args: { _crew_id: string }; Returns: Json }
       delete_my_account: { Args: never; Returns: undefined }
       demo_reset_day: { Args: never; Returns: undefined }
@@ -3216,11 +3529,26 @@ export type Database = {
         Args: { _minutes: number; _path: string }
         Returns: undefined
       }
+      mark_moderation_notice_read: {
+        Args: { _notice: string }
+        Returns: undefined
+      }
       mark_prayer: {
         Args: { _day?: string; _prayer: string; _user_habit_id: string }
         Returns: Json
       }
+      moderate_community: {
+        Args: {
+          _action: string
+          _crew: string | null
+          _reason: string
+          _season: string
+          _target: string
+        }
+        Returns: undefined
+      }
       my_challenge_history: { Args: never; Returns: Json }
+      my_moderation_notices: { Args: never; Returns: Json }
       my_season_result: { Args: { _season_id: string }; Returns: Json }
       participating_countries: { Args: never; Returns: number }
       post_action: {
@@ -3253,24 +3581,11 @@ export type Database = {
         }
         Returns: Json
       }
-      crew_invite_preview: { Args: { _code: string }; Returns: Json }
-      admin_official_events: { Args: never; Returns: Json }
-      admin_save_official_event: { Args: { _id: string | null; _event: Json; _habits: Json }; Returns: string }
-      community_moderation_access: { Args: { _season: string; _crew?: string }; Returns: boolean }
-      community_moderation_queue: { Args: { _season: string; _crew?: string; _search?: string }; Returns: Json }
-      moderate_community: { Args: { _season: string; _crew: string | null; _action: string; _target: string; _reason: string }; Returns: undefined }
-      report_community_post: { Args: { _post: string; _reason: string; _crew?: string }; Returns: undefined }
-      my_moderation_notices: { Args: never; Returns: Json }
-      report_community_member: { Args: { _season: string; _target: string; _reason: string; _crew?: string }; Returns: undefined }
-      community_member_reports_queue: { Args: { _season: string; _crew?: string }; Returns: Json }
-      resolve_community_member_report: { Args: { _report: string; _reason: string }; Returns: undefined }
-      submit_moderation_appeal: { Args: { _notice: string; _body: string }; Returns: undefined }
-      mark_moderation_notice_read: { Args: { _notice: string }; Returns: undefined }
-      admin_moderation_appeals: { Args: never; Returns: Json }
-      admin_resolve_moderation_appeal: { Args: { _notice: string; _response: string }; Returns: undefined }
-      publish_event_announcement: { Args: { _season: string; _body: string }; Returns: undefined }
-      rotate_crew_invite: { Args: { _season: string; _crew: string }; Returns: string }
       public_challenge_catalog: { Args: never; Returns: Json }
+      publish_event_announcement: {
+        Args: { _body: string; _season: string }
+        Returns: undefined
+      }
       react_post: {
         Args: { _kind: string; _post_id: string }
         Returns: undefined
@@ -3299,11 +3614,32 @@ export type Database = {
         Args: { _reason: string; _target: string }
         Returns: undefined
       }
+      report_community_member: {
+        Args: {
+          _crew?: string
+          _reason: string
+          _season: string
+          _target: string
+        }
+        Returns: undefined
+      }
+      report_community_post: {
+        Args: { _crew?: string; _post: string; _reason: string }
+        Returns: undefined
+      }
       request_creator: { Args: never; Returns: string }
       reset_boss: { Args: { _boss_id: string }; Returns: undefined }
+      resolve_community_member_report: {
+        Args: { _reason: string; _report: string }
+        Returns: undefined
+      }
       review_creator_request: {
         Args: { _approve: boolean; _note?: string; _request_id: string }
         Returns: undefined
+      }
+      rotate_crew_invite: {
+        Args: { _crew: string; _season: string }
+        Returns: string
       }
       scoreboard: {
         Args: {
@@ -3362,6 +3698,10 @@ export type Database = {
       solo_ghost: { Args: { _season_id: string }; Returns: Json }
       spin_daily_chaos: { Args: { _season_id: string }; Returns: Json }
       start_habit_timer: { Args: { _user_habit_id: string }; Returns: Json }
+      submit_moderation_appeal: {
+        Args: { _body: string; _notice: string }
+        Returns: undefined
+      }
       surrender_challenge: { Args: { _season_id: string }; Returns: Json }
       swap_habit: {
         Args: {

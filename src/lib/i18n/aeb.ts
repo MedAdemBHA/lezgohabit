@@ -182,7 +182,7 @@ export const aeb: Dict = {
   common: {
     cta: "يلّا نبداو", today: "اليوم", ranks: "الترتيب", crew: "الجماعة", profile: "البروفيل", settings: "الإعدادات",
     back: "ارجع", save: "سجّل", cancel: "بلاش", close: "سكّر", done: "كمّلت", loading: "استنى شوية…",
-    error: "صار مشكل. عاود جرّب.", next: "اللي بعدو", skip: "فوت", pts: "نقطة", language: "اللغة",
+    retry: "عاود", error: "صار مشكل. عاود جرّب.", next: "اللي بعدو", skip: "فوت", pts: "نقطة", language: "اللغة",
     season1: "الموسم 1", live: "لايف", openProfile: "حل البروفيل",
   },
   nav: { today: "اليوم", board: "الترتيب", crew: "الكرو", me: "أنا", pulse: "نبض التحدّي" },

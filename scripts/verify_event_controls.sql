@@ -1,11 +1,11 @@
--- Apply 0072 and 0073 to a test database, then execute this file. Everything rolls back.
+-- Apply 0072 through 0075 to a test database, then execute this file. Everything rolls back.
 BEGIN;
 CREATE TEMP TABLE event_checks(check_name text, passed boolean) ON COMMIT DROP;
 
 DO $verify$
 DECLARE
   admin uuid:=gen_random_uuid(); creator uuid:=gen_random_uuid(); outsider uuid:=gen_random_uuid();
-  owner uuid:=gen_random_uuid(); member uuid:=gen_random_uuid(); guest uuid:=gen_random_uuid();
+  owner uuid:=gen_random_uuid(); extra uuid:=gen_random_uuid(); member uuid:=gen_random_uuid(); guest uuid:=gen_random_uuid();
   s uuid; future_event uuid; event_id uuid; creator_event uuid; creator_code text; crew uuid; other_crew uuid;
   post_id uuid; crew_post uuid; event_post uuid; notice uuid; report uuid; old_code text; new_code text;
   d date:=public._event_today(); payload jsonb; check_ok boolean;
@@ -13,7 +13,7 @@ BEGIN
   INSERT INTO auth.users(id,instance_id,aud,role,created_at,updated_at,email,raw_user_meta_data,raw_app_meta_data)
   SELECT id,'00000000-0000-0000-0000-000000000000','authenticated','authenticated',now(),now(),alias||'@example.invalid','{}'::jsonb,'{}'::jsonb
   FROM (VALUES(admin,'fixtures_admin'),(creator,'fixtures_creator'),(outsider,'fixtures_outsider'),
-    (owner,'fixtures_owner'),(member,'fixtures_member'),(guest,'demo')) users(id,alias);
+    (owner,'fixtures_owner'),(member,'fixtures_member'),(extra,'fixtures_extra'),(guest,'demo')) users(id,alias);
   UPDATE public.profiles SET is_admin=true WHERE id=admin;
   INSERT INTO public.user_roles(user_id,role) VALUES(creator,'creator');
   PERFORM set_config('request.jwt.claims',jsonb_build_object('sub',admin,'role','authenticated')::text,true);
@@ -169,6 +169,41 @@ BEGIN
   PERFORM public.join_season(s);
   INSERT INTO event_checks VALUES('the next official event can be joined',EXISTS(
     SELECT FROM public.season_entries WHERE user_id=guest AND season_id=s AND status='active'));
+  -- 0075 checks
+  PERFORM set_config('request.jwt.claims',jsonb_build_object('sub',creator,'role','authenticated')::text,true);
+  PERFORM public.moderate_community(creator_event,NULL,'unban',guest,'Fixture unban busy');
+  INSERT INTO event_checks VALUES('unban does not reinstate a player already in another event',
+    EXISTS(SELECT FROM public.season_entries WHERE user_id=guest AND season_id=creator_event AND status='surrendered'));
+  PERFORM set_config('request.jwt.claims',jsonb_build_object('sub',extra,'role','authenticated')::text,true);
+  PERFORM public.join_challenge(creator_code,'solo');
+  PERFORM set_config('request.jwt.claims',jsonb_build_object('sub',creator,'role','authenticated')::text,true);
+  PERFORM public.moderate_community(creator_event,NULL,'ban',extra,'Fixture ban two');
+  PERFORM public.moderate_community(creator_event,NULL,'unban',extra,'Fixture unban two');
+  INSERT INTO event_checks VALUES('unban reinstates a moderated player with no other event',
+    EXISTS(SELECT FROM public.season_entries WHERE user_id=extra AND season_id=creator_event AND status='active' AND end_reason IS NULL)
+    AND NOT EXISTS(SELECT FROM public.season_results WHERE user_id=extra AND season_id=creator_event)
+    AND (SELECT active_challenge_id FROM public.user_preferences WHERE user_id=extra) IS NOT NULL);
+  PERFORM set_config('request.jwt.claims',jsonb_build_object('sub',extra,'role','authenticated')::text,true);
+  INSERT INTO event_checks VALUES('reinstated player can check the feed again',
+    jsonb_typeof(public.proof_feed(creator_event,'challenge'))='array');
+  check_ok:=false;
+  BEGIN PERFORM public.submit_moderation_appeal(notice,'x');
+  EXCEPTION WHEN raise_exception THEN check_ok:=SQLERRM='invalid_appeal'; END;
+  INSERT INTO event_checks VALUES('short appeals get a readable error',check_ok);
+  UPDATE public.challenges SET public_board=false WHERE season_id=creator_event;
+  PERFORM set_config('request.jwt.claims',jsonb_build_object('sub',creator,'role','authenticated')::text,true);
+  check_ok:=true;
+  BEGIN PERFORM public.publish_event_announcement(creator_event,'Private board announcement');
+  EXCEPTION WHEN raise_exception THEN check_ok:=false; RAISE NOTICE '%',SQLERRM; END;
+  PERFORM set_config('request.jwt.claims',jsonb_build_object('sub',extra,'role','authenticated')::text,true);
+  INSERT INTO event_checks VALUES('announcements work on private-board challenges and reach players',check_ok
+    AND EXISTS(SELECT FROM jsonb_array_elements(public.proof_feed(creator_event,'challenge')) p WHERE p->>'body'='Private board announcement'));
+  check_ok:=false;
+  BEGIN PERFORM public.create_post(creator_event,'thought',NULL,'No crew here');
+  EXCEPTION WHEN raise_exception THEN check_ok:=SQLERRM='no_crew'; END;
+  INSERT INTO event_checks VALUES('private-board posts without a crew are refused clearly',check_ok);
+  INSERT INTO event_checks VALUES('integrity_tick still applies habit swaps',
+    pg_get_functiondef('public.integrity_tick'::regproc) LIKE '%apply_due_habit_swaps%');
 END $verify$;
 
 SELECT check_name, CASE WHEN passed THEN 'PASS' ELSE 'FAIL' END result FROM event_checks;

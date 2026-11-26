@@ -123,7 +123,8 @@ export function Compose({
       onClose();
     } catch (error) {
       if (path) await supabase.storage.from("proofs").remove([path]);
-      toast(t((error as Error)?.message?.includes("moderation_mute") ? "moderation.mutedPost" : "common.error"));
+      const message = (error as Error)?.message ?? "";
+      toast(t(message.includes("moderation_mute") ? "moderation.mutedPost" : message.includes("no_crew") ? "moderation.noCrew" : "common.error"));
     } finally {
       setBusy(false);
     }
