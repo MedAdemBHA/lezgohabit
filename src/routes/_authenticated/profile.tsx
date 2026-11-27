@@ -5,21 +5,32 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Settings, Upload, ChevronRight, CheckCircle2, Star } from "lucide-react";
+import {
+  ArrowLeft,
+  Settings,
+  Upload,
+  ChevronDown,
+  ChevronRight,
+  CheckCircle2,
+  Sparkles,
+  Star,
+  UsersRound,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Compose } from "@/components/lezgo/community/compose";
 import { AppShell } from "@/components/lezgo/app-shell";
+import { AppTourButton } from "@/components/lezgo/app-tour";
 import { StreakIcon, SalatIcon, BossIcon, NoSugarIcon } from "@/components/icons";
 import { Avatar, BottomSheet, Num, StickerButton } from "@/components/lezgo/ui";
 import { FittedLabel } from "@/components/lezgo/fitted-label";
 import { useHabitStatLabel } from "@/components/lezgo/habit-stat";
 import { habitsQuery, scoresQuery, useBase } from "@/lib/data";
-import { buddyQuery, countryName, summaryQuery } from "@/lib/community-data";
+import { buddyQuery, countryName, countryWhere, summaryQuery } from "@/lib/community-data";
 import { challengePulseQuery } from "@/lib/feed-data";
 import { COUNTRY_RANK_MIN_PLAYERS } from "@/lib/challenge-plan";
 import { BADGE_KEYS, trailState } from "@/lib/community-rules";
 import { addDays, daysBetween } from "@/lib/time";
-import { loc } from "@/lib/i18n";
+import { formatNumber, loc } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { bossQuery, rolesQuery, challengeLink } from "@/lib/batch6-data";
@@ -178,7 +189,11 @@ function ProfilePage() {
       {creatorDashboard.isError && (
         <div className="space-y-2">
           <p role="alert">{t("common.error")}</p>
-          <StickerButton size="sm" variant="secondary" onClick={() => void creatorDashboard.refetch()}>
+          <StickerButton
+            size="sm"
+            variant="secondary"
+            onClick={() => void creatorDashboard.refetch()}
+          >
             {t("common.retry")}
           </StickerButton>
         </div>
@@ -261,6 +276,7 @@ function ProfilePage() {
             </StickerButton>
           </Link>
         </div>
+        <AppTourButton className="self-start" />
       </AppShell>
     );
   const data = q.data;
@@ -287,238 +303,211 @@ function ProfilePage() {
       /* cancelled */
     }
   }
+  const stats = [
+    { key: "points", value: data?.points, label: t("socialDesign.seasonPts") },
+    {
+      key: "country",
+      value: data?.rank && countryReady ? `#${formatNumber(data.rank, i18n.language)}` : undefined,
+      label: t("socialDesign.rankLabel", {
+        country,
+        where: countryWhere(profile.country_code, i18n.language),
+      }),
+    },
+    { key: "habit", value: data?.stat?.value, label: statLabel },
+  ];
   return (
-    <AppShell todayLayout>
-      <div className="flex items-center justify-between">
-        <Link to="/today">
-          <StickerButton variant="secondary" className="habit-back" aria-label={t("common.back")}>
-            <ArrowLeft size={22} className="rtl:-scale-x-100" />
-          </StickerButton>
-        </Link>
-        <div className="flex items-center gap-2">
-          <Link to="/settings">
-            <StickerButton
-              variant="secondary"
-              className="habit-back"
-              aria-label={t("common.settings")}
-            >
-              <Settings size={22} />
-            </StickerButton>
-          </Link>
-          <StickerButton
-            variant="lime"
-            size="sm"
-            className="profile-share-button rounded-[14px] text-[16px]"
+    <AppShell
+      title={t("nav.me")}
+      actions={
+        <>
+          <button
+            type="button"
+            className="app-icon-button"
+            aria-label={t("socialDesign.share")}
             onClick={() => setShare(true)}
           >
-            <Upload size={18} />
-            {t("socialDesign.share")}
-          </StickerButton>
-        </div>
-      </div>
-      <div className="profile-header mt-2">
-        <div className="relative shrink-0">
+            <Upload size={20} aria-hidden="true" />
+          </button>
+          <Link to="/settings" className="app-icon-button" aria-label={t("common.settings")}>
+            <Settings size={20} aria-hidden="true" />
+          </Link>
+        </>
+      }
+    >
+      <section className="profile-pass">
+        <div className="profile-header">
           <Avatar
             id={profile.id}
             name={profile.display_name}
             url={profile.avatar_url}
-            size={84}
-            className="border-[3px] bg-yellow text-[40px]"
+            size={68}
+            className="profile-portrait"
           />
-          <span className="absolute -bottom-1 -end-1 flex items-center gap-1 rounded-[8px] bg-orange px-1.5 py-0.5 sticker-border">
-            <Num className="text-[13px] font-bold">{data?.streak ?? 0}</Num>
-            <StreakIcon size={16} />
-          </span>
+          <div className="min-w-0 flex-1">
+            <h2 className="profile-name">{profile.display_name}</h2>
+            <p className="profile-byline">
+              <bdi dir="ltr">@{profile.handle}</bdi>
+            </p>
+            <p className="profile-byline">{[profile.city, country].filter(Boolean).join(", ")}</p>
+          </div>
         </div>
-        <div className="min-w-0 flex-1">
-          <h1 className="profile-name">{profile.display_name}</h1>
-          <p className="text-[16px] font-semibold text-design-muted">
-            <bdi dir="ltr">@{profile.handle}</bdi>
-          </p>
-          <p className="mt-1 text-[16px] font-bold">
-            {[profile.city, country].filter(Boolean).join(", ")}
-          </p>
+        <div className="profile-pass-meta">
+          <span>
+            <StreakIcon size={18} />
+            {t("socialDesign.streakStat", { n: formatNumber(data?.streak ?? 0, i18n.language) })}
+          </span>
           {data?.crew && (
-            <Link
-              to="/crew-details"
-              className="mt-2 inline-flex max-w-full items-center rounded-full bg-card px-3 py-1 text-[15px] font-extrabold sticker-border"
-            >
-              <span className="truncate">{data.crew.name}</span>
+            <Link to="/crew-details">
+              {data.crew.name}
+              <ChevronRight size={15} className="rtl:-scale-x-100" aria-hidden="true" />
             </Link>
           )}
         </div>
-      </div>
-      {q.isError ? (
-        <StickerButton variant="secondary" onClick={() => void q.refetch()}>
-          {t("common.error")}
-        </StickerButton>
-      ) : (
-        <div className="mt-3 grid grid-cols-3 gap-3">
-          {[
-            { value: data?.points ?? "—", label: t("socialDesign.seasonPts") },
-            {
-              value: data?.rank && countryReady ? `#${data.rank}` : "—",
-              label: t("socialDesign.countryRank", { rank: "", country }).replace(/^#\s*/, ""),
-            },
-            { value: data?.stat?.value ?? 0, label: statLabel },
-          ].map((s, i) => (
-            <div key={i} className="profile-stat bg-card sticker-border shadow-hard-lg">
-              <Num className="stat-value">{s.value}</Num>
-              <FittedLabel className="stat-label" text={s.label} />
-            </div>
-          ))}
-        </div>
-      )}
-      <h2 className="mt-3 text-[13px] font-extrabold">{t("ux.currentChallenge")}</h2>
+        {q.isError ? (
+          <StickerButton variant="secondary" size="sm" onClick={() => void q.refetch()}>
+            {t("common.retry")}
+          </StickerButton>
+        ) : (
+          <dl className="profile-pass-stats">
+            {stats.map(({ key, value, label }) => (
+              <div key={key} className="profile-stat">
+                <dt>
+                  <FittedLabel className="stat-label" text={label} />
+                </dt>
+                <dd>
+                  <Num className="stat-value">
+                    {typeof value === "number"
+                      ? formatNumber(value, i18n.language)
+                      : (value ?? "—")}
+                  </Num>
+                </dd>
+              </div>
+            ))}
+          </dl>
+        )}
+      </section>
+
+      <section className="app-surface profile-journey">
+        <Link to="/seasons" className="app-row-link profile-season-link">
+          <span>
+            <small>{t("ux.currentChallenge")}</small>
+            <strong>{loc(season.name, i18n.language)}</strong>
+          </span>
+          <span className="profile-day-label">
+            <Num>
+              {day}/{length}
+            </Num>
+            <ChevronRight size={18} className="rtl:-scale-x-100" aria-hidden="true" />
+          </span>
+        </Link>
+        <Link
+          to="/trail"
+          search={{ season: season.id }}
+          className="profile-trail"
+          aria-label={t("batch8.viewTrail")}
+        >
+          <span className="app-row-link">
+            <strong>{t("profile.trail")}</strong>
+            <ChevronRight size={18} className="rtl:-scale-x-100" aria-hidden="true" />
+          </span>
+          <span className="season-trail" aria-hidden="true">
+            {Array.from({ length }, (_, i) => {
+              const d = addDays(season.starts_on, i);
+              const score = byDay.get(d);
+              const state = trailState(
+                d,
+                today,
+                score
+                  ? { completion: Number(score.completion), shield_used: score.shield_used }
+                  : undefined,
+              );
+              return (
+                <span
+                  key={d}
+                  className="season-square"
+                  data-state={state}
+                  data-final={!!score?.finalized_at}
+                  title={score?.finalized_at ? `${d} · ${t("integrity.final")}` : d}
+                />
+              );
+            })}
+          </span>
+        </Link>
+      </section>
+
       <Link
-        to="/seasons"
-        className="flex items-center gap-3 rounded-[20px] bg-blue px-[18px] py-[14px] sticker-border shadow-hard-lg"
+        to="/small-wins"
+        search={{ from: "profile" }}
+        className="app-surface app-row-link profile-wins-link"
       >
-        <span className="min-w-0 flex-1">
-          <span className="block text-[18px] font-extrabold">
-            {loc(season.name, i18n.language)} · {t("common.season1")}
-          </span>
-          <span className="block text-[15px] font-bold">
-            {t("socialDesign.inProgress", { day, total: length })}
-          </span>
+        <Sparkles className="profile-win-icon" size={26} aria-hidden="true" />
+        <span>
+          <strong>{t("batch6.winTitle")}</strong>
+          <small>{t("appRefresh.shareWin")}</small>
         </span>
-        <ChevronRight className="shrink-0 rtl:-scale-x-100" />
+        <ChevronRight size={20} className="rtl:-scale-x-100" aria-hidden="true" />
       </Link>
-      <Link
-        to="/trail"
-        search={{ season: season.id }}
-        className="mt-2 block"
-        aria-label={t("batch8.viewTrail")}
-      >
-        <h2 className="mb-2 text-[13px] font-extrabold">{t("profile.trail")}</h2>
-        <div className="season-trail">
-          {Array.from({ length }, (_, i) => {
-            const d = addDays(season.starts_on, i);
-            const s = byDay.get(d);
-            const state = trailState(
-              d,
-              today,
-              s ? { completion: Number(s.completion), shield_used: s.shield_used } : undefined,
-            );
+
+      <Link to="/buddies" className="app-surface app-row-link profile-wins-link profile-buddy-link">
+        <UsersRound className="profile-win-icon" size={26} aria-hidden="true" />
+        <span>
+          <strong>{buddy.data?.buddy?.display_name ?? t("socialDesign.findBuddy")}</strong>
+          <small>{t(buddy.data?.buddy ? "batch5.myBuddy" : "socialDesign.findBuddySub")}</small>
+        </span>
+        <ChevronRight size={20} className="rtl:-scale-x-100" aria-hidden="true" />
+      </Link>
+
+      <details className="app-disclosure profile-badges">
+        <summary>
+          {t("profile.badges")}
+          <Num>
+            {visibleBadges.filter((badge) => data?.badges.includes(badge)).length}/
+            {visibleBadges.length}
+          </Num>
+          <ChevronDown size={20} aria-hidden="true" />
+        </summary>
+        <div className="grid grid-cols-3 gap-2 p-3 pt-0">
+          {visibleBadges.map((badge) => {
+            const earned = data?.badges.includes(badge);
             return (
-              <span
-                key={d}
-                title={s?.finalized_at ? `${d} · ${t("integrity.final")}` : d}
-                data-final={!!s?.finalized_at}
-                data-state={state}
+              <StickerButton
+                key={badge}
+                variant="ghost"
                 className={cn(
-                  "season-square",
-                  state === "shield"
-                    ? "bg-blue"
-                    : state === "done"
-                      ? "bg-lime"
-                      : state === "today"
-                        ? "bg-card"
-                        : "bg-transparent",
+                  "badge-tile",
+                  earned ? `${COLORS[badge]} sticker-border` : "badge-locked shadow-none",
                 )}
-              />
+                aria-label={`${t(`socialDesign.${badge}`)} · ${t(earned ? "socialDesign.earned" : "socialDesign.locked")}`}
+                onClick={() => setSelectedBadge(badge)}
+              >
+                <BadgeIcon badge={badge} />
+                <span>{t(`socialDesign.${badge}`)}</span>
+              </StickerButton>
             );
           })}
         </div>
-      </Link>
-      <Link to="/lights-out" className="mt-3 block">
-        <StickerButton block variant="secondary">
-          {t("ux.closeMyDay")}
-        </StickerButton>
-      </Link>
-      <Link to="/challenges" search={{ season: "" }} className="mt-3 block">
-        <StickerButton block variant="secondary">
-          {t("challengeHistory.title")}
-        </StickerButton>
-      </Link>
-      <div className="mt-3 flex items-center justify-between">
-        <h2 className="text-[13px] font-extrabold">
-          {t("profile.badges").toLocaleUpperCase(i18n.language === "aeb" ? "ar" : i18n.language)}
-        </h2>
-        <Num className="text-[13px] font-bold">
-          {visibleBadges.filter((b) => data?.badges.includes(b)).length}/{visibleBadges.length}
-        </Num>
-      </div>
-      <div className="grid grid-cols-3 gap-3">
-        {visibleBadges.map((b) => {
-          const earned = data?.badges.includes(b);
-          return (
-            <StickerButton
-              key={b}
-              variant="ghost"
-              className={cn(
-                "badge-tile",
-                earned ? `${COLORS[b]} sticker-border shadow-hard` : "badge-locked shadow-none",
-              )}
-              aria-label={`${t(`socialDesign.${b}`)} · ${t(earned ? "socialDesign.earned" : "socialDesign.locked")}`}
-              onClick={() => setSelectedBadge(b)}
-            >
-              <BadgeIcon badge={b} />
-              <span>{t(`socialDesign.${b}`)}</span>
-            </StickerButton>
-          );
-        })}
-      </div>
-      <h2 className="mt-4 text-[13px] font-extrabold">{t("ux.more")}</h2>
-      <Link to="/create-challenge">
-        <StickerButton block variant="lime">
-          {t("batch6.create")}
-        </StickerButton>
-      </Link>
-      <Link to="/wrapped" search={{ season: season.id }}>
-        <StickerButton block variant="secondary">
-          {t("batch6.wrapped")}
-        </StickerButton>
-      </Link>
-      <Link to="/small-wins">
-        <StickerButton block variant="secondary">
-          {t("batch6.winTitle")}
-        </StickerButton>
-      </Link>
-      <div className="mt-3 grid grid-cols-2 gap-3">
-        <Link to="/lift">
-          <StickerButton block variant="secondary">
-            {t("design.lift")}
-          </StickerButton>
-        </Link>
-        <Link to="/boss">
-          <StickerButton block variant="secondary">
-            {t("design.boss")}
-          </StickerButton>
-        </Link>
-      </div>
-      <Link
-        to="/buddies"
-        className="mt-2 flex items-center gap-3 rounded-[20px] bg-card px-[18px] py-4 dashed-ink"
-      >
-        {buddy.data?.buddy && (
-          <Avatar
-            id={buddy.data.buddy.user_id}
-            name={buddy.data.buddy.display_name}
-            url={buddy.data.buddy.avatar_url}
-            size={40}
-          />
-        )}
-        <span className="min-w-0 flex-1">
-          <span className="block text-[18px] font-extrabold">
-            {buddy.data?.buddy?.display_name ?? t("socialDesign.noBuddy")}
-          </span>
-          <span className="block text-[14px] font-semibold">
-            {buddy.data?.buddy
-              ? t("socialDesign.streakStat", { n: buddy.data.buddy.streak })
-              : t("socialDesign.findBuddySub")}
-          </span>
-        </span>
-        <ChevronRight className="shrink-0 rtl:-scale-x-100" />
-      </Link>
-      {creatorPanel}
-      {profile.is_admin && (
-        <Link to="/admin">
-          <StickerButton block variant="secondary">
-            {t("admin.title")}
-          </StickerButton>
-        </Link>
-      )}
+      </details>
+      <details className="app-disclosure">
+        <summary>
+          {t("appRefresh.profileTools")}
+          <ChevronDown size={20} aria-hidden="true" />
+        </summary>
+        <div className="profile-tools">
+          <Link to="/lights-out">{t("ux.closeMyDay")}</Link>
+          <Link to="/challenges" search={{ season: "" }}>
+            {t("challengeHistory.title")}
+          </Link>
+          <Link to="/wrapped" search={{ season: season.id }}>
+            {t("batch6.wrapped")}
+          </Link>
+          <Link to="/create-challenge">{t("batch6.create")}</Link>
+          <Link to="/lift">{t("design.lift")}</Link>
+          <Link to="/boss">{t("design.boss")}</Link>
+          <AppTourButton />
+          {creatorPanel}
+          {profile.is_admin && <Link to="/admin">{t("admin.title")}</Link>}
+        </div>
+      </details>
       <BottomSheet
         open={!!selectedBadge}
         onClose={() => setSelectedBadge(null)}

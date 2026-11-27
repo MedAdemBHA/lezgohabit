@@ -1,11 +1,12 @@
-import { useRef } from "react";
+import { useEffect, useId, useRef } from "react";
+import { Check, ChevronRight, Plus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { UserHabit, HabitPoints } from "@/lib/data";
 import { habitColor } from "@/lib/today-rules";
 import { loc } from "@/lib/i18n";
 import { fmtPts, fmtVal, isSleepHabit, unitLabel } from "@/lib/habits";
 import { HabitIcon } from "../habit-icon";
-import { StickerButton, Num } from "../ui";
+import { Num } from "../ui";
 export function habitName(h: UserHabit, t: (key: string) => string, lang: string) {
   const key = h.template?.key;
   if (h.custom_name) return h.custom_name;
@@ -45,10 +46,13 @@ export function HabitTile({
   const { t, i18n } = useTranslation();
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const held = useRef(false);
+  const detailsId = useId();
   const done = completion >= 1;
   const color =
     habit.template?.color ?? habitColor(habit.template?.key ?? "", habit.template?.category ?? "");
   const key = habit.template?.key;
+  const opensDetail =
+    habit.kind === "count" || habit.kind === "quit" || habit.kind === "timer" || key === "detox";
   const ruleData = habit.rule as { window_start?: string; window_end?: string } | null;
   const rule =
     key === "train" ? (
@@ -94,14 +98,17 @@ export function HabitTile({
     if (timer.current) clearTimeout(timer.current);
     timer.current = null;
   }
+  useEffect(() => release, []);
   return (
-    <StickerButton
-      variant="secondary"
+    <button
+      type="button"
       data-habit-id={habit.id}
-      className={`today-habit ${done ? "is-done" : ""} ${pop ? "animate-pop" : ""}`}
+      className={`today-habit press ${done ? "is-done" : ""} ${pop ? "animate-pop" : ""}`}
       data-color={color}
-      aria-pressed={done}
+      aria-pressed={opensDetail ? undefined : done}
+      aria-haspopup={opensDetail && key !== "detox" ? "dialog" : undefined}
       aria-label={habitName(habit, t, i18n.language)}
+      aria-describedby={detailsId}
       disabled={disabled}
       onPointerDown={(e) => {
         if (e.button !== 0 || !hasSheet) return;
@@ -130,35 +137,29 @@ export function HabitTile({
         onTap();
       }}
     >
-      <span className="today-habit-top">
-        <span className="habit-icon-box">
-          <HabitIcon name={habit.template?.icon ?? null} className="size-9" />
-        </span>
-        <span className="habit-top-end">
-          <Num className="habit-points">+{fmtPts(points?.earned)}</Num>
-          <span className={`habit-check ${done ? "is-checked" : ""}`}>
-            {done && (
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="var(--lime)"
-                strokeWidth="3.4"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden
-              >
-                <path d="M5 12l5 5 9-10" />
-              </svg>
-            )}
-          </span>
-        </span>
+      <span className="habit-icon-box">
+        <HabitIcon name={habit.template?.icon ?? null} className="size-7" />
       </span>
       <span className="today-habit-bottom">
         <span className="habit-name">{habitName(habit, t, i18n.language)}</span>
-        <span className="habit-rule">{rule}</span>
+        <span className="habit-rule" id={detailsId}>
+          {rule}
+        </span>
       </span>
-    </StickerButton>
+      <span className="habit-top-end">
+        {fmtPts(points?.earned) !== "0" && (
+          <Num className="habit-points">+{fmtPts(points?.earned)}</Num>
+        )}
+        <span className={`habit-check ${done ? "is-checked" : ""}`} aria-hidden="true">
+          {done ? (
+            <Check size={17} strokeWidth={3} />
+          ) : opensDetail ? (
+            <ChevronRight size={18} className="rtl:-scale-x-100" />
+          ) : (
+            <Plus size={19} />
+          )}
+        </span>
+      </span>
+    </button>
   );
 }

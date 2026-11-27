@@ -13,8 +13,23 @@ export const liftQuery = (uid:string) => queryOptions({queryKey:['lift',uid],que
   return {exercises:exercises.data,sets:sets.data};
 }});
 export const matchesQuery=(uid:string,sid:string,filters:boolean[]=[false,false,false,false])=>queryOptions({queryKey:['buddies',uid,sid,...filters],queryFn:async()=>{
-  const {data,error}=await supabase.rpc('buddy_matches',{_season_id:sid,_language:filters[0]??false,_timezone:filters[1]??false,_goals:filters[2]??false,_gender:filters[3]??false});if(error)throw error;return data as unknown as Matches;
+  const {data,error}=await supabase.rpc('buddy_matches',{_season_id:sid,_language:filters[0]??false,_timezone:filters[1]??false,_goals:filters[2]??false,_gender:filters[3]??false});
+  if(error)throw error;
+  const matches = data as unknown as Matches | null;
+  if (typeof matches?.eligible !== 'boolean' || !Array.isArray(matches.results) || !Array.isArray(matches.incoming)) throw Error('invalid_buddy_matches');
+  return matches;
 }});
+export const outgoingBuddyCountQuery = (uid: string) => queryOptions({
+  queryKey: ['buddies', uid, 'outgoing'],
+  queryFn: async () => {
+    const { count, error } = await supabase.from('buddy_requests')
+      .select('id', { count: 'exact', head: true })
+      .eq('from_user', uid)
+      .eq('status', 'pending');
+    if (error || count === null) throw error ?? Error('missing_buddy_request_count');
+    return count;
+  },
+});
 export const detoxQuery=(uid:string)=>queryOptions({queryKey:['detox',uid],queryFn:async()=>{
   const {data,error}=await supabase.rpc('detox_overview');if(error)throw error;
   return data as unknown as DetoxOverview;

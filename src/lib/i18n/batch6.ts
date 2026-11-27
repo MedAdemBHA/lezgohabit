@@ -113,6 +113,7 @@ export const batch6en = {
   dessert: "Said no to dessert",
   stepsWin: "8k steps",
   tinyFlex: "TODAY’S TINY FLEX",
+  pickWins: "Pick a win above to fill your card.",
   day: "LEZGO · DAY {{n}}",
   newCaption: "New caption",
   shareCard: "Share card",
@@ -122,12 +123,23 @@ export const batch6en = {
   privacy: "Private faith wins stay off your share card.",
   posted: "Your win is in the feed.",
   captions: [
-    "Sugar who?",
     "Small win. Loud energy.",
     "I showed up. Again.",
     "Main character, tiny chapter.",
     "No perfect. Just present.",
+    "Tiny steps, real streak.",
   ],
+  winCaptions: {
+    water: ["Hydrated and dangerous.", "2 litres down. Glowing up."],
+    stairs: ["Elevator? Never heard of her.", "Leg day, accidentally."],
+    coffee: ["Bitter coffee, sweeter discipline.", "Sugar who?"],
+    fajr: ["Up before the sun.", "Fajr first, everything else after."],
+    read: ["10 pages closer to a better me.", "Plot twist: I read today."],
+    dinner: ["Phone down, people up.", "Dinner with zero notifications."],
+    steps: ["8k steps and still walking.", "My shoes worked overtime."],
+    sleep: ["Early night, main-character morning.", "In bed by 23:00. Elite behaviour."],
+    dessert: ["Sugar who?", "Dessert asked. I said no."],
+  },
   wrapped: "LEZGO WRAPPED",
   finished: "I FINISHED {{year}}",
   strong: "STRONG.",
@@ -149,7 +161,11 @@ export const batch6en = {
   resetSaved: "Manual hits reset. Logged habits and lifts still count.",
 };
 type Copy = {
-  [K in keyof typeof batch6en]: (typeof batch6en)[K] extends string[] ? string[] : string;
+  [K in keyof typeof batch6en]: (typeof batch6en)[K] extends string[]
+    ? string[]
+    : (typeof batch6en)[K] extends string
+      ? string
+      : { [W in keyof (typeof batch6en)[K]]: string[] };
 };
 export const batch6fr: Copy = {
   lessonSeconds: "Durée de la leçon · secondes",
@@ -262,10 +278,11 @@ export const batch6fr: Copy = {
   fajr: "Fajr à l’heure",
   read: "Lu 10 pages",
   dinner: "Dîner sans téléphone",
-  sleep: "Au lit avant 23 h",
+  sleep: "Au lit avant 23\u00a0h",
   dessert: "Dit non au dessert",
   stepsWin: "8 000 pas",
   tinyFlex: "MA PETITE FIERTÉ DU JOUR",
+  pickWins: "Choisis une victoire au-dessus pour remplir ta carte.",
   day: "LEZGO · JOUR {{n}}",
   newCaption: "Nouvelle légende",
   shareCard: "Partager la carte",
@@ -275,12 +292,26 @@ export const batch6fr: Copy = {
   privacy: "Tes victoires de foi privées restent hors de ta carte partagée.",
   posted: "Ta victoire est dans le fil.",
   captions: [
-    "Le sucre ? Connais pas.",
     "Petite victoire. Grosse énergie.",
     "J’étais là. Encore.",
     "Personnage principal, petit chapitre.",
     "Pas parfait. Juste présent.",
+    "Petits pas, vraie série.",
   ],
+  winCaptions: {
+    water: ["Hydratation : validée.", "2 litres plus tard, je brille."],
+    stairs: ["L’ascenseur ? Connais pas.", "Leg day, sans le faire exprès."],
+    coffee: ["Café sans sucre, mental en béton.", "Le sucre ? Connais pas."],
+    fajr: ["Debout avant le soleil.", "Le Fajr d’abord, le reste après."],
+    read: [
+      "10 pages de plus, une meilleure version de moi.",
+      "Rebondissement : j’ai lu aujourd’hui.",
+    ],
+    dinner: ["Téléphone posé, vrais regards.", "Un dîner sans aucune notif."],
+    steps: ["8 000 pas et ça continue.", "Mes baskets ont fait des heures sup."],
+    sleep: ["Nuit tôt, matin en mode héros.", "Au lit avant 23\u00a0h. Niveau élite."],
+    dessert: ["Le sucre ? Connais pas.", "Le dessert a demandé. J’ai dit non."],
+  },
   wrapped: "LEZGO WRAPPED",
   finished: "J’AI TERMINÉ {{year}}",
   strong: "EN FORCE.",
@@ -299,7 +330,8 @@ export const batch6fr: Copy = {
   exportError: "Impossible d’exporter la carte. Réessaie.",
   challengeError: "Impossible de créer ce défi. Vérifie tes choix.",
   closedBoss: "Ce Boss est terminé.",
-  resetSaved: "Frappes manuelles réinitialisées. Les habitudes et séances enregistrées comptent toujours.",
+  resetSaved:
+    "Frappes manuelles réinitialisées. Les habitudes et séances enregistrées comptent toujours.",
 };
 export const batch6ar: Copy = {
   lessonSeconds: "مدة الدرس · ثوانٍ",
@@ -416,6 +448,7 @@ export const batch6ar: Copy = {
   dessert: "رفضت الحلوى",
   stepsWin: "8 آلاف خطوة",
   tinyFlex: "إنجازي الصغير اليوم",
+  pickWins: "اختر إنجازًا من الأعلى لملء بطاقتك.",
   day: "LEZGO · اليوم {{n}}",
   newCaption: "عبارة جديدة",
   shareCard: "شارك البطاقة",
@@ -425,12 +458,23 @@ export const batch6ar: Copy = {
   privacy: "انتصارات الإيمان الخاصة لا تظهر في بطاقة المشاركة.",
   posted: "نُشر انتصارك في المنشورات.",
   captions: [
-    "السكر؟ لا أعرفه.",
     "انتصار صغير، طاقة كبيرة.",
     "حضرت. مرة أخرى.",
     "البطل، في فصل صغير.",
     "لست مثاليًا. لكنني حاضر.",
+    "خطوات صغيرة، سلسلة حقيقية.",
   ],
+  winCaptions: {
+    water: ["ماء كافٍ، طاقة كاملة.", "لتران من الماء، وأنا أتألق."],
+    stairs: ["المصعد؟ لا أعرفه.", "يوم أرجل بدون تخطيط."],
+    coffee: ["قهوة مُرّة، وإرادة أقوى.", "السكر؟ لا أعرفه."],
+    fajr: ["استيقظت قبل الشمس.", "الفجر أولًا، وكل شيء بعده."],
+    read: ["عشر صفحات أقرب إلى نسخة أفضل مني.", "مفاجأة: قرأت اليوم."],
+    dinner: ["الهاتف جانبًا، والعائلة أولًا.", "عشاء بلا أي إشعار."],
+    steps: ["8 آلاف خطوة وما زلت أمشي.", "حذائي عمل ساعات إضافية."],
+    sleep: ["نوم مبكر، صباح بطل.", "في السرير قبل 23:00. مستوى النخبة."],
+    dessert: ["السكر؟ لا أعرفه.", "الحلوى طلبت، وأنا رفضت."],
+  },
   wrapped: "LEZGO WRAPPED",
   finished: "أنهيت {{year}}",
   strong: "بقوة.",
@@ -566,6 +610,7 @@ export const batch6aeb: Copy = {
   dessert: "قلت لا للحلو",
   stepsWin: "8 آلاف خطوة",
   tinyFlex: "ربحتي الصغيّرة اليوم",
+  pickWins: "اختار ربحة من الفوق باش تعمّر الكارت متاعك.",
   day: "LEZGO · نهار {{n}}",
   newCaption: "جملة أخرى",
   shareCard: "شارك الكارت",
@@ -575,12 +620,23 @@ export const batch6aeb: Copy = {
   privacy: "ربحات الإيمان الخاصّة ما يبانوش في الكارت اللي تشاركها.",
   posted: "ربحتك هبطت في الفيد.",
   captions: [
-    "السكّر؟ شكون هو؟",
     "ربحة صغيّرة. طاقة كبيرة.",
     "جيت. مرّة أخرى.",
     "بطل الحكاية، فصل صغيّر.",
     "موش كامل. أما موجود.",
+    "خطوات صغار، سلسلة بالحق.",
   ],
+  winCaptions: {
+    water: ["شربت الماء، نوّرت.", "2 لتر ماء وأنا نلمع."],
+    stairs: ["الأسانسور؟ شكون هو؟", "نهار رجلين بلا ما نقصد."],
+    coffee: ["قهوة مرّة، أما أنا أقوى.", "السكّر؟ شكون هو؟"],
+    fajr: ["قمت قبل الشمس.", "الفجر الأوّل، والباقي من بعد."],
+    read: ["10 صفحات وأنا خير.", "مفاجأة: قريت اليوم."],
+    dinner: ["التليفون على جنب، والعايلة قدّامي.", "عشاء بلا حتى نوتيف."],
+    steps: ["8 آلاف خطوة ومازلت نمشي.", "الصبابط متاعي خدمو سوايع زايدة."],
+    sleep: ["رقدت بكري، صباح بطل.", "رقدت قبل 23:00. مستوى عالي."],
+    dessert: ["السكّر؟ شكون هو؟", "الحلو طلب، وأنا قلتلّو لا."],
+  },
   wrapped: "LEZGO WRAPPED",
   finished: "كمّلت {{year}}",
   strong: "بالقوّة.",

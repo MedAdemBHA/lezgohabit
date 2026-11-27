@@ -21,6 +21,7 @@ export const ar: Dict = {
     "currentRun": "آخر 7 أيام لك",
     "yourCrew": "فريقك",
     "countryRank": "#{{rank}} في {{country}}",
+    "rankLabel": "ترتيبك في {{country}}",
     "seasonPoints": "{{n}} نقطة هذا الموسم",
     "sync": "تزامن الفريق اليوم",
     "syncMore": "بقي {{n}} تسجيلات ويحصل الجميع على +10.",

@@ -9,13 +9,12 @@ import {
 } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Plus, Users } from "lucide-react";
+import { ChevronDown, MessageSquare, Plus, Users } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/lezgo/app-shell";
 import { ChallengeEventCard } from "@/components/lezgo/community/challenge-event-card";
 import { Compose } from "@/components/lezgo/community/compose";
 import { PostCard } from "@/components/lezgo/community/post-card";
-import { FitHeading } from "@/components/lezgo/fit-heading";
 import { Avatar, StickerButton } from "@/components/lezgo/ui";
 import { CommunitySwitch } from "@/components/lezgo/community/community-switch";
 import { useBase } from "@/lib/data";
@@ -112,8 +111,7 @@ function Community() {
     );
   if (!season) {
     return (
-      <AppShell todayLayout>
-        <FitHeading className="feed-title" requestedSize={42} text={t("challengePulse.title")} />
+      <AppShell title={t("nav.pulse")}>
         {lastCompleted ? (
           <>
             <p className="font-semibold">
@@ -140,82 +138,91 @@ function Community() {
     );
   }
 
+  const checkedIn = pulse.data?.checked_in ?? 0;
+  const participants = pulse.data?.participants ?? 0;
+  const checkInProgress = t("challengePulse.checkedIn", { done: checkedIn, total: participants });
   return (
-    <AppShell todayLayout>
-      <header className="space-y-3">
-        <CommunitySwitch active="challenge" />
-        <FitHeading className="feed-title" requestedSize={42} text={challengeName} />
-      </header>
+    <AppShell title={t("nav.pulse")}>
+      <CommunitySwitch active="challenge" />
 
-      <section
-        className="rounded-[20px] bg-yellow p-4 sticker-border shadow-hard-lg"
-        aria-label={t("challengePulse.title")}
-      >
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <p className="text-[12px] font-extrabold uppercase tracking-wide">
-              {t("challengePulse.today")}
-            </p>
-            <p className="text-[16px] font-extrabold">
-              {t("challengePulse.checkedIn", {
-                done: pulse.data?.checked_in ?? 0,
-                total: pulse.data?.participants ?? 0,
-              })}
-            </p>
+      <section className="app-surface feed-pulse" aria-label={t("appRefresh.challengeActivity")}>
+        <div className="feed-pulse-heading">
+          <Users size={24} className="feed-pulse-icon" aria-hidden="true" />
+          <div className="min-w-0">
+            <h2>{challengeName}</h2>
+            {pulse.data && <p>{checkInProgress}</p>}
           </div>
-          <Users size={26} aria-hidden />
         </div>
-        <progress
-          className="mt-3 block h-3 w-full accent-ink"
-          value={pulse.data?.checked_in ?? 0}
-          max={Math.max(1, pulse.data?.participants ?? 0)}
-        />
-        <div className="mt-3 flex flex-wrap gap-2">
-          {(pulse.data?.crew ?? []).map((member) =>
-            member.checked_in || member.id === uid ? (
-              <span
-                key={member.id}
-                className="flex min-h-11 items-center gap-2 rounded-full bg-card px-2 py-1 sticker-border"
-                title={member.name}
-              >
-                <Avatar id={member.id} name={member.name} url={member.avatar_url} size={32} />
-                <span className="max-w-24 truncate text-[12px] font-bold">{member.name}</span>
-              </span>
-            ) : (
-              <button
-                key={member.id}
-                type="button"
-                className="flex min-h-11 items-center gap-2 rounded-full bg-card px-2 py-1 text-start sticker-border press"
-                disabled={!!nudging}
-                aria-label={t("challengePulse.nudge", { name: member.name })}
-                onClick={() => void nudge(member.id, member.name)}
-              >
-                <Avatar id={member.id} name={member.name} url={member.avatar_url} size={32} />
-                <span className="max-w-24 truncate text-[12px] font-bold">{member.name}</span>
-              </button>
-            ),
-          )}
-          {pulse.data && !pulse.data.crew.length && (
-            <Link to="/crew">
-              <StickerButton size="sm" variant="secondary">
-                {t("challengePulse.findCrew")}
-              </StickerButton>
-            </Link>
-          )}
-        </div>
+        {pulse.data && (
+          <div
+            className="pulse-meter"
+            role="progressbar"
+            aria-label={checkInProgress}
+            aria-valuenow={checkedIn}
+            aria-valuemin={0}
+            aria-valuemax={Math.max(1, participants)}
+          >
+            <span
+              style={{
+                width: `${Math.min(100, (checkedIn / Math.max(1, participants)) * 100)}%`,
+              }}
+            />
+          </div>
+        )}
+        {pulse.data && (
+          <details className="feed-crew-details">
+            <summary>
+              {t("ux.pulseCrew")}
+              <ChevronDown size={18} aria-hidden="true" />
+            </summary>
+            <div className="flex flex-wrap gap-2 pb-2">
+              {(pulse.data?.crew ?? []).map((member) =>
+                member.checked_in || member.id === uid ? (
+                  <span
+                    key={member.id}
+                    className="flex min-h-11 items-center gap-2 rounded-full bg-card px-2 py-1 sticker-border"
+                    title={member.name}
+                  >
+                    <Avatar id={member.id} name={member.name} url={member.avatar_url} size={32} />
+                    <span className="max-w-24 truncate text-[12px] font-bold">{member.name}</span>
+                  </span>
+                ) : (
+                  <button
+                    key={member.id}
+                    type="button"
+                    className="flex min-h-11 items-center gap-2 rounded-full bg-card px-2 py-1 text-start sticker-border press"
+                    disabled={!!nudging}
+                    aria-label={t("challengePulse.nudge", { name: member.name })}
+                    onClick={() => void nudge(member.id, member.name)}
+                  >
+                    <Avatar id={member.id} name={member.name} url={member.avatar_url} size={32} />
+                    <span className="max-w-24 truncate text-[12px] font-bold">{member.name}</span>
+                  </button>
+                ),
+              )}
+              {pulse.data && !pulse.data.crew.length && (
+                <Link to="/crew">
+                  <StickerButton size="sm" variant="secondary">
+                    {t("challengePulse.findCrew")}
+                  </StickerButton>
+                </Link>
+              )}
+            </div>
+          </details>
+        )}
       </section>
 
       {/* The feed comes first: posts, then the automatic check-in moments. */}
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-[18px] font-extrabold">{t("challengePulse.challengePosts")}</h2>
+        <h2 className="app-section-title">{t("challengePulse.challengePosts")}</h2>
         <StickerButton
           variant="lime"
           size="sm"
-          aria-label={t("batch4.newPost")}
+          className="feed-compose-action"
           onClick={() => setCompose(true)}
         >
-          <Plus size={20} />
-          {t("challengePulse.shareProof")}
+          <Plus size={18} aria-hidden="true" />
+          {t("batch4.newPost")}
         </StickerButton>
       </div>
       {rows.map((post) => (
@@ -230,9 +237,16 @@ function Community() {
           moderation={modAccess.data ? modScope : undefined}
         />
       ))}
-      {!rows.length && (
-        <div className="rounded-[18px] bg-card p-4 text-center text-[14px] font-semibold sticker-border">
-          {t("challengePulse.emptyPosts")}
+      {posts.isPending && <StickerLoading />}
+      {posts.isError && (
+        <StickerButton variant="secondary" onClick={() => void posts.refetch()}>
+          {t("common.retry")}
+        </StickerButton>
+      )}
+      {posts.isSuccess && !rows.length && (
+        <div className="app-surface feed-empty">
+          <MessageSquare size={24} aria-hidden="true" />
+          <p>{t("appRefresh.noFeedPosts")}</p>
         </div>
       )}
       {posts.hasNextPage && (
@@ -245,15 +259,12 @@ function Community() {
           {t(posts.isFetchingNextPage ? "common.loading" : "batch4.loadMore")}
         </StickerButton>
       )}
-      <h2 className="mt-2 text-[18px] font-extrabold">{t("challengePulse.moments")}</h2>
+      {momentRows.length > 0 && (
+        <h2 className="app-section-title mt-2">{t("challengePulse.moments")}</h2>
+      )}
       {momentRows.map((event) => (
         <ChallengeEventCard key={event.id} event={event} challengeName={challengeName} />
       ))}
-      {!momentRows.length && (
-        <p className="rounded-[18px] bg-card p-3 text-[14px] font-semibold sticker-border">
-          {t("challengePulse.emptyMoments")}
-        </p>
-      )}
 
       <Compose open={compose} onClose={() => setCompose(false)} initialAudience="everyone" />
     </AppShell>

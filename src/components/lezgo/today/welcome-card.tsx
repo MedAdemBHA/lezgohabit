@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import type { ChallengePlan } from "@/lib/challenge-plan";
 import { numberLocale } from "@/lib/i18n";
+import { AppTourButton } from "../app-tour";
 
 /** First-day card: what's left, what a good day is, and whether the trophy is still possible. */
 export function WelcomeCard({
@@ -34,6 +35,7 @@ export function WelcomeCard({
           need: fmt.format(plan.need),
         })}
       </p>
+      <AppTourButton className="self-start" />
     </section>
   );
 }

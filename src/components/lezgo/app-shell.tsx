@@ -1,6 +1,7 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { useEffect, useRef, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
+import { ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { applyLang } from "@/lib/i18n";
 import { useBase } from "@/lib/data";
@@ -9,21 +10,27 @@ import { Avatar } from "./ui";
 import { TabIcon } from "@/components/icons/tab-icons";
 import { AppStatus } from "./app-status";
 import { OfflineStatus } from "./launch/offline-status";
-import { daysBetween } from "@/lib/time";
 import { BadgeSignals } from "./signature/moments";
 import { GuestChrome } from "./guest";
+import { FitHeading } from "./fit-heading";
 
 export function AppShell({
   children,
   hideTabs,
   todayLayout = false,
+  title,
+  actions,
+  back,
 }: {
   children: ReactNode;
   hideTabs?: boolean;
   todayLayout?: boolean;
+  title?: string;
+  actions?: ReactNode;
+  back?: "/today" | "/profile";
 }) {
   const { t, i18n } = useTranslation();
-  const { profile, season } = useBase();
+  const { profile } = useBase();
   const loc = useLocation();
   const applied = useRef(false);
   useEffect(() => {
@@ -43,30 +50,10 @@ export function AppShell({
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-[440px] flex-col bg-background">
       <GuestChrome active={!!profile?.is_demo} />
-      <AppStatus profile={profile} hideBell={loc.pathname === "/today"} />
-      {profile && (
-        <OfflineStatus
-          uid={profile.id}
-          day={
-            season
-              ? Math.max(
-                  1,
-                  daysBetween(
-                    season.starts_on,
-                    new Intl.DateTimeFormat("en-CA", {
-                      timeZone: profile.timezone,
-                      year: "numeric",
-                      month: "2-digit",
-                      day: "2-digit",
-                    }).format(new Date()),
-                  ) + 1,
-                )
-              : 1
-          }
-        />
-      )}
+      {!title && <AppStatus profile={profile} hideBell={loc.pathname === "/today"} />}
+      {profile && <OfflineStatus uid={profile.id} />}
       <BadgeSignals />
-      {!todayLayout && (
+      {!todayLayout && !title && (
         <header className="sticky top-0 z-30 flex items-center justify-between bg-background/95 px-4 py-3 backdrop-blur">
           <Link to="/today" aria-label="lezgo">
             <LezgoMark size={40} />
@@ -91,10 +78,24 @@ export function AppShell({
       )}
       <main
         className={cn(
-          todayLayout ? "today-content" : "flex-1 px-4",
-          !todayLayout && (hideTabs ? "pb-8" : "pb-28"),
+          todayLayout || title ? "today-content" : "flex-1 px-4",
+          !todayLayout && !title && (hideTabs ? "pb-8" : "pb-28"),
         )}
       >
+        {title && (
+          <header className="app-page-header">
+            {back && (
+              <Link to={back} className="app-icon-button" aria-label={t("common.back")}>
+                <ArrowLeft size={20} className="rtl:-scale-x-100" aria-hidden="true" />
+              </Link>
+            )}
+            <FitHeading text={title} className="app-page-title" requestedSize={36} />
+            <div className="app-page-actions">
+              {actions}
+              <AppStatus profile={profile} />
+            </div>
+          </header>
+        )}
         {children}
       </main>
       {!hideTabs && (

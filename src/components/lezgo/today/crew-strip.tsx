@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { ArrowRight, Check, Hand } from "lucide-react";
 import { toast } from "sonner";
-import { Avatar, StickerButton } from "@/components/lezgo/ui";
+import { Avatar } from "@/components/lezgo/ui";
 import { supabase } from "@/integrations/supabase/client";
 import { challengePulseQuery } from "@/lib/feed-data";
 
@@ -28,14 +28,12 @@ export function TodayCrewStrip({ uid, seasonId }: { uid: string; seasonId: strin
     return (
       <section className="today-crew-strip">
         <span>
-          <strong>{t("todayDesign.crew")}</strong>
+          <strong>{t("ux.pulseCrew")}</strong>
           <small>{t("challengePulse.noCrew")}</small>
         </span>
-        <Link to="/crew">
-          <StickerButton size="sm" variant="secondary">
-            {t("challengePulse.findCrew")}
-            <ArrowRight size={16} className="rtl:-scale-x-100" />
-          </StickerButton>
+        <Link to="/crew" className="today-crew-cta">
+          {t("challengePulse.findCrew")}
+          <ArrowRight size={16} className="rtl:-scale-x-100" aria-hidden="true" />
         </Link>
       </section>
     );
@@ -50,11 +48,9 @@ export function TodayCrewStrip({ uid, seasonId }: { uid: string; seasonId: strin
             <small>{t("ux.aloneHint")}</small>
           </span>
         </span>
-        <Link to="/crew">
-          <StickerButton size="sm" variant="secondary">
-            {t("crew.invite")}
-            <ArrowRight size={16} className="rtl:-scale-x-100" />
-          </StickerButton>
+        <Link to="/crew" className="today-crew-cta">
+          {t("crew.invite")}
+          <ArrowRight size={16} className="rtl:-scale-x-100" aria-hidden="true" />
         </Link>
       </section>
     );
@@ -63,7 +59,7 @@ export function TodayCrewStrip({ uid, seasonId }: { uid: string; seasonId: strin
     <section className="today-crew-strip">
       <Link to="/crew-details" className="today-crew-title">
         <span>
-          <strong>{t("todayDesign.crew")}</strong>
+          <strong>{t("ux.pulseCrew")}</strong>
           <small>{t("challengePulse.checkedIn", { done: checked, total: crew.length })}</small>
         </span>
         <ArrowRight size={16} className="rtl:-scale-x-100" />
@@ -91,11 +87,6 @@ export function TodayCrewStrip({ uid, seasonId }: { uid: string; seasonId: strin
           ),
         )}
       </div>
-      <Link to="/community">
-        <StickerButton size="sm" variant="ghost" aria-label={t("design.community")}>
-          <ArrowRight size={18} className="rtl:-scale-x-100" />
-        </StickerButton>
-      </Link>
     </section>
   );
 }

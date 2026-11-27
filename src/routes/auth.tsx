@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ExploreAsGuest } from "@/components/lezgo/guest";
+import { AppTourButton } from "@/components/lezgo/app-tour";
 import { DEFAULT_SHARE_DESCRIPTION, DEFAULT_SHARE_TITLE, pageHead } from "@/lib/page-head";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -347,31 +348,14 @@ function AuthPage() {
         </div>
       )}
       {!user && !toAdmin && (
-        <section className="login-welcome" aria-label={t("landing.how")}>
-          <img
-            src="/images/lezgo-track.webp"
-            alt=""
-            width={1122}
-            height={1402}
-            className="login-photo"
-            decoding="async"
-          />
-          <ol className="login-steps">
-            {([1, 2, 3] as const).map((n) => (
-              <li key={n}>
-                <span
-                  className={`login-step-num num ${["bg-lime", "bg-yellow", "bg-blue"][n - 1]}`}
-                >
-                  {n}
-                </span>
-                <span>
-                  <strong>{t(`landing.step${n}`)}</strong>
-                  <small>{t(`landing.step${n}Detail`)}</small>
-                </span>
-              </li>
-            ))}
-          </ol>
-        </section>
+        <img
+          src="/images/lezgo-track.webp"
+          alt=""
+          width={1122}
+          height={1402}
+          className="login-photo"
+          decoding="async"
+        />
       )}
       {(countries.data ?? 0) >= 2 && (
         <div className="flex items-center gap-3">
@@ -429,6 +413,7 @@ function AuthPage() {
               {t("auth.playerSignIn")}
             </Link>
           )}
+          {!toAdmin && <AppTourButton preview />}
           {!next && demo.data && <ExploreAsGuest />}
           <div className="flex justify-center gap-4">
             {(["terms", "privacy"] as const).map((document) => (

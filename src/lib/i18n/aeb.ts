@@ -21,6 +21,7 @@ export const aeb: Dict = {
     "currentRun": "آخر 7 أيام متاعك",
     "yourCrew": "الكرو متاعك",
     "countryRank": "#{{rank}} في {{country}}",
+    "rankLabel": "ترتيبك في {{country}}",
     "seasonPoints": "{{n}} نقطة في الموسم هذا",
     "sync": "تزامن الكرو اليوم",
     "syncMore": "مازال {{n}} تسجيلات والكل ياخذ +10.",

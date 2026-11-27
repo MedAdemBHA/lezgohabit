@@ -13,6 +13,7 @@ import confetti from "canvas-confetti";
 import {
   AlertTriangle,
   ArrowRight,
+  Compass,
   Minus,
   Plus,
   Share2,
@@ -22,7 +23,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/lezgo/app-shell";
-import { GlobeIcon, TodayFlame } from "@/components/icons/tab-icons";
+import { TodayFlame } from "@/components/icons/tab-icons";
 import { BottomSheet, Avatar, Field, Num, StickerButton, inputCls } from "@/components/lezgo/ui";
 import { LangGrid } from "@/components/lezgo/lang-switcher";
 import { HabitTile, habitName } from "@/components/lezgo/today/habit-tile";
@@ -58,7 +59,6 @@ import {
 } from "@/lib/habits";
 import { canSpin, habitColor, DAILY_DARE_COUNT, streakAtRisk } from "@/lib/today-rules";
 import { daysBetween, localHour, useNow } from "@/lib/time";
-import { FitHeading } from "@/components/lezgo/fit-heading";
 import { TodayMoments } from "@/components/lezgo/signature/moments";
 import { ChallengeSurrenderSheet } from "@/components/lezgo/challenge-surrender-sheet";
 import { SurrenderRecapCard } from "@/components/lezgo/surrender-recap-card";
@@ -536,24 +536,20 @@ function Today() {
     );
   if (!season)
     return (
-      <AppShell todayLayout>
-        <FitHeading
-          requestedSize={40}
-          className="page-title"
-          text={t("challengeHistory.noActive")}
-        />
-        <AppStatus profile={profile} compact />
-        <p className="font-semibold">{t("challengeHistory.noActiveBody")}</p>
-        <SurrenderRecapCard />
-        <Link to="/start">
-          <StickerButton block variant="lime">
+      <AppShell title={t("nav.today")}>
+        <section className="app-surface today-start-card">
+          <Compass size={29} aria-hidden="true" />
+          <h2 className="app-section-title">{t("challengeHistory.noActive")}</h2>
+          <p>{t("challengeHistory.noActiveBody")}</p>
+          <Link to="/start" className="app-row-link today-start-link">
             {t("challengeHistory.pickNext")}
-          </StickerButton>
-        </Link>
-        <Link to="/challenges" search={{ season: "" }}>
-          <StickerButton block variant="secondary">
-            {t("challengeHistory.openHistory")}
-          </StickerButton>
+            <ArrowRight size={18} className="rtl:-scale-x-100" aria-hidden="true" />
+          </Link>
+        </section>
+        <SurrenderRecapCard />
+        <Link to="/challenges" search={{ season: "" }} className="app-row-link">
+          {t("challengeHistory.openHistory")}
+          <ArrowRight size={18} className="rtl:-scale-x-100" aria-hidden="true" />
         </Link>
       </AppShell>
     );
@@ -571,14 +567,6 @@ function Today() {
           >
             <MoreHorizontal />
           </StickerButton>
-          <StickerButton
-            variant="secondary"
-            className="today-settings"
-            aria-label={t("todayDesign.settings")}
-            onClick={() => setSettingsOpen(true)}
-          >
-            <GlobeIcon />
-          </StickerButton>
         </div>
       </header>
       {!!now && localHour(tz, now) < 3 && (
@@ -586,14 +574,6 @@ function Today() {
           <Lock size={14} aria-hidden />
           {t("integrity.locksAt")}
         </p>
-      )}
-      {showNew("welcome", 1) && playDay === 1 && season && (
-        <WelcomeCard
-          name={loc(season.name, i18n.language)}
-          plan={planFor(season.starts_on, season.ends_on, today, list.length)}
-          habits={list.length}
-          onDismiss={() => dismissNew("welcome")}
-        />
       )}
       <TodayScoreCard
         score={score}
@@ -608,152 +588,177 @@ function Today() {
         </StickerButton>
       )}
       {list.length ? (
-        <div className="today-habit-grid">
-          {list
-            .filter((habit) => habit.kind !== "salat")
-            .map((h) => (
-              <HabitTile
-                key={h.id}
-                habit={h}
-                value={Number(byHabit.get(h.id)?.value ?? 0)}
-                completion={completion(h, byHabit.get(h.id))}
-                points={points.get(h.id)}
-                pop={popId === h.id}
-                onTap={() => tap(h)}
-                onStepper={() => setStepper(h)}
+        <section className="today-checklist" aria-labelledby="today-habits-heading">
+          <h2 id="today-habits-heading" className="app-section-title">
+            {t("appRefresh.yourHabits")}
+          </h2>
+          {list.some((habit) => habit.kind !== "salat") && (
+            <div className="today-habit-grid">
+              {list
+                .filter((habit) => habit.kind !== "salat")
+                .map((h) => (
+                  <HabitTile
+                    key={h.id}
+                    habit={h}
+                    value={Number(byHabit.get(h.id)?.value ?? 0)}
+                    completion={completion(h, byHabit.get(h.id))}
+                    points={points.get(h.id)}
+                    pop={popId === h.id}
+                    onTap={() => tap(h)}
+                    onStepper={() => setStepper(h)}
+                    disabled={disabled}
+                  />
+                ))}
+            </div>
+          )}
+          {salat && (
+            <div id="salat-today">
+              <SalatCard
+                uid={uid}
+                day={today}
+                city={profile.city}
+                country={profile.country_code}
+                points={points.get(salat.id)}
+                prayers={
+                  (
+                    byHabit.get(salat.id)?.detail as {
+                      prayers?: Record<string, PrayerState>;
+                    } | null
+                  )?.prayers ?? {}
+                }
+                onCity={() => {
+                  setCity(profile.city ?? "");
+                  setCityOpen(true);
+                }}
                 disabled={disabled}
+                markedAt={
+                  (byHabit.get(salat.id)?.detail as { marked_at?: Record<string, string> } | null)
+                    ?.marked_at ?? {}
+                }
+                onMark={(prayer) => markPrayer(salat, prayer)}
               />
-            ))}
-        </div>
+            </div>
+          )}
+        </section>
       ) : (
         <div className="today-banner bg-card">
           <p>{t("today.noHabits")}</p>
         </div>
       )}
-      {salat && (
-        <div id="salat-today">
-          <SalatCard
-            uid={uid}
-            day={today}
-            city={profile.city}
-            country={profile.country_code}
-            points={points.get(salat.id)}
-            prayers={
-              (byHabit.get(salat.id)?.detail as { prayers?: Record<string, PrayerState> } | null)
-                ?.prayers ?? {}
-            }
-            onCity={() => {
-              setCity(profile.city ?? "");
-              setCityOpen(true);
-            }}
-            disabled={disabled}
-            markedAt={
-              (byHabit.get(salat.id)?.detail as { marked_at?: Record<string, string> } | null)
-                ?.marked_at ?? {}
-            }
-            onMark={(prayer) => markPrayer(salat, prayer)}
-          />
-        </div>
+      {showNew("welcome", 1) && playDay === 1 && (
+        <WelcomeCard
+          name={loc(season.name, i18n.language)}
+          plan={planFor(season.starts_on, season.ends_on, today, list.length)}
+          habits={list.length}
+          onDismiss={() => dismissNew("welcome")}
+        />
       )}
-      {playDay >= 3 && (
+      {(playDay >= 3 ||
+        showNew("streak", 2) ||
+        (showNew("ghost", 2) && summary.data?.mode === "solo") ||
+        (showNew("capsule", 1) && hadPerfectDay)) && (
         <BonusSection uid={uid} seasonId={sid} points={Number(score?.stack_points ?? 0)}>
-          {score?.comeback && (
-            <section className="today-banner bg-blue">
-              <h2 className="font-extrabold">{t("todayDesign.comeBack")}</h2>
-              <p>{t("todayDesign.comebackBody")}</p>
-            </section>
-          )}
-          {atRisk && (
-            <section className="today-banner bg-yellow">
-              <h2 className="flex items-center gap-2 font-extrabold">
-                <AlertTriangle size={20} />
-                {t("today.riskTitle")}
-              </h2>
-              <p>{t("today.riskBody")}</p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {missing.map((habit) => (
-                  <StickerButton
-                    variant="secondary"
-                    size="sm"
-                    key={habit.id}
-                    onClick={() => tap(habit)}
-                  >
-                    {habitName(habit, t, i18n.language)}
-                  </StickerButton>
-                ))}
+          {playDay >= 3 && (
+            <>
+              {score?.comeback && (
+                <section className="today-banner bg-blue">
+                  <h2 className="font-extrabold">{t("todayDesign.comeBack")}</h2>
+                  <p>{t("todayDesign.comebackBody")}</p>
+                </section>
+              )}
+              {atRisk && (
+                <section className="today-banner bg-yellow">
+                  <h2 className="flex items-center gap-2 font-extrabold">
+                    <AlertTriangle size={20} />
+                    {t("today.riskTitle")}
+                  </h2>
+                  <p>{t("today.riskBody")}</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {missing.map((habit) => (
+                      <StickerButton
+                        variant="secondary"
+                        size="sm"
+                        key={habit.id}
+                        onClick={() => tap(habit)}
+                      >
+                        {habitName(habit, t, i18n.language)}
+                      </StickerButton>
+                    ))}
+                  </div>
+                </section>
+              )}
+              <TodayMoments
+                missing={missing}
+                pending={pending}
+                onDone={(habit) =>
+                  habit.kind === "salat" ||
+                  habit.kind === "timer" ||
+                  habit.kind === "quit" ||
+                  habit.template?.key === "detox"
+                    ? tap(habit)
+                    : log(habit, Number(habit.target))
+                }
+              />
+              <DailyDare
+                text={dares[chaosIndex] ?? ""}
+                done={chaosDone}
+                canSpin={canSpin(spins)}
+                busy={disabled || bonusBusy}
+                onSpin={() => void spin()}
+                onToggle={() => void toggleChaos()}
+              />
+              <div className="flex flex-wrap gap-2">
+                <StickerButton variant="secondary" onClick={() => setProofOpen(true)}>
+                  {t("todayDesign.proof")}
+                </StickerButton>
+                {tinyWin ? (
+                  <Link to="/small-wins">
+                    <StickerButton variant="lime">{t("batch6.winTitle")}</StickerButton>
+                  </Link>
+                ) : (
+                  <Link to="/small-wins">
+                    <StickerButton variant="secondary">{t("batch6.winTitle")}</StickerButton>
+                  </Link>
+                )}
               </div>
-            </section>
+            </>
           )}
-          <TodayMoments
-            missing={missing}
-            pending={pending}
-            onDone={(habit) =>
-              habit.kind === "salat" ||
-              habit.kind === "timer" ||
-              habit.kind === "quit" ||
-              habit.template?.key === "detox"
-                ? tap(habit)
-                : log(habit, Number(habit.target))
-            }
-          />
-          <DailyDare
-            text={dares[chaosIndex] ?? ""}
-            done={chaosDone}
-            canSpin={canSpin(spins)}
-            busy={disabled || bonusBusy}
-            onSpin={() => void spin()}
-            onToggle={() => void toggleChaos()}
-          />
-          <div className="flex flex-wrap gap-2">
-            <StickerButton variant="secondary" onClick={() => setProofOpen(true)}>
-              {t("todayDesign.proof")}
-            </StickerButton>
-            {tinyWin ? (
-              <Link to="/small-wins">
-                <StickerButton variant="lime">{t("batch6.winTitle")}</StickerButton>
+          {showNew("ghost", 2) && summary.data?.mode === "solo" && (
+            <NewFeature title={t("todayDesign.ghostNew")} onDismiss={() => dismissNew("ghost")}>
+              <GhostBar uid={uid} sid={sid} />
+            </NewFeature>
+          )}
+          {showNew("streak", 2) && (
+            <NewFeature title={t("todayDesign.streakNew")} onDismiss={() => dismissNew("streak")}>
+              <div className="streak-pill">
+                <TodayFlame />
+                <span>
+                  <Num>{score?.streak ?? 0}</Num> {t("todayDesign.days")} ·{" "}
+                  {t("ux.streakBonus", {
+                    m: formatNumber(Number(score?.multiplier ?? 1), i18n.language, {
+                      maximumFractionDigits: 2,
+                    }),
+                  })}
+                </span>
+              </div>
+            </NewFeature>
+          )}
+          {showNew("boss", 5) && bossOverview.data?.boss && (
+            <NewFeature title={t("batch6.boss")} onDismiss={() => dismissNew("boss")}>
+              <BossMini overview={bossOverview.data} />
+            </NewFeature>
+          )}
+          {showNew("capsule", 1) && hadPerfectDay && (
+            <NewFeature title={t("todayDesign.capsuleNew")} onDismiss={() => dismissNew("capsule")}>
+              <Link to="/capsule">
+                <StickerButton block variant="secondary">
+                  {t("batch8.capsule")}
+                  <ArrowRight size={18} className="rtl:-scale-x-100" />
+                </StickerButton>
               </Link>
-            ) : (
-              <Link to="/small-wins">
-                <StickerButton variant="secondary">{t("batch6.winTitle")}</StickerButton>
-              </Link>
-            )}
-          </div>
+            </NewFeature>
+          )}
         </BonusSection>
-      )}
-      {showNew("ghost", 2) && summary.data?.mode === "solo" && (
-        <NewFeature title={t("todayDesign.ghostNew")} onDismiss={() => dismissNew("ghost")}>
-          <GhostBar uid={uid} sid={sid} />
-        </NewFeature>
-      )}
-      {showNew("streak", 2) && (
-        <NewFeature title={t("todayDesign.streakNew")} onDismiss={() => dismissNew("streak")}>
-          <div className="streak-pill">
-            <TodayFlame />
-            <span>
-              <Num>{score?.streak ?? 0}</Num> {t("todayDesign.days")} ·{" "}
-              {t("ux.streakBonus", {
-                m: formatNumber(Number(score?.multiplier ?? 1), i18n.language, {
-                  maximumFractionDigits: 2,
-                }),
-              })}
-            </span>
-          </div>
-        </NewFeature>
-      )}
-      {showNew("boss", 5) && bossOverview.data?.boss && (
-        <NewFeature title={t("batch6.boss")} onDismiss={() => dismissNew("boss")}>
-          <BossMini overview={bossOverview.data} />
-        </NewFeature>
-      )}
-      {showNew("capsule", 1) && hadPerfectDay && (
-        <NewFeature title={t("todayDesign.capsuleNew")} onDismiss={() => dismissNew("capsule")}>
-          <Link to="/capsule">
-            <StickerButton block variant="secondary">
-              {t("batch8.capsule")}
-              <ArrowRight size={18} className="rtl:-scale-x-100" />
-            </StickerButton>
-          </Link>
-        </NewFeature>
       )}
       <TodayCrewStrip uid={uid} seasonId={sid} />
       {playDay >= 2 && missing.length === 0 && list.length > 0 && (
@@ -788,6 +793,16 @@ function Today() {
               {t("challengeHistory.title")}
             </StickerButton>
           </Link>
+          <StickerButton
+            block
+            variant="secondary"
+            onClick={() => {
+              setChallengeMenuOpen(false);
+              setSettingsOpen(true);
+            }}
+          >
+            {t("todayDesign.settings")}
+          </StickerButton>
           <StickerButton
             block
             variant="secondary"

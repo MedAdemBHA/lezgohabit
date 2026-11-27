@@ -183,7 +183,7 @@ export const uxFr: UxCopy = {
   trophyTarget: "Trophée à {{need}} bonnes journées",
   bonus: "bonus",
   streakBonus: "Bonus de série ×{{m}}",
-  habitsDone: "{{done}} habitude(s) sur {{total}} aujourd’hui",
+  habitsDone: "{{done}} sur {{total}} habitudes aujourd’hui",
   welcomeTitle: "Bienvenue dans {{name}}",
   welcomeLeft: "Il reste {{left}} jours.",
   welcomeGood: "Une bonne journée = {{x}} habitudes sur {{y}}.",
@@ -399,7 +399,8 @@ export const uxAeb: UxCopy = {
   welcomeLeft: "بقالك {{left}} نهار.",
   welcomeGood: "نهار باهي = {{x}} من {{y}} عادات.",
   welcomeTrophy: "الكأس في {{need}} نهار باهي — مازلت تنجّم تلحقها.",
-  welcomeNoTrophy: "الكأس تحب {{need}} نهار باهي — المرّة هاذي ما تتلحقش، أما كل نهار باهي يجيبلك نقاط.",
+  welcomeNoTrophy:
+    "الكأس تحب {{need}} نهار باهي — المرّة هاذي ما تتلحقش، أما كل نهار باهي يجيبلك نقاط.",
   backToToday: "ارجع لليوم",
   youLeft: "خرجت من التحدّي هذا",
   youFinished: "كمّلت التحدّي هذا",

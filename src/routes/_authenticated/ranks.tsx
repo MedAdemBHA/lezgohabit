@@ -12,9 +12,8 @@ import { COUNTRY_RANK_MIN_PLAYERS, PODIUM_MIN_PLAYERS } from "@/lib/challenge-pl
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/lezgo/app-shell";
 import { Avatar, BottomSheet, Num, StickerButton } from "@/components/lezgo/ui";
-import { FitHeading } from "@/components/lezgo/fit-heading";
 import { myCrewQuery, useBase } from "@/lib/data";
-import { summaryQuery, type RankRowData } from "@/lib/community-data";
+import { countryName, summaryQuery, type RankRowData } from "@/lib/community-data";
 import { movement } from "@/lib/community-rules";
 import { daysBetween } from "@/lib/time";
 import { cn } from "@/lib/utils";
@@ -72,14 +71,14 @@ function Ranks() {
     enabled: !!uid && !!season && entry.data?.kind !== "personal",
   });
   const q = useQuery({
-    queryKey: ["challengeScoreboard", uid, season?.id, boardScope],
+    queryKey: ["challengeScoreboard", uid, season?.id, boardScope, profile?.country_code],
     enabled: !!season && !!profile && !!entry.data && entry.data.kind !== "personal",
     queryFn: async () => {
       if (!season || !profile) throw Error("missing season");
       const { data, error } = await supabase.rpc("challenge_scoreboard", {
         _season_id: season.id,
         _scope: boardScope,
-        _country: "TN",
+        _country: profile.country_code,
       });
       if (error) throw error;
       return data as unknown as { rows: RankRowData[]; me: RankRowData | null };
@@ -125,9 +124,9 @@ function Ranks() {
     official && countryReady ? ["crew", "challenge", "country"] : ["crew", "challenge"];
   const early = rows.length > 0 && rows.length < PODIUM_MIN_PLAYERS;
   useEffect(() => {
-    if ((!official || (pulse.isSuccess && !countryReady)) && scope === "country")
+    if (entry.isSuccess && (!official || (pulse.isSuccess && !countryReady)) && scope === "country")
       setScope("challenge");
-  }, [official, scope, countryReady, pulse.isSuccess]);
+  }, [entry.isSuccess, official, scope, countryReady, pulse.isSuccess]);
 
   if (loading)
     return (
@@ -137,8 +136,7 @@ function Ranks() {
     );
   if (!season)
     return (
-      <AppShell todayLayout>
-        <FitHeading text={t("nav.board")} requestedSize={44} className="board-title" />
+      <AppShell title={t("nav.board")}>
         <p className="font-semibold">{t("challengeHistory.noActiveBody")}</p>
         <Link to="/start">
           <StickerButton block variant="lime">
@@ -155,8 +153,7 @@ function Ranks() {
     );
   if (entry.data?.kind === "personal")
     return (
-      <AppShell todayLayout>
-        <FitHeading text={t("nav.board")} requestedSize={44} className="board-title" />
+      <AppShell title={t("nav.board")}>
         <h2 className="text-[22px] font-extrabold">{loc(season.name, i18n.language)}</h2>
         <p className="font-semibold">{t("ranks.privateChallenge")}</p>
         <div className="grid grid-cols-2 gap-3">
@@ -178,25 +175,19 @@ function Ranks() {
         </Link>
       </AppShell>
     );
+  const length = daysBetween(season.starts_on, season.ends_on) + 1;
+  const day = Math.max(1, Math.min(length, daysBetween(season.starts_on, today) + 1));
   return (
-    <AppShell todayLayout>
-      <div className="board-header">
-        <FitHeading text={t("nav.board")} requestedSize={44} className="board-title" />
-        <Num className="week-sticker">
-          {Math.max(
-            1,
-            Math.min(
-              daysBetween(season.starts_on, season.ends_on) + 1,
-              daysBetween(season.starts_on, today) + 1,
-            ),
-          )}
-          /{daysBetween(season.starts_on, season.ends_on) + 1}
-        </Num>
+    <AppShell title={t("nav.board")}>
+      <div className="board-context">
+        <strong>{loc(season.name, i18n.language)}</strong>
+        <span>
+          {t("todayDesign.day")}{" "}
+          <Num>
+            {formatNumber(day, i18n.language)}/{formatNumber(length, i18n.language)}
+          </Num>
+        </span>
       </div>
-      <p className="truncate text-[15px] font-bold">{loc(season.name, i18n.language)}</p>
-      <p className="board-updated" role="status">
-        {t("integrity.updated")}
-      </p>
       <div className="board-segments" role="group" aria-label={t("socialDesign.scoreboard")}>
         {scopes.map((s) => (
           <StickerButton
@@ -210,7 +201,7 @@ function Ranks() {
             }}
           >
             {s === "country"
-              ? t("ranks.tunisia")
+              ? countryName(profile?.country_code ?? "TN", i18n.language)
               : s === "crew"
                 ? t("ranks.myCrew")
                 : t("challengePulse.challengeTab")}
@@ -248,10 +239,10 @@ function Ranks() {
         )
       ) : early ? (
         <>
-          <div className="space-y-3 rounded-[20px] bg-yellow p-4 sticker-border">
-            <p className="font-extrabold">{t("ux.boardEarly")}</p>
-            <StickerButton variant="lime" onClick={() => void inviteToChallenge(t)}>
-              <Share2 size={18} />
+          <div className="app-surface board-invite">
+            <p>{t("ux.boardEarly")}</p>
+            <StickerButton size="sm" variant="secondary" onClick={() => void inviteToChallenge(t)}>
+              <Share2 size={16} aria-hidden="true" />
               {t("crew.invite")}
             </StickerButton>
           </div>
@@ -272,42 +263,35 @@ function Ranks() {
           <div className="podium">
             {top.map((row, i) =>
               row ? (
-                <div key={row.user_id ?? row.crew_id ?? i} className="podium-player">
-                  {row.rank === 1 && (
-                    <Crown className="podium-crown fill-yellow" size={34} strokeWidth={2.5} />
-                  )}
-                  <StickerButton
-                    variant="ghost"
-                    className="min-h-11 border-0 p-0 shadow-none"
-                    aria-label={row.display_name}
+                <div
+                  key={row.user_id ?? row.crew_id ?? i}
+                  ref={row.is_me ? myAnchor : undefined}
+                  className="podium-player"
+                >
+                  <button
+                    type="button"
+                    className="board-podium-card press"
+                    data-place={row.rank}
+                    aria-label={`${formatNumber(row.rank, i18n.language)} · ${row.display_name} · ${formatNumber(row.points, i18n.language)} ${t("common.pts")}`}
                     onClick={() => setSel(row)}
                   >
+                    <span className="board-podium-medal">
+                      {row.rank === 1 && <Crown size={18} aria-hidden="true" />}
+                      <Num>#{formatNumber(row.rank, i18n.language)}</Num>
+                    </span>
                     <Avatar
                       id={row.user_id ?? row.crew_id ?? ""}
                       name={row.display_name}
                       url={row.avatar_url}
-                      size={52}
-                      className={row.rank === 1 ? "bg-yellow" : ""}
+                      size={42}
                     />
-                  </StickerButton>
-                  <bdi className="podium-handle" dir="ltr">
-                    {row.handle ? `@${row.handle}` : row.display_name}
-                  </bdi>
-                  <StickerButton
-                    variant="ghost"
-                    className={cn(
-                      "podium-block p-0 text-ink",
-                      row.rank === 1
-                        ? "h-[148px] bg-yellow"
-                        : row.rank === 2
-                          ? "h-[112px] bg-blue"
-                          : "h-[88px] bg-pink",
-                    )}
-                    onClick={() => setSel(row)}
-                  >
-                    <strong>{row.rank}</strong>
-                    <Num>{formatNumber(row.points, i18n.language)}</Num>
-                  </StickerButton>
+                    <bdi className="podium-handle">
+                      {row.handle ? `@${row.handle}` : row.display_name}
+                    </bdi>
+                    <span>
+                      <Num>{formatNumber(row.points, i18n.language)}</Num> {t("common.pts")}
+                    </span>
+                  </button>
                 </div>
               ) : (
                 <span key={i} />
@@ -315,11 +299,6 @@ function Ranks() {
             )}
           </div>
           <div className="mt-3">
-            {me && me.rank <= 3 && (
-              <div ref={myAnchor} className="mb-3">
-                <RankRow row={me} onClick={() => setSel(me)} />
-              </div>
-            )}
             {rows.slice(3).map((row) => (
               <div
                 key={row.user_id ?? row.crew_id ?? row.rank}
@@ -351,21 +330,15 @@ function Ranks() {
           <Num className="text-[20px] font-bold">{g.data?.points ?? "—"}</Num>
         </div>
       )}
-      <div
-        className={cn(
-          "mt-2 rounded-[18px] bg-lime px-[18px] py-[14px] sticker-border",
-          pinned && "mb-[76px]",
+      <div className={cn("board-footer", pinned && "mb-[76px]")}>
+        {q.isSuccess && (
+          <p className="board-updated" role="status">
+            {t("integrity.updated")}
+          </p>
         )}
-      >
-        <p className="text-[15px] font-bold">{t("socialDesign.note")}</p>
-        <Link to="/scoring">
-          <StickerButton
-            variant="ghost"
-            className="scoring-link min-h-11 text-[15px] font-extrabold"
-          >
-            {t("socialDesign.scoring")}
-            <ArrowRight size={18} className="rtl:-scale-x-100" />
-          </StickerButton>
+        <Link to="/scoring" className="app-row-link">
+          {t("socialDesign.scoring")}
+          <ArrowRight size={17} className="rtl:-scale-x-100" aria-hidden="true" />
         </Link>
       </div>
       {pinned && me && (

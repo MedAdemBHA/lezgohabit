@@ -5,7 +5,15 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { ArrowLeft, ChevronRight, LogOut, Trash2, MapPin, ListChecks } from "lucide-react";
+import {
+  ArrowLeft,
+  ChevronRight,
+  Download,
+  LogOut,
+  Trash2,
+  MapPin,
+  ListChecks,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/lezgo/app-shell";
 import { LangFlag } from "@/components/icons";
@@ -311,6 +319,13 @@ function SettingsPage() {
             icon={<ListChecks size={18} aria-hidden="true" />}
             onClick={() => void nav({ to: "/habits" })}
           />
+          {!window.matchMedia("(display-mode: standalone)").matches && (
+            <NavRow
+              label={t("batch9.install")}
+              icon={<Download size={18} aria-hidden="true" />}
+              onClick={() => toast(t("batch9.installHint"))}
+            />
+          )}
           <NavRow
             label={t("settings.signOut")}
             icon={<LogOut size={18} aria-hidden="true" />}

@@ -27,6 +27,9 @@ import { guestEn, guestFr, guestAr, guestAeb } from "./guest";
 import { wrappedEn, wrappedFr, wrappedAr, wrappedAeb } from "./wrapped";
 import { flowsEn, flowsFr, flowsAr, flowsAeb } from "./flows";
 import { uxEn, uxFr, uxAr, uxAeb } from "./ux";
+import { tourEn, tourFr, tourAr, tourAeb } from "./tour";
+import { appRefreshEn, appRefreshFr, appRefreshAr, appRefreshAeb } from "./app-refresh";
+import { buddiesEn, buddiesFr, buddiesAr, buddiesAeb } from "./buddies";
 
 
 export const LANGS = ["en", "fr", "ar", "aeb"] as const;
@@ -58,6 +61,9 @@ if (!i18n.isInitialized) {
           wrapped: wrappedEn,
           flows: flowsEn,
           ux: uxEn,
+          tour: tourEn,
+          appRefresh: appRefreshEn,
+          buddies: buddiesEn,
         },
       },
       fr: {
@@ -76,6 +82,9 @@ if (!i18n.isInitialized) {
           wrapped: wrappedFr,
           flows: flowsFr,
           ux: uxFr,
+          tour: tourFr,
+          appRefresh: appRefreshFr,
+          buddies: buddiesFr,
         },
       },
       ar: {
@@ -94,6 +103,9 @@ if (!i18n.isInitialized) {
           wrapped: wrappedAr,
           flows: flowsAr,
           ux: uxAr,
+          tour: tourAr,
+          appRefresh: appRefreshAr,
+          buddies: buddiesAr,
         },
       },
       aeb: {
@@ -112,6 +124,9 @@ if (!i18n.isInitialized) {
           wrapped: wrappedAeb,
           flows: flowsAeb,
           ux: uxAeb,
+          tour: tourAeb,
+          appRefresh: appRefreshAeb,
+          buddies: buddiesAeb,
         },
       },
     },
