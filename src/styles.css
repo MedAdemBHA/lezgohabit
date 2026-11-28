@@ -1258,3 +1258,15 @@
 /* Arabic script needs taller lines: stacked invite headings overlapped at 44px. */
 [dir=rtl] .challenge-public h1 { line-height:1.4; }
 [dir=rtl] .challenge-public h1.invite-error { line-height:1.5; }
+
+/* P3.2: crew status under Today's habits. */
+.today-crew-status { display:flex; flex-direction:column; gap:8px; border:1.5px solid var(--ink); border-radius:18px; padding:10px 12px; background:color-mix(in srgb, var(--blue) 28%, var(--card)); }
+.crew-status-list { display:flex; flex-direction:column; gap:6px; }
+.crew-status-list li { display:flex; align-items:center; gap:10px; min-height:44px; }
+.crew-status-name { flex:1; min-width:0; }
+.crew-status-name strong, .crew-status-name small { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.crew-status-name strong { font-size:14px; font-weight:800; }
+.crew-status-name small { font-size:12px; font-weight:700; display:flex; align-items:center; gap:4px; }
+.crew-status-list li[data-state=done] .crew-status-name small { color:var(--ink); }
+.crew-status-list li[data-state=idle] .crew-status-name small { color:var(--muted-foreground); }
+.crew-status-nudged { font-size:12px; font-weight:700; color:var(--muted-foreground); }

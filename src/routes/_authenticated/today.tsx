@@ -698,6 +698,9 @@ function Today() {
           <p>{t("today.noHabits")}</p>
         </div>
       )}
+      {entryKind.isSuccess && !isPrivateChallenge(entryKind.data) && (
+        <TodayCrewStrip uid={uid} seasonId={sid} />
+      )}
       {showNew("welcome", 1) && playDay === 1 && (
         <WelcomeCard
           name={loc(season.name, i18n.language)}
@@ -814,9 +817,6 @@ function Today() {
             </NewFeature>
           )}
         </BonusSection>
-      )}
-      {entryKind.isSuccess && !isPrivateChallenge(entryKind.data) && (
-        <TodayCrewStrip uid={uid} seasonId={sid} />
       )}
       {playDay >= 2 && missing.length === 0 && list.length > 0 && (
         <Link to="/ranks" className="today-next">
