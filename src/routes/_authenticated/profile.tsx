@@ -30,7 +30,8 @@ import { buddyQuery, countryName, countryWhere, summaryQuery } from "@/lib/commu
 import { challengePulseQuery } from "@/lib/feed-data";
 import { COUNTRY_RANK_MIN_PLAYERS } from "@/lib/challenge-plan";
 import { BADGE_KEYS, trailState } from "@/lib/community-rules";
-import { challengeHistoryQuery, joinedDay } from "@/lib/challenge-history";
+import { challengeHistoryQuery, joinedDay, resultsFinal } from "@/lib/challenge-history";
+import { localHour, useNow } from "@/lib/time";
 import { addDays, daysBetween } from "@/lib/time";
 import { formatNumber, loc } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -74,6 +75,7 @@ function ProfilePage() {
   const joinHistory = useQuery({ ...challengeHistoryQuery(uid), enabled: !!uid && !!season });
   const joinEntry = joinHistory.data?.find((entry) => entry.season_id === season?.id);
   const joinedOn = joinEntry ? joinedDay(joinEntry.joined_at, tz) : null;
+  const now = useNow(60_000);
   const roles = useQuery({ ...rolesQuery(uid), enabled: !!uid });
   const creatorDashboard = useQuery({
     queryKey: ["creatorDashboard", uid],
@@ -405,7 +407,11 @@ function ProfilePage() {
       </section>
 
       <section className="app-surface profile-journey">
-        <Link to="/seasons" className="app-row-link profile-season-link">
+        <Link
+          to="/challenges"
+          search={{ season: season.id }}
+          className="app-row-link profile-season-link"
+        >
           <span>
             <small>{t("ux.currentChallenge")}</small>
             <strong>{loc(season.name, i18n.language)}</strong>
@@ -517,9 +523,11 @@ function ProfilePage() {
           <Link to="/challenges" search={{ season: "" }}>
             {t("challengeHistory.title")}
           </Link>
-          <Link to="/wrapped" search={{ season: season.id }}>
-            {t("batch6.wrapped")}
-          </Link>
+          {joinEntry && now && resultsFinal(joinEntry.end_date, today, localHour(tz, now)) && (
+            <Link to="/wrapped" search={{ season: season.id }}>
+              {t("batch6.wrapped")}
+            </Link>
+          )}
           <Link to="/create-challenge">{t("batch6.create")}</Link>
           {liftOn && <Link to="/lift">{t("design.lift")}</Link>}
           {bossOn && <Link to="/boss">{t("design.boss")}</Link>}

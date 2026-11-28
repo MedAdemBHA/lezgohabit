@@ -293,7 +293,7 @@ export const ar: Dict = {
     openHistory: "افتح سجلي", pickNext: "اختر تحديك القادم", noActive: "انتهى تحديك", noActiveBody: "نقاطك وسجلك محفوظان. اختر ما تريد فعله بعد ذلك.",
     kind_official: "تحدٍّ رسمي", kind_creator: "تحدي صانع محتوى", kind_personal: "تحدٍّ شخصي", by: "بواسطة {{name}}",
     status_active: "نشط", status_completed: "مكتمل", status_surrendered: "منسحب", days: "{{done}} أيام جيدة من {{total}} منذ انضمامك", dayUnit: "أيام",
-    consistency: "المواظبة", consistencyShort: "انتظام {{n}}٪", points: "النقاط", pointsShort: "نقطة", pointsTotal: "نقطة إجمالًا", rank: "الترتيب النهائي", perfectDays: "أيام مثالية", crew: "الفريق · {{name}}", habits: "عادات التحدي", habitsLocked: "هذه العادات ثابتة لهذا التحدي.", openTrail: "افتح المسار يومًا بيوم",
+    consistency: "المواظبة", consistencyShort: "انتظام {{n}}٪", points: "النقاط", pointsShort: "نقطة", pointsTotal: "نقطة إجمالًا", noTrophies: "لا كؤوس بعد: أكمل 75٪ من أيام التحدي لتربح واحدًا.", rank: "الترتيب النهائي", perfectDays: "أيام مثالية", crew: "الفريق · {{name}}", habits: "عادات التحدي", habitsLocked: "هذه العادات ثابتة لهذا التحدي.", openTrail: "افتح المسار يومًا بيوم",
     surrender: "انسحب من التحدي", surrenderTitle: "إنهاء هذا التحدي؟", surrenderIntro: "يمكنك المغادرة الآن. يبقى تقدّمك حتى الآن ملكك.",
     keepTitle: "ما سيبقى لك", keepBody: "يبقى سجلك ونقاطك التي حصلت عليها وشاراتك محفوظة.", endsTitle: "ما الذي سيتوقف", endsBody: "تنتهي التسجيلات والترتيب وعضوية الفريق في هذا التحدي. لن تتمكن من الانضمام إليه مرة أخرى.", surrenderedToast: "تم حفظ تحديك في السجل.",
   },

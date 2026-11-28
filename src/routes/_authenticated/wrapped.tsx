@@ -64,7 +64,7 @@ function WrappedPage() {
     <AppShell todayLayout>
       <div className="wrapped-page">
         <header className="wrapped-page-header">
-          <Link to="/seasons" className="wrapped-back press" aria-label={t("common.back")}>
+          <Link to="/challenges" search={{ season: "" }} className="wrapped-back press" aria-label={t("common.back")}>
             <ArrowLeft size={22} className="rtl:-scale-x-100" aria-hidden="true" />
           </Link>
           <h1>{t("batch6.wrapped")}</h1>
