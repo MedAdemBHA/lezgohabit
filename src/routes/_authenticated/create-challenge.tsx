@@ -1,11 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { PageTitle } from "@/components/lezgo/page-title";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, ArrowRight, Check, Copy, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/lezgo/app-shell";
-import { FitHeading } from "@/components/lezgo/fit-heading";
 import { BottomSheet, Field, Num, StickerButton, inputCls } from "@/components/lezgo/ui";
 import { HabitIcon } from "@/components/lezgo/habit-icon";
 import { useBase, templatesQuery, type Template } from "@/lib/data";
@@ -157,7 +157,7 @@ function CreateChallenge() {
           <Num className="rounded-full bg-ink px-3 py-1 text-lime">{`${step + 1} / 3`}</Num>
         )}
       </div>
-      <FitHeading requestedSize={44} className="batch6-heading" text={t("batch6.create")} />
+      <PageTitle text={t("batch6.create")} />
       {!isCreator ? (
         <section className="sticker rounded-[20px] bg-card p-4">
           <h2 className="text-[20px] font-extrabold">{t("batch6.applyCreator")}</h2>

@@ -1,4 +1,5 @@
 import { NotificationSettings } from "@/components/lezgo/launch/notification-settings";
+import { PageTitle } from "@/components/lezgo/page-title";
 import { pageHead } from "@/lib/page-head";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -16,7 +17,6 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/lezgo/app-shell";
-import { LangFlag } from "@/components/icons";
 import {
   Segmented,
   StickerButton,
@@ -145,7 +145,7 @@ function SettingsPage() {
               <ArrowLeft className="rtl:-scale-x-100" />
             </StickerButton>
           </Link>
-          <h1 className="settings-title">{t("settings.title")}</h1>
+          <PageTitle text={t("settings.title")} />
         </header>
         <h2 className="section-label">{t("batch4.language")}</h2>
         <div className="settings-card settings-languages">
@@ -161,7 +161,6 @@ function SettingsPage() {
                 if (!profile.is_demo) void update({ language: lang });
               }}
             >
-              <LangFlag lang={lang} size={27} />
               {t(`batch4.${["english", "french", "arabic", "darja"][i]}`)}
             </StickerButton>
           ))}

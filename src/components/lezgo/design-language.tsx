@@ -2,7 +2,6 @@ import { useTranslation } from "react-i18next";
 import { Check, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import i18next, { applyLang, isRtl, LANGS, type Lang } from "@/lib/i18n";
-import { LangFlag } from "@/components/icons";
 import { BottomSheet } from "./ui";
 
 /** Each language named in itself, so a reader can always find their own. */
@@ -33,7 +32,6 @@ export function DesignLanguage({
         aria-label={`${t("common.language")}: ${NATIVE[current]}`}
         onClick={() => setOpen(true)}
       >
-        <LangFlag lang={current} size={24} />
         <span className={isRtl(current) ? "font-arabic" : undefined}>{NATIVE[current]}</span>
         <ChevronDown size={16} strokeWidth={2.6} aria-hidden="true" />
       </button>
@@ -55,7 +53,6 @@ export function DesignLanguage({
               }}
             >
               <span className="language-row-name">
-                <LangFlag lang={l} size={30} />
                 {NATIVE[l]}
               </span>
               {current === l && <Check size={20} strokeWidth={3} aria-hidden="true" />}

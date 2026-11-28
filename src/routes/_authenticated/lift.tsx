@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { PageTitle } from "@/components/lezgo/page-title";
 import { useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -6,7 +7,6 @@ import { toast } from "sonner";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { TrainIcon } from "@/components/icons";
 import { AppShell } from "@/components/lezgo/app-shell";
-import { FitHeading } from "@/components/lezgo/fit-heading";
 import { Num, Segmented, StickerButton } from "@/components/lezgo/ui";
 import { LiftStepper } from "@/components/lezgo/lift-stepper";
 import { useBase, dayQuery } from "@/lib/data";
@@ -89,7 +89,7 @@ function Lift() {
         <ArrowLeft size={22} className="rtl:-scale-x-100" aria-hidden="true" />
       </Link>
       <header className="lift-header">
-        <FitHeading requestedSize={56} className="batch5-title" text={t("batch5.lift")} />
+        <PageTitle text={t("batch5.lift")} />
         <span className="lift-session">
           <Num>{t("batch5.session", { n: session })}</Num>
         </span>

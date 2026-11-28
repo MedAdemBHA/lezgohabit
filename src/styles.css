@@ -1251,3 +1251,10 @@
 .buddy-option-list button { display:flex; align-items:center; gap:8px; min-height:44px; padding:8px 9px; border:1.5px solid var(--ink); border-radius:10px; background:var(--card); text-align:start; font-weight:750; cursor:pointer; }
 .buddy-confirm p { font-size:15px; font-weight:650; }
 .buddy-confirm textarea { min-height:100px; }
+
+/* P1.7: one page title for every signed-in screen (PageTitle). */
+.page-title { font-weight:800; line-height:1.1; letter-spacing:0; text-transform:none; margin:4px 0 8px; }
+[dir=rtl] .page-title { line-height:1.35; }
+/* Arabic script needs taller lines: stacked invite headings overlapped at 44px. */
+[dir=rtl] .challenge-public h1 { line-height:1.4; }
+[dir=rtl] .challenge-public h1.invite-error { line-height:1.5; }

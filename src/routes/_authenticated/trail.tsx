@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { PageTitle } from "@/components/lezgo/page-title";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { Check, ChevronRight, Lock, Shield, Star } from "lucide-react";
@@ -47,7 +48,7 @@ function Trail() {
   return (
     <SignatureFrame>
       <header className="trail-head">
-        <h1 className="settings-title">{t("ux.trailTitle")}</h1>
+        <PageTitle text={t("ux.trailTitle")} />
         <p className="signature-sub">{t("batch8.trailSub")}</p>
       </header>
       {season && data ? (

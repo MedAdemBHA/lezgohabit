@@ -1,6 +1,6 @@
 export const batch6en = {
   lessonSeconds: "Lesson duration · seconds",
-  boss: "BOSS FIGHT",
+  boss: "Boss fight",
   ends: "ENDS {{date}}",
   weekBoss: "WEEK {{n}} BOSS",
   hp: "TEAM GOAL",
@@ -27,7 +27,7 @@ export const batch6en = {
   amount: "Hit amount",
   burpees: "Burpees",
   pullups: "Pull-ups",
-  create: "CREATE A CHALLENGE",
+  create: "Create a challenge",
   templates: "START FROM A TEMPLATE",
   winter_arc: "Winter Arc",
   ramadan: "Ramadan",
@@ -169,7 +169,7 @@ type Copy = {
 };
 export const batch6fr: Copy = {
   lessonSeconds: "Durée de la leçon · secondes",
-  boss: "COMBAT DE BOSS",
+  boss: "Combat de boss",
   ends: "FIN {{date}}",
   weekBoss: "BOSS DE LA SEMAINE {{n}}",
   hp: "OBJECTIF D’ÉQUIPE",
@@ -196,7 +196,7 @@ export const batch6fr: Copy = {
   amount: "Nombre de frappes",
   burpees: "Burpees",
   pullups: "Tractions",
-  create: "CRÉER UN DÉFI",
+  create: "Créer un défi",
   templates: "PARTIR D’UN MODÈLE",
   winter_arc: "Winter Arc",
   ramadan: "Ramadan",
