@@ -1,4 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useBase } from "@/lib/data";
+import { useRankVisibility } from "@/lib/rank-thresholds";
 import { useQuery } from "@tanstack/react-query";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -185,6 +187,8 @@ function SwitchAccount({ season }: { season: string }) {
 }
 
 function WrappedRecap({ data, season }: { data: Wrapped; season: NonNullable<Wrapped["season"]> }) {
+  const { uid, profile } = useBase();
+  const countryCode = profile?.country_code;
   const { t, i18n } = useTranslation();
   const [square, setSquare] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -197,6 +201,8 @@ function WrappedRecap({ data, season }: { data: Wrapped; season: NonNullable<Wra
   const days = data.days ?? 0;
   const rank =
     (season.challenge_owned ? data.result?.rank_challenge : data.result?.rank_country) ?? data.rank;
+  // A rank among too few players says nothing (same thresholds as every other screen).
+  const ranks = useRankVisibility(uid, season.id, countryCode);
   const result = data.result;
   const metrics = [
     ...(result
@@ -205,7 +211,7 @@ function WrappedRecap({ data, season }: { data: Wrapped; season: NonNullable<Wra
           { label: t("profile.bestStreak"), value: number.format(result.best_streak) },
         ]
       : []),
-    ...(rank != null
+    ...(rank != null && (season.challenge_owned ? ranks.challenge : ranks.country)
       ? [
           {
             label: t(season.challenge_owned ? "challengeHistory.rank" : "wrapped.countryRank"),

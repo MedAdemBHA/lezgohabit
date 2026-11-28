@@ -269,6 +269,7 @@ export const fr: Dict = {
     empty: "Pas encore de scores. Sois le premier.", you: "Toi", members: "{{n}} membres", next: "Prochaine étape : valide pour grimper", noCrew: "Rejoins ou trouve un crew pour voir ce classement.", privateChallenge: "Les défis personnels restent privés. Pas de classement public.", myCrew: "Mon crew",
   },
   crew: {
+    rankLocked: "Classement dès 3 équipes · invite tes potes",
     noneTitle: "Joue avec ton crew", create: "Créer un crew", createDesc: "Lance-le, partage le code",
     join: "Rejoindre avec un code", joinDesc: "6 caractères reçus d’un ami ?", name: "Nom du crew", type: "Type",
     duo: "Duo", squad: "Squad", club: "Club", company: "Entreprise", size: "Taille max", code: "Code du crew",
