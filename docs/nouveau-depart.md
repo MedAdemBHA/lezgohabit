@@ -1,26 +1,24 @@
 # "Nouveau départ" — 1 January 2027 (P4.3)
 
-Owner decision (2026-11-28): **30 days, 3 habits**. Enter this in **Admin → Seasons → New event**,
-save as a draft, check the `/start` card in all four languages, then publish.
-
-Official events give every player the **same prescribed habits** (the editor takes 1–6). Players
-can't pick their own 3 from the library in an official event. To let players choose, run it as a
-personal-challenge template instead. The habits below are a proposal; change them before
-publishing.
+Owner decision (2026-11-28): **30 days, 3 habits**. The event already exists as
+`new-year-reset-2027` ("New Year Reset" / "Nouveau départ"), published, 1 Jan → 7 Feb.
+Migration `0086_better_official_challenges.sql` updates it (only while nobody has joined):
 
 | Field | Value |
 |---|---|
 | Dates | 2027-01-01 → 2027-01-30 (30 days) |
-| Scoring | v2 (automatic for seasons created after migration 0083) |
-| Colour | lime |
-| Habits (proposal) | `train` (any workout, target 1) · `read` (10 pages) · `sleep7` (7 h) |
+| Scoring | v2 (0083 moves seasons that haven't started to v2) |
+| Habits | `train` (any workout) · `read` (10 pages) · `no_phone_first_hour` (no phone 09:00–10:00) |
 
-| Language | Name | Goal |
-|---|---|---|
-| en | New Start | 30 days, 3 habits, one fresh start. Bring your crew. |
-| fr | Nouveau départ | 30 jours, 3 habitudes, un vrai nouveau départ. Ramène ton équipe. |
-| ar | بداية جديدة | 30 يومًا، 3 عادات، وبداية جديدة حقًا. أحضِر فريقك. |
-| aeb | بداية جديدة | 30 نهار، 3 عادات، وبداية جديدة بالحق. جيب فرقتك. |
+| Language | Goal |
+|---|---|
+| en | 30 days, 3 habits, one clean start: move, read, and keep your phone away for the first hour. |
+| fr | 30 jours, 3 habitudes, un vrai nouveau départ : bouge, lis, et pas de téléphone la première heure. |
+| ar | 30 يومًا، 3 عادات، وبداية نظيفة: تحرّك، اقرأ، وابتعد عن الهاتف في الساعة الأولى. |
+| aeb | 30 نهار، 3 عادات، بداية نظيفة: تحرّك، اقرا، وبلاش تليفون في أول ساعة. |
+
+Official events give every player the same habits; players can't pick their own 3 in an
+official event.
 
 ## Before publishing
 
