@@ -1,8 +1,9 @@
 > [!NOTE]
-> **Branch `own-hosting`** runs on the owner's own Supabase project (`yjkniwjneqmtatwozcpv`) and Cloudflare
-> Workers, not Lovable Cloud. On this branch, schema changes are new numbered files in `drizzle/migrations/`
-> applied to that project, secrets live in Cloudflare, and Google sign-in uses Supabase Auth. See DEPLOY.md.
-> The Lovable rules below still apply to `main` while the live app runs on Lovable.
+> **`main` is self-hosted** (owner decision, 2026-11-28): it runs on the owner's own Supabase project
+> (`yjkniwjneqmtatwozcpv`) and Vercel/Cloudflare, not Lovable Cloud. Schema changes are new numbered files in
+> `drizzle/migrations/` applied to that project; secrets live in the hosting provider; Google sign-in uses
+> Supabase Auth. See DEPLOY.md. `own-hosting` is an older branch. The Lovable-managed rules below no longer
+> apply to `main`'s database or migrations; keep the project rules.
 
 <!-- LOVABLE:BEGIN -->
 > [!IMPORTANT]
