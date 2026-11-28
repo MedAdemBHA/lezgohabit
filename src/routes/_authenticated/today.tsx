@@ -1,4 +1,9 @@
 import { AppStatus } from "@/components/lezgo/app-status";
+import {
+  FirstInviteSheet,
+  firstInviteKey,
+  shouldOfferFirstInvite,
+} from "@/components/lezgo/today/first-invite";
 import { challengeEntryQuery, isPrivateChallenge } from "@/lib/challenge-history";
 import { StickerLoading } from "@/components/lezgo/launch/loading";
 import { GhostBar } from "@/components/lezgo/sharing/ghost-bar";
@@ -122,6 +127,32 @@ function Today() {
   const revision = useRef(0);
   const bossOn = useFeature("bosses");
   const entryKind = useQuery({ ...challengeEntryQuery(uid, sid) });
+  const [inviteOpen, setInviteOpen] = useState(false);
+  /** Once per challenge, after the first successful log in a shared challenge. */
+  function offerFirstInvite() {
+    if (!entryKind.isSuccess) return;
+    const key = firstInviteKey(uid, sid);
+    let shown = false;
+    try {
+      shown = !!localStorage.getItem(key);
+    } catch {
+      shown = true; // no storage: don't risk showing it on every log
+    }
+    if (
+      !shouldOfferFirstInvite({
+        privateChallenge: isPrivateChallenge(entryKind.data),
+        alreadyShown: shown,
+        value: 1,
+      })
+    )
+      return;
+    try {
+      localStorage.setItem(key, "1");
+    } catch {
+      /* storage can be unavailable */
+    }
+    setInviteOpen(true);
+  }
   const liftOn = useFeature("lift");
   const dareOn = useFeature("daily_dare");
   const latestWrite = useRef(new Map<string, number>());
@@ -317,6 +348,7 @@ function Today() {
           if (writeRevision === revision.current) await reconcile();
           if ((serverScore as { held?: boolean } | null)?.held) toast(t("todayDesign.heldToast"));
           else if (value > 0) setTinyWin(true);
+          if (value > 0) offerFirstInvite();
           void qc.invalidateQueries({ queryKey: ["boss"] });
           void qc.invalidateQueries({ queryKey: ["ghost"] });
           void qc.invalidateQueries({ queryKey: ["signature"] });
@@ -846,6 +878,11 @@ function Today() {
         name={loc(season.name, i18n.language)}
         open={surrenderOpen}
         onClose={() => setSurrenderOpen(false)}
+      />
+      <FirstInviteSheet
+        open={inviteOpen}
+        onClose={() => setInviteOpen(false)}
+        crewId={mine.data ?? null}
       />
       <ScoringSheet
         open={scoringOpen}

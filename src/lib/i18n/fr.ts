@@ -68,6 +68,7 @@ export const fr: Dict = {
     "sharedCrew": "Membres du crew",
     "privateShare": "Les résultats de foi privés sont exclus de ta carte partagée."
 },
+  firstInvite: { title: "Ramène deux potes", body: "Un défi tient mieux à plusieurs. Envoie ton code d'équipe à deux personnes maintenant ; elles rejoignent avec le lien.", makeCrew: "Crée une équipe pour inviter tes potes", skip: "Plus tard" },
   todayDesign: {
     "heldTile": "En vérification · points après validation",
     "heldToast": "Enregistré. Cette saisie est en vérification ; ses points arrivent après validation.",
