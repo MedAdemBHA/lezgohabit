@@ -69,6 +69,7 @@ import { bossQuery } from "@/lib/batch6-data";
 import { challengeHistoryQuery } from "@/lib/challenge-history";
 import { planFor } from "@/lib/challenge-plan";
 import { useFeature } from "@/lib/features";
+import { scoringVersion } from "@/lib/scoring-version";
 import { WelcomeCard } from "@/components/lezgo/today/welcome-card";
 export const Route = createFileRoute("/_authenticated/today")({
   head: () => pageHead("Today · lezgo", "Log today's gos and keep your go streak alive."),
@@ -842,7 +843,11 @@ function Today() {
         open={surrenderOpen}
         onClose={() => setSurrenderOpen(false)}
       />
-      <ScoringSheet open={scoringOpen} onClose={() => setScoringOpen(false)} />
+      <ScoringSheet
+        open={scoringOpen}
+        onClose={() => setScoringOpen(false)}
+        version={scoringVersion(season)}
+      />
       <BottomSheet
         open={settingsOpen}
         onClose={() => setSettingsOpen(false)}
