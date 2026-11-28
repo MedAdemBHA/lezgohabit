@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useServerFn } from '@tanstack/react-start';
 import { fingerprintProof } from '@/lib/admin.functions';
 import { StickerButton } from '../ui';
+import { compressProof } from '@/lib/proof-image';
 export function ProofCompose({ uid, seasonId, day, existingPath, onSaved }: { uid: string; seasonId: string; day: string; existingPath: string | null; onSaved: () => Promise<void> }) {
  const { t } = useTranslation(); const [file, setFile] = useState<File | null>(null); const [preview, setPreview] = useState(''); const [busy, setBusy] = useState(false); const proofFingerprint = useServerFn(fingerprintProof);
  useEffect(() => {
@@ -17,9 +18,10 @@ export function ProofCompose({ uid, seasonId, day, existingPath, onSaved }: { ui
  async function post() {
   if (!file) return; setBusy(true); let path = '';
   try {
-   const ext = file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg';
-   path = `${uid}/${day}/${crypto.randomUUID()}.${ext}`;
-   const uploaded = await supabase.storage.from('habit-proofs').upload(path,file,{ contentType: file.type });
+   // Same path as feed photos: re-encoded JPEG, max 1280px, no EXIF/GPS metadata.
+   const photo = await compressProof(file);
+   path = `${uid}/${day}/${crypto.randomUUID()}.jpg`;
+   const uploaded = await supabase.storage.from('habit-proofs').upload(path,photo,{ contentType: 'image/jpeg' });
    if (uploaded.error) throw uploaded.error;
    await proofFingerprint({ data: { path, bucket: 'habit-proofs' } });
    const posted = await supabase.rpc('post_daily_proof',{ _season_id: seasonId, _path: path });
