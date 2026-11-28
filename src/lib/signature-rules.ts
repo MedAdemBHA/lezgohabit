@@ -36,10 +36,28 @@ export function tileState(
   day: string,
   today: string,
   score?: { perfect: boolean; completion: number; shield_used: boolean },
+  joinedOn?: string | null,
 ) {
   if (day === today) return "today";
+  // Days before a late joiner arrived were never playable: not missed.
+  if (joinedOn && day < joinedOn && !score) return "before";
   if (day > today) return "future";
   if (score?.shield_used) return "shield";
   if (score?.perfect) return "perfect";
   return score && score.completion > 0 ? "partial" : "missed";
+}
+
+const LEGEND_ORDER = [
+  "perfect",
+  "partial",
+  "shield",
+  "missed",
+  "before",
+  "today",
+  "future",
+] as const;
+/** Legend entries for exactly the tile styles on screen, in a stable order. */
+export function legendStates(states: string[]) {
+  const used = new Set(states);
+  return LEGEND_ORDER.filter((s) => used.has(s));
 }

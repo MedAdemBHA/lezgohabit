@@ -29,6 +29,7 @@ import { buddyQuery, countryName, countryWhere, summaryQuery } from "@/lib/commu
 import { challengePulseQuery } from "@/lib/feed-data";
 import { COUNTRY_RANK_MIN_PLAYERS } from "@/lib/challenge-plan";
 import { BADGE_KEYS, trailState } from "@/lib/community-rules";
+import { challengeHistoryQuery, joinedDay } from "@/lib/challenge-history";
 import { addDays, daysBetween } from "@/lib/time";
 import { formatNumber, loc } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -68,7 +69,10 @@ function BadgeIcon({ badge }: { badge: (typeof BADGE_KEYS)[number] }) {
 }
 function ProfilePage() {
   const { t, i18n } = useTranslation();
-  const { uid, profile, season, today, loading } = useBase();
+  const { uid, profile, season, today, tz, loading } = useBase();
+  const joinHistory = useQuery({ ...challengeHistoryQuery(uid), enabled: !!uid && !!season });
+  const joinEntry = joinHistory.data?.find((entry) => entry.season_id === season?.id);
+  const joinedOn = joinEntry ? joinedDay(joinEntry.joined_at, tz) : null;
   const roles = useQuery({ ...rolesQuery(uid), enabled: !!uid });
   const creatorDashboard = useQuery({
     queryKey: ["creatorDashboard", uid],
@@ -420,6 +424,7 @@ function ProfilePage() {
                 score
                   ? { completion: Number(score.completion), shield_used: score.shield_used }
                   : undefined,
+                joinedOn,
               );
               return (
                 <span

@@ -26,7 +26,7 @@ export const Route = createFileRoute("/_authenticated/challenges")({
 
 function ChallengesPage() {
   const { t, i18n } = useTranslation();
-  const { uid } = useBase();
+  const { uid, tz } = useBase();
   const { season: selectedSeason } = Route.useSearch();
   const history = useQuery(challengeHistoryQuery(uid));
   const [surrenderOpen, setSurrenderOpen] = useState(false);
@@ -89,12 +89,12 @@ function ChallengesPage() {
               <Num>
                 {t("challengeHistory.days", {
                   done: selected.completed_days,
-                  total: possibleDays(selected).possible,
+                  total: possibleDays(selected, tz).possible,
                 })}
               </Num>
             </div>
             <p className="mt-2 text-[13px] font-bold">
-              {t("ux.trophyTarget", { need: possibleDays(selected).trophy })}
+              {t("ux.trophyTarget", { need: possibleDays(selected, tz).trophy })}
             </p>
             {selected.crew && (
               <p className="mt-3 text-[13px] font-bold">
@@ -210,6 +210,7 @@ function Stat({
 }
 
 function HistoryCard({ entry }: { entry: ChallengeHistoryEntry }) {
+  const { tz } = useBase();
   const { t, i18n } = useTranslation();
   return (
     <Link
@@ -238,10 +239,10 @@ function HistoryCard({ entry }: { entry: ChallengeHistoryEntry }) {
         <span>
           {t("challengeHistory.days", {
             done: entry.completed_days,
-            total: possibleDays(entry).possible,
+            total: possibleDays(entry, tz).possible,
           })}
         </span>
-        <span>{Math.round(entry.consistency)}%</span>
+        <span>{t("challengeHistory.consistencyShort", { n: Math.round(entry.consistency) })}</span>
         <span>
           <Num>{entry.points}</Num> {t("challengeHistory.pointsTotal")}
         </span>
