@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
+import { CameraIcon } from "@/components/icons/feature-icons";
 import { useServerFn } from "@tanstack/react-start";
 import { fingerprintProof } from "@/lib/admin.functions";
 import { createPortal } from "react-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { Camera, X } from "lucide-react";
+import { X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { habitsQuery, myCrewQuery, useBase } from "@/lib/data";
@@ -238,7 +239,7 @@ export function Compose({
           </div>
         ) : (
           <label className="photo-drop">
-            <Camera className="text-yellow" size={30} />
+            <CameraIcon size={30} />
             <span>{processing ? t("common.loading") : t("batch4.addPhoto")}</span>
             <input
               className="sr-only"

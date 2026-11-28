@@ -1,24 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { BuddyIcon } from "@/components/icons/feature-icons";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRef, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  ArrowRight,
-  Ban,
-  CalendarCheck,
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-  Flag,
-  Flame,
-  Mail,
-  MapPin,
-  MoreHorizontal,
-  ShieldCheck,
-  SlidersHorizontal,
-  UserRoundMinus,
-  UsersRound,
-} from "lucide-react";
+import { ArrowRight, Ban, CalendarCheck, ChevronDown, ChevronLeft, ChevronRight, Flag, Flame, Mail, MapPin, MoreHorizontal, ShieldCheck, SlidersHorizontal, UserRoundMinus } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/lezgo/app-shell";
@@ -193,7 +178,7 @@ function Buddies() {
         <StickerLoading />
       ) : !season ? (
         <section className="app-surface buddy-empty">
-          <UsersRound size={28} aria-hidden="true" />
+          <BuddyIcon size={28} />
           <p>{t("buddies.noActive")}</p>
           <Link to="/start" className="buddy-primary-link">
             {t("challengeHistory.pickNext")}
@@ -429,7 +414,7 @@ function Buddies() {
                 </>
               ) : (
                 <section className="app-surface buddy-empty">
-                  <UsersRound size={28} aria-hidden="true" />
+                  <BuddyIcon size={28} />
                   <h2 className="app-section-title">{t("socialDesign.noResults")}</h2>
                   <p>{t(activeFilters ? "buddies.tryWider" : "buddies.empty")}</p>
                   {activeFilters > 0 && (

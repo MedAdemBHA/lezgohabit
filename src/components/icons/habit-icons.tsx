@@ -5,7 +5,7 @@ import type { IconProps } from "./index";
  * One drawing per habit template, in the supplied sticker style: 48px grid, 3px ink outline,
  * round joins, flat sticker colours from the design tokens (so they follow light/dark themes).
  */
-function Sticker({ size = 48, children, ...props }: IconProps & { children: ReactNode }) {
+export function Sticker({ size = 48, children, ...props }: IconProps & { children: ReactNode }) {
   return (
     <svg
       width={size}

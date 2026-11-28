@@ -1,4 +1,5 @@
 import { pageHead } from "@/lib/page-head";
+import { InviteIcon } from "@/components/icons/feature-icons";
 import { useRankVisibility } from "@/lib/rank-thresholds";
 import { PageTitle } from "@/components/lezgo/page-title";
 import { createFileRoute, Link } from "@tanstack/react-router";
@@ -143,7 +144,7 @@ function NoCrew() {
           onClick={() => setOpen("join")}
           className="press block w-full rounded-[22px] bg-blue p-5 text-start sticker-border shadow-hard"
         >
-          <UserPlus strokeWidth={2.5} className="size-8" />
+          <InviteIcon className="size-8" />
           <p className="mt-3 text-[24px] font-extrabold">{t("crew.join")}</p>
           <p className="text-[15px] font-semibold">{t("crew.joinDesc")}</p>
         </button>

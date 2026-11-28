@@ -1,4 +1,5 @@
 import { moderationAccess } from "@/lib/event-data";
+import { CrowdIcon } from "@/components/icons/feature-icons";
 import { challengeEntryQuery, isPrivateChallenge } from "@/lib/challenge-history";
 import { StickerLoading } from "@/components/lezgo/launch/loading";
 import { createFileRoute, Link } from "@tanstack/react-router";
@@ -10,7 +11,7 @@ import {
 } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ChevronDown, MessageSquare, Plus, Users } from "lucide-react";
+import { ChevronDown, MessageSquare, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/lezgo/app-shell";
 import { ChallengeEventCard } from "@/components/lezgo/community/challenge-event-card";
@@ -166,7 +167,7 @@ function Community() {
 
       <section className="app-surface feed-pulse" aria-label={t("appRefresh.challengeActivity")}>
         <div className="feed-pulse-heading">
-          <Users size={24} className="feed-pulse-icon" aria-hidden="true" />
+          <CrowdIcon size={24} className="feed-pulse-icon" />
           <div className="min-w-0">
             <h2>{challengeName}</h2>
             {pulse.data && <p>{checkInProgress}</p>}
