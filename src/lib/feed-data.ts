@@ -130,30 +130,5 @@ export const MAX_NOTE = 280;
 export function noteLength(note: string) {
   return Array.from(note).length;
 }
-export async function compressProof(file: File): Promise<Blob> {
-  if (
-    !["image/jpeg", "image/png", "image/webp"].includes(file.type) ||
-    file.size > 20 * 1024 * 1024
-  )
-    throw Error("invalid_image");
-  const bitmap = await createImageBitmap(file);
-  const ratio = Math.min(1, 1280 / Math.max(bitmap.width, bitmap.height));
-  const canvas = document.createElement("canvas");
-  canvas.width = Math.max(1, Math.round(bitmap.width * ratio));
-  canvas.height = Math.max(1, Math.round(bitmap.height * ratio));
-  const context = canvas.getContext("2d");
-  if (!context) {
-    bitmap.close();
-    throw Error("invalid_image");
-  }
-  context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-  bitmap.close();
-  // Re-encoding pixels drops EXIF, GPS and all original metadata.
-  return new Promise((resolve, reject) =>
-    canvas.toBlob(
-      (blob) => (blob ? resolve(blob) : reject(Error("invalid_image"))),
-      "image/jpeg",
-      0.84,
-    ),
-  );
-}
+// Moved to proof-image.ts so Today proofs and feed posts share one metadata-stripping path.
+export { compressProof } from "./proof-image";
