@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { applyLang } from "@/lib/i18n";
 import { useBase } from "@/lib/data";
+import { trackVisitOnce } from "@/lib/product-events";
 import { LezgoMark } from "./brand";
 import { Avatar } from "./ui";
 import { TabIcon } from "@/components/icons/tab-icons";
@@ -30,7 +31,11 @@ export function AppShell({
   back?: "/today" | "/profile";
 }) {
   const { t, i18n } = useTranslation();
-  const { profile } = useBase();
+  const { profile, season } = useBase();
+  // visit_start for the product funnel (first-party; demo accounts are ignored server-side).
+  useEffect(() => {
+    if (profile && !profile.is_demo) trackVisitOnce(season?.id);
+  }, [profile, season?.id]);
   const loc = useLocation();
   const applied = useRef(false);
   useEffect(() => {

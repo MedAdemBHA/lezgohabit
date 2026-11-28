@@ -70,6 +70,7 @@ export const en = {
   firstInvite: { title: "Bring two friends", body: "Challenges stick when friends play too. Send your crew code to two people now; they join from the link.", makeCrew: "Make a crew to invite friends", skip: "Maybe later" },
   crewStatus: { "summary": "{{done}} of {{total}} finished today", "you": "You", "done": "All done", "progress": "{{done}}/{{total}} habits", "idle": "Not started" },
   crewRetry: {"joined": "You're in the challenge, but joining the crew didn't work:", "retry": "Try the crew again", "otherCode": "Try another crew code", "done": "You're in a crew now."},
+  funnel: {"title": "Challenge funnel", "challenge": "Challenge", "visits": "Visited", "joined": "Joined", "first_log": "First log", "day7_log": "Logged on day 7", "crew": "Day-7 retention · crew", "solo": "Day-7 retention · solo", "retention": "{{day7}} of {{joined}} players"},
   todayDesign: {
     "heldTile": "Being checked · points after review",
     "heldToast": "Saved. This entry is being checked; its points come after review.",
