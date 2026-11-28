@@ -25,6 +25,7 @@ import { Avatar, BottomSheet, Num, StickerButton } from "@/components/lezgo/ui";
 import { FittedLabel } from "@/components/lezgo/fitted-label";
 import { useHabitStatLabel } from "@/components/lezgo/habit-stat";
 import { habitsQuery, scoresQuery, useBase } from "@/lib/data";
+import { useFeature } from "@/lib/features";
 import { buddyQuery, countryName, countryWhere, summaryQuery } from "@/lib/community-data";
 import { challengePulseQuery } from "@/lib/feed-data";
 import { COUNTRY_RANK_MIN_PLAYERS } from "@/lib/challenge-plan";
@@ -127,7 +128,13 @@ function ProfilePage() {
     ...summaryQuery(uid, season?.id ?? "", true),
     enabled: !!uid && !!season && share,
   });
-  const buddy = useQuery({ ...buddyQuery(uid, season?.id ?? ""), enabled: !!uid && !!season });
+  const liftOn = useFeature("lift");
+  const bossOn = useFeature("bosses");
+  const buddiesOn = useFeature("buddies");
+  const buddy = useQuery({
+    ...buddyQuery(uid, season?.id ?? ""),
+    enabled: !!uid && !!season && buddiesOn,
+  });
   const statLabel = useHabitStatLabel(q.data?.stat);
   const shareStat = useHabitStatLabel(shareQ.data?.stat);
   if (!profile)
@@ -268,18 +275,24 @@ function ProfilePage() {
           </StickerButton>
         </Link>
         {creatorPanel}
-        <div className="mt-3 grid grid-cols-2 gap-3">
-          <Link to="/lift">
-            <StickerButton block variant="secondary">
-              {t("design.lift")}
-            </StickerButton>
-          </Link>
-          <Link to="/boss">
-            <StickerButton block variant="secondary">
-              {t("design.boss")}
-            </StickerButton>
-          </Link>
-        </div>
+        {(liftOn || bossOn) && (
+          <div className="mt-3 grid grid-cols-2 gap-3">
+            {liftOn && (
+              <Link to="/lift">
+                <StickerButton block variant="secondary">
+                  {t("design.lift")}
+                </StickerButton>
+              </Link>
+            )}
+            {bossOn && (
+              <Link to="/boss">
+                <StickerButton block variant="secondary">
+                  {t("design.boss")}
+                </StickerButton>
+              </Link>
+            )}
+          </div>
+        )}
         <AppTourButton className="self-start" />
       </AppShell>
     );
@@ -453,14 +466,16 @@ function ProfilePage() {
         <ChevronRight size={20} className="rtl:-scale-x-100" aria-hidden="true" />
       </Link>
 
-      <Link to="/buddies" className="app-surface app-row-link profile-wins-link profile-buddy-link">
-        <UsersRound className="profile-win-icon" size={26} aria-hidden="true" />
-        <span>
-          <strong>{buddy.data?.buddy?.display_name ?? t("socialDesign.findBuddy")}</strong>
-          <small>{t(buddy.data?.buddy ? "batch5.myBuddy" : "socialDesign.findBuddySub")}</small>
-        </span>
-        <ChevronRight size={20} className="rtl:-scale-x-100" aria-hidden="true" />
-      </Link>
+      {buddiesOn && (
+        <Link to="/buddies" className="app-surface app-row-link profile-wins-link profile-buddy-link">
+          <UsersRound className="profile-win-icon" size={26} aria-hidden="true" />
+          <span>
+            <strong>{buddy.data?.buddy?.display_name ?? t("socialDesign.findBuddy")}</strong>
+            <small>{t(buddy.data?.buddy ? "batch5.myBuddy" : "socialDesign.findBuddySub")}</small>
+          </span>
+          <ChevronRight size={20} className="rtl:-scale-x-100" aria-hidden="true" />
+        </Link>
+      )}
 
       <details className="app-disclosure profile-badges">
         <summary>
@@ -506,8 +521,8 @@ function ProfilePage() {
             {t("batch6.wrapped")}
           </Link>
           <Link to="/create-challenge">{t("batch6.create")}</Link>
-          <Link to="/lift">{t("design.lift")}</Link>
-          <Link to="/boss">{t("design.boss")}</Link>
+          {liftOn && <Link to="/lift">{t("design.lift")}</Link>}
+          {bossOn && <Link to="/boss">{t("design.boss")}</Link>}
           <AppTourButton />
           {creatorPanel}
           {profile.is_admin && <Link to="/admin">{t("admin.title")}</Link>}

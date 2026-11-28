@@ -68,6 +68,7 @@ import { formatNumber, loc } from "@/lib/i18n";
 import { bossQuery } from "@/lib/batch6-data";
 import { challengeHistoryQuery } from "@/lib/challenge-history";
 import { planFor } from "@/lib/challenge-plan";
+import { useFeature } from "@/lib/features";
 import { WelcomeCard } from "@/components/lezgo/today/welcome-card";
 export const Route = createFileRoute("/_authenticated/today")({
   head: () => pageHead("Today · lezgo", "Log today's gos and keep your go streak alive."),
@@ -117,6 +118,9 @@ function Today() {
   const [newReady, setNewReady] = useState(false);
   const [pending, setPending] = useState(0);
   const revision = useRef(0);
+  const bossOn = useFeature("bosses");
+  const liftOn = useFeature("lift");
+  const dareOn = useFeature("daily_dare");
   const latestWrite = useRef(new Map<string, number>());
   const queue = useRef<Promise<void>>(Promise.resolve());
   const now = useNow(30_000);
@@ -173,7 +177,7 @@ function Today() {
   }
   const bossOverview = useQuery({
     ...bossQuery(uid, sid),
-    enabled: !!uid && !!sid && showNew("boss", 5),
+    enabled: !!uid && !!sid && bossOn && showNew("boss", 5),
   });
   const closed = !!season && (today < season.starts_on || today > season.ends_on);
   const atRisk = !!now && streakAtRisk(localHour(tz, now), avg, list.length > 0, closed);
@@ -713,14 +717,16 @@ function Today() {
                     : log(habit, Number(habit.target))
                 }
               />
-              <DailyDare
-                text={dares[chaosIndex] ?? ""}
-                done={chaosDone}
-                canSpin={canSpin(spins)}
-                busy={disabled || bonusBusy}
-                onSpin={() => void spin()}
-                onToggle={() => void toggleChaos()}
-              />
+              {dareOn && (
+                <DailyDare
+                  text={dares[chaosIndex] ?? ""}
+                  done={chaosDone}
+                  canSpin={canSpin(spins)}
+                  busy={disabled || bonusBusy}
+                  onSpin={() => void spin()}
+                  onToggle={() => void toggleChaos()}
+                />
+              )}
               <div className="flex flex-wrap gap-2">
                 <StickerButton variant="secondary" onClick={() => setProofOpen(true)}>
                   {t("todayDesign.proof")}
@@ -757,7 +763,7 @@ function Today() {
               </div>
             </NewFeature>
           )}
-          {showNew("boss", 5) && bossOverview.data?.boss && (
+          {bossOn && showNew("boss", 5) && bossOverview.data?.boss && (
             <NewFeature title={t("batch6.boss")} onDismiss={() => dismissNew("boss")}>
               <BossMini overview={bossOverview.data} />
             </NewFeature>
@@ -959,7 +965,7 @@ function Today() {
                 completion(stepper, byHabit.get(stepper.id)) >= 1 ? "ux.markUndone" : "ux.markDone",
               )}
             </StickerButton>
-            {stepper.template?.key === "train" && (
+            {liftOn && stepper.template?.key === "train" && (
               <Link to="/lift" className="block" onClick={() => setStepper(null)}>
                 <StickerButton block variant="secondary">
                   {t("ux.logSets")}

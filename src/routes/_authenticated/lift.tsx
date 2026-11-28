@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { FeatureGate } from "@/components/lezgo/feature-gate";
 import { PageTitle } from "@/components/lezgo/page-title";
 import { useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
@@ -22,7 +23,11 @@ export const Route = createFileRoute("/_authenticated/lift")({
       "Save your lifting session and beat your previous results with your own kit.",
     ),
   loader: ({ context }) => context.queryClient.ensureQueryData(liftQuery(context.user.id)),
-  component: Lift,
+  component: () => (
+    <FeatureGate feature="lift">
+      <Lift />
+    </FeatureGate>
+  ),
 });
 function Lift() {
   const { t, i18n } = useTranslation();
