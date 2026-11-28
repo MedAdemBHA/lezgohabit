@@ -98,7 +98,9 @@ function Today() {
   const habits = useQuery({ ...habitsQuery(uid, sid), enabled: !!uid && !!sid });
   const mine = useQuery({ ...myCrewQuery(uid, sid), enabled: !!uid && !!sid });
   const dq = dayQuery(uid, sid, today);
-  const day = useQuery({ ...dq, enabled: !!uid && !!sid });
+  const [pending, setPending] = useState(0);
+  // Don't let a return-to-app refresh overwrite a check-in that is still being saved.
+  const day = useQuery({ ...dq, enabled: !!uid && !!sid, refetchOnWindowFocus: pending === 0 });
   const [popId, setPopId] = useState<string | null>(null);
   const [perfectOpen, setPerfectOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -115,7 +117,6 @@ function Today() {
   const [bonusBusy, setBonusBusy] = useState(false);
   const [newDismissed, setNewDismissed] = useState<Record<string, boolean>>({});
   const [newReady, setNewReady] = useState(false);
-  const [pending, setPending] = useState(0);
   const revision = useRef(0);
   const bossOn = useFeature("bosses");
   const entryKind = useQuery({ ...challengeEntryQuery(uid, sid) });

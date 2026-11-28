@@ -189,6 +189,33 @@ export const myCrewQuery = (uid: string, seasonId: string) =>
     },
   });
 
+/**
+ * The local calendar day, kept current: re-read every minute and whenever the app comes back to
+ * the foreground, so a screen left open past midnight (or reopened the next morning) moves to the
+ * new day without a manual refresh. Re-renders only when the date string actually changes.
+ */
+function subscribeDay(notify: () => void) {
+  const onVisible = () => {
+    if (document.visibilityState === "visible") notify();
+  };
+  const timer = window.setInterval(notify, 60_000);
+  document.addEventListener("visibilitychange", onVisible);
+  window.addEventListener("focus", notify);
+  return () => {
+    window.clearInterval(timer);
+    document.removeEventListener("visibilitychange", onVisible);
+    window.removeEventListener("focus", notify);
+  };
+}
+
+export function useLocalDay(tz: string) {
+  return useSyncExternalStore(
+    subscribeDay,
+    () => localDate(tz),
+    () => localDate(tz),
+  );
+}
+
 /** Everything a signed-in screen needs: user, profile, season, local today. */
 export function useBase() {
   const user = useUser();
@@ -196,8 +223,9 @@ export function useBase() {
   const profile = useQuery({ ...profileQuery(uid), enabled: !!uid });
   const season = useQuery({ ...activeSeasonQuery(uid), enabled: !!uid });
   const tz = profile.data?.timezone ?? "Africa/Tunis";
+  const liveDay = useLocalDay(tz);
   const today =
-    profile.data?.is_demo && profile.data.demo_today ? profile.data.demo_today : localDate(tz);
+    profile.data?.is_demo && profile.data.demo_today ? profile.data.demo_today : liveDay;
   return {
     user,
     uid,
