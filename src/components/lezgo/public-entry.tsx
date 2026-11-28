@@ -147,7 +147,7 @@ export function ChallengeHabits({ card, lang }: { card: CatalogCard; lang: Lang 
           return (
             <li key={habit.key}>
               <span className="public-habit-icon" aria-hidden="true">
-                <HabitIcon name={habit.key} className="size-5" />
+                <HabitIcon habitKey={habit.key} className="size-5" />
               </span>
               <div>
                 <p className="font-extrabold">{loc(habit.name, lang)}</p>

@@ -249,7 +249,7 @@ function CreateChallenge() {
                     className="min-h-[86px] justify-start"
                     onClick={() => toggle(h)}
                   >
-                    <HabitIcon name={h.icon} className="size-6 shrink-0" />
+                    <HabitIcon habitKey={h.key} name={h.icon} className="size-6 shrink-0" />
                     <span className="min-w-0 text-start">
                       <span className="block truncate">{loc(h.name, i18n.language)}</span>
                       {target !== undefined && h.kind === "count" && (

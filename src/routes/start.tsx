@@ -518,7 +518,7 @@ function StartPage() {
                       onClick={() => setPicked((items) => toggleStartHabit(items, item.key))}
                     >
                       <span className="flex w-full items-center justify-between gap-1">
-                        <HabitIcon name={item.icon} className="size-6" />
+                        <HabitIcon habitKey={item.key} name={item.icon} className="size-6" />
                         {on && <Check className="size-5" aria-hidden="true" />}
                       </span>
                       <span className="text-sm font-extrabold">{loc(item.name, lang)}</span>

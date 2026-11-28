@@ -175,7 +175,11 @@ export function TodayMoments({
         <div className="risk-list">
           {missing.map((h) => (
             <div key={h.id} className="risk-habit">
-              <HabitIcon name={h.template?.icon ?? null} className="size-8 shrink-0" />
+              <HabitIcon
+                habitKey={h.template?.key}
+                name={h.template?.icon ?? null}
+                className="size-8 shrink-0"
+              />
               <div className="min-w-0 flex-1">
                 <h3>{habitName(h, t, i18n.language)}</h3>
                 <p>{loc(h.template?.description, i18n.language)}</p>

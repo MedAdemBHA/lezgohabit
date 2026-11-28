@@ -223,7 +223,7 @@ function TodayExample({
             data-done={done}
             onClick={() => (isRead ? setShowTarget(!showTarget) : onToggle(key))}
           >
-            <HabitIcon name={icon} />
+            <HabitIcon habitKey={key} name={icon} />
             <span>{t(label)}</span>
             <span className="app-tour-habit-action" aria-hidden="true">
               {done ? <Check size={16} /> : null}
