@@ -32,11 +32,11 @@ export function TodayScoreCard({
           className="score-total"
           type="button"
           onClick={onOpen}
-          aria-label={`${formatNumber(score?.total ?? 0, i18n.language)} ${t("common.pts")} · ${t("socialDesign.scoring")}`}
+          aria-label={`${formatNumber(score?.total ?? 0, i18n.language)} ${t("common.ptsToday")} · ${t("socialDesign.scoring")}`}
           aria-busy={busy}
         >
           <CountUp value={score?.total ?? 0} className="today-score-number" />
-          <span>{t("common.pts")}</span>
+          <span>{t("common.ptsToday")}</span>
           <ArrowUpRight size={15} className="rtl:-scale-x-100" aria-hidden="true" />
         </button>
       </div>

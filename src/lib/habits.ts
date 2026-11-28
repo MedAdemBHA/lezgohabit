@@ -4,12 +4,25 @@ import type { Checkin, UserHabit } from "./data";
 export const PRAYERS = ["fajr", "dhuhr", "asr", "maghrib", "isha"] as const;
 export type PrayerState = "on_time" | "late" | "missed";
 
+/** True when the server held this check-in for fair-play review (see checkin_upsert). */
+export function isHeld(c?: Pick<Checkin, "detail"> | null): boolean {
+  return !!(c?.detail as { held?: boolean } | null)?.held;
+}
+
+/**
+ * Count habits save once the player stops tapping, so 29 taps on "+" become one write
+ * instead of 29 (the server's burst rule holds entries after 40 check-ins in a minute).
+ */
+export const COUNT_SETTLE_MS = 700;
+
 /** Mirrors the server's _habit_completion for instant UI feedback; the server stays the source of truth. */
 export function completion(
   h: Pick<UserHabit, "kind" | "target">,
   c?: Pick<Checkin, "value" | "detail"> | null,
 ): number {
   if (!c) return 0;
+  // A held entry waits for review: the server scores it 0 until an admin approves it.
+  if (isHeld(c)) return 0;
   const detail = c.detail as { limit_met?: boolean } | null;
   if (detail?.limit_met !== undefined) return detail.limit_met ? 1 : 0;
   if (h.kind === "salat") {

@@ -50,8 +50,10 @@ import {
   type UserHabit,
 } from "@/lib/data";
 import {
+  COUNT_SETTLE_MS,
   completion,
   fmtVal,
+  isHeld,
   isSleepHabit,
   stepFor,
   unitLabel,
@@ -115,6 +117,7 @@ function Today() {
   const [newReady, setNewReady] = useState(false);
   const [pending, setPending] = useState(0);
   const revision = useRef(0);
+  const latestWrite = useRef(new Map<string, number>());
   const queue = useRef<Promise<void>>(Promise.resolve());
   const now = useNow(30_000);
   const data = day.data;
@@ -258,7 +261,8 @@ function Today() {
           done_at: null,
         }),
         value,
-        detail,
+        // The server keeps a pending review's hold on re-saves; mirror it so the tile stays honest.
+        detail: isHeld(prev) ? { ...((detail as object | null) ?? {}), held: true } : detail,
       };
       return { ...d, checkins: [...d.checkins.filter((c) => c.user_habit_id !== h.id), row] };
     });
@@ -267,11 +271,19 @@ function Today() {
       setTimeout(() => setPopId(null), 350);
     }
     const writeRevision = ++revision.current;
+    latestWrite.current.set(h.id, writeRevision);
+    const superseded = () => latestWrite.current.get(h.id) !== writeRevision;
     setPending((n) => n + 1);
     queue.current = queue.current
       .catch(() => {})
       .then(async () => {
         try {
+          // Only the last value of a burst of taps on the same habit is sent.
+          if (superseded()) return;
+          if (h.kind === "count") {
+            await new Promise((resolve) => setTimeout(resolve, COUNT_SETTLE_MS));
+            if (superseded()) return;
+          }
           if (!navigator.onLine) {
             queueGo({ uid, habit: h.id, day: today, value, detail });
             toast(t("batch9.queued"));
@@ -296,7 +308,8 @@ function Today() {
             points: allocation.data as unknown as HabitPoints[],
           }));
           if (writeRevision === revision.current) await reconcile();
-          if (value > 0) setTinyWin(true);
+          if ((serverScore as { held?: boolean } | null)?.held) toast(t("todayDesign.heldToast"));
+          else if (value > 0) setTinyWin(true);
           void qc.invalidateQueries({ queryKey: ["boss"] });
           void qc.invalidateQueries({ queryKey: ["ghost"] });
           void qc.invalidateQueries({ queryKey: ["signature"] });
@@ -602,6 +615,7 @@ function Today() {
                     habit={h}
                     value={Number(byHabit.get(h.id)?.value ?? 0)}
                     completion={completion(h, byHabit.get(h.id))}
+                    review={isHeld(byHabit.get(h.id))}
                     points={points.get(h.id)}
                     pop={popId === h.id}
                     onTap={() => tap(h)}

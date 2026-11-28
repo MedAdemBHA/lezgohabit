@@ -243,7 +243,7 @@ function HistoryCard({ entry }: { entry: ChallengeHistoryEntry }) {
         </span>
         <span>{Math.round(entry.consistency)}%</span>
         <span>
-          <Num>{entry.points}</Num> {t("challengeHistory.pointsShort")}
+          <Num>{entry.points}</Num> {t("challengeHistory.pointsTotal")}
         </span>
         {entry.rank && <span>#{entry.rank}</span>}
       </div>

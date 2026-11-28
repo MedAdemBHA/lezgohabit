@@ -28,6 +28,7 @@ export function HabitTile({
   habit,
   value,
   completion,
+  review = false,
   points,
   pop,
   onTap,
@@ -37,6 +38,8 @@ export function HabitTile({
   habit: UserHabit;
   value: number;
   completion: number;
+  /** The server held this entry for fair-play review; it scores nothing until approved. */
+  review?: boolean;
   points: HabitPoints | undefined;
   pop: boolean;
   onTap: () => void;
@@ -143,7 +146,7 @@ export function HabitTile({
       <span className="today-habit-bottom">
         <span className="habit-name">{habitName(habit, t, i18n.language)}</span>
         <span className="habit-rule" id={detailsId}>
-          {rule}
+          {review ? t("todayDesign.heldTile") : rule}
         </span>
       </span>
       <span className="habit-top-end">

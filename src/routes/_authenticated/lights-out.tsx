@@ -42,6 +42,8 @@ function LightsOut() {
   const list = habits.data ?? [];
   const missing = list.filter((h) => completion(h, byHabit.get(h.id)) < 1);
   const done = list.length - missing.length;
+  // Never show "day 1 · 0 of 0 · all done" while the day is still loading.
+  const ready = !!sid && sig.isSuccess && day.isSuccess && habits.isSuccess;
   async function save() {
     if (!mood) return;
     setBusy(true);
@@ -69,8 +71,8 @@ function LightsOut() {
                   minute: "2-digit",
                   hourCycle: "h23",
                 }).format(now)
-              : "—"}{" "}
-            · {t("batch8.day", { n: pad(sig.data?.day ?? 1) })}
+              : "—"}
+            {sig.data && <> · {t("batch8.day", { n: pad(sig.data.day) })}</>}
           </Num>
           <Link to="/today">
             <StickerButton variant="ghost" className="lights-close" aria-label={t("common.close")}>
@@ -93,20 +95,30 @@ function LightsOut() {
             />
             <Moon x="23" y="23" width="24" height="24" />
           </svg>
-          <div>
-            <h2>
-              {t("batch8.summary", {
-                done,
-                total: list.length,
-                points: day.data?.score?.total ?? 0,
-              })}
-            </h2>
-            <p>
-              {missing[0]
-                ? t("batch8.stillOpen", { name: habitName(missing[0], t, i18n.language) })
-                : t("batch8.allDone")}
-            </p>
-          </div>
+          {ready ? (
+            <div>
+              <h2>
+                {t("batch8.summary", {
+                  done,
+                  total: list.length,
+                  points: day.data?.score?.total ?? 0,
+                })}
+              </h2>
+              <p>
+                {missing[0]
+                  ? t("batch8.stillOpen", { name: habitName(missing[0], t, i18n.language) })
+                  : t("batch8.allDone")}
+              </p>
+            </div>
+          ) : sig.isError || day.isError || habits.isError ? (
+            <div>
+              <p>{t("common.error")}</p>
+            </div>
+          ) : (
+            <div aria-busy="true">
+              <p>{t("common.loading")}</p>
+            </div>
+          )}
         </div>
         <fieldset>
           <legend>{t("batch8.feel")}</legend>
@@ -138,14 +150,22 @@ function LightsOut() {
           <StickerButton
             block
             className="lights-submit"
-            disabled={!mood || busy || !day.data}
+            disabled={!mood || busy || !ready}
             onClick={() => setConfirmOpen(true)}
           >
             {t("batch8.closeDay")}
           </StickerButton>
           <p>{t("batch8.privateMood")}</p>
         </footer>
-        <ConfirmSheet open={confirmOpen} title={t("integrity.closeTitle")} body={t("integrity.closeBody")} confirmLabel={t("integrity.closeConfirm")} busy={busy} onConfirm={() => void save()} onClose={() => setConfirmOpen(false)} />
+        <ConfirmSheet
+          open={confirmOpen}
+          title={t("integrity.closeTitle")}
+          body={t("integrity.closeBody")}
+          confirmLabel={t("integrity.closeConfirm")}
+          busy={busy}
+          onConfirm={() => void save()}
+          onClose={() => setConfirmOpen(false)}
+        />
       </div>
     </main>
   );

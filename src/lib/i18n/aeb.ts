@@ -68,6 +68,8 @@ export const aeb: Dict = {
     "privateShare": "نتائج الدين الخاصة متاعك ما يظهروش في كارطة المشاركة."
 },
   todayDesign: {
+    "heldTile": "قاعد يتراجع · النقاط بعد المراجعة",
+    "heldToast": "تسجّل. هالإدخال قاعد يتراجع، والنقاط متاعو يجيو بعد المراجعة.",
     "day": "نهار",
     "days": "أيام",
     "today": "اليوم",
@@ -183,7 +185,7 @@ export const aeb: Dict = {
   common: {
     cta: "يلّا نبداو", today: "اليوم", ranks: "الترتيب", crew: "الكرو", profile: "البروفيل", settings: "الإعدادات",
     back: "ارجع", save: "احفظ", cancel: "إلغاء", close: "سكّر", done: "كمّلت", loading: "استنّى شوية…",
-    retry: "عاود", error: "صار مشكل. عاود جرّب.", next: "اللي بعدو", skip: "فوّت", pts: "نقطة", language: "اللغة",
+    retry: "عاود", error: "صار مشكل. عاود جرّب.", next: "اللي بعدو", skip: "فوّت", pts: "نقطة", ptsToday: "نقطة اليوم", language: "اللغة",
     season1: "الموسم 1", live: "لايف", openProfile: "حلّ البروفيل",
   },
   nav: { today: "اليوم", board: "الترتيب", crew: "الكرو", me: "أنا", pulse: "الفيد" },
@@ -290,7 +292,7 @@ export const aeb: Dict = {
     openHistory: "حلّ السجل متاعي", pickNext: "اختار التحدّي الجاي", noActive: "التحدّي متاعك وفى", noActiveBody: "النقاط والسجل متاعك محفوظين. اختار شنوة تعمل توّا.",
     kind_official: "تحدّي رسمي", kind_creator: "تحدّي صانع محتوى", kind_personal: "تحدّي شخصي", by: "من {{name}}",
     status_active: "ماشي", status_completed: "كمل", status_surrendered: "انسحب", days: "{{done}} / {{total}} أيام", dayUnit: "أيام",
-    consistency: "المواظبة", points: "النقاط", pointsShort: "نقطة", rank: "الترتيب الأخير", perfectDays: "نهارات كاملة", crew: "الكرو · {{name}}", habits: "عادات التحدّي", habitsLocked: "العادات هاذم ثابتين في التحدّي هذا.", openTrail: "حلّ المشوار نهار بنهار",
+    consistency: "المواظبة", points: "النقاط", pointsShort: "نقطة", pointsTotal: "نقطة الكل", rank: "الترتيب الأخير", perfectDays: "نهارات كاملة", crew: "الكرو · {{name}}", habits: "عادات التحدّي", habitsLocked: "العادات هاذم ثابتين في التحدّي هذا.", openTrail: "حلّ المشوار نهار بنهار",
     surrender: "انسحب من التحدّي", surrenderTitle: "توفّي التحدّي هذا؟", surrenderIntro: "تنجم تخرج توّا. اللي عملتو لتوّا يبقى متاعك.",
     keepTitle: "شنوة يبقى ليك", keepBody: "السجل متاعك، النقاط اللي ربحتها والبادجات يبقاو محفوظين.", endsTitle: "شنوة يوفى", endsBody: "التسجيلات، الترتيب والعضوية في الكرو يوفاو في التحدّي هذا. ما عادش تنجم ترجعلو.", surrenderedToast: "التحدّي متاعك تحفظ في السجل.",
   },
