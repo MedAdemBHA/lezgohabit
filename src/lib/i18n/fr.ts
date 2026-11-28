@@ -71,6 +71,7 @@ export const fr: Dict = {
   firstInvite: { title: "Ramène deux potes", body: "Un défi tient mieux à plusieurs. Envoie ton code d'équipe à deux personnes maintenant ; elles rejoignent avec le lien.", makeCrew: "Crée une équipe pour inviter tes potes", skip: "Plus tard" },
   crewStatus: { "summary": "{{done}} sur {{total}} ont fini aujourd'hui", "you": "Toi", "done": "Tout fait", "progress": "{{done}}/{{total}} habitudes", "idle": "Pas commencé" },
   crewRetry: {"joined": "Tu as rejoint le défi, mais pas l'équipe :", "retry": "Réessayer l'équipe", "otherCode": "Essayer un autre code", "done": "Tu es dans une équipe maintenant."},
+  funnel: {"title": "Entonnoir du défi", "challenge": "Défi", "visits": "Visites", "joined": "Inscrits", "first_log": "Première saisie", "day7_log": "Saisie au jour 7", "crew": "Rétention J7 · équipe", "solo": "Rétention J7 · solo", "retention": "{{day7}} sur {{joined}} joueurs"},
   todayDesign: {
     "heldTile": "En vérification · points après validation",
     "heldToast": "Enregistré. Cette saisie est en vérification ; ses points arrivent après validation.",

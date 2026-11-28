@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { AdminFunnel } from "@/components/lezgo/admin/funnel";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -392,6 +393,7 @@ function AdminPage() {
             actionButton("newBroadcast", () => setEditor({ kind: "announcement" }))}
         </div>
         {section === "overview" && <AdminOverview data={data} />}
+        {section === "overview" && !showDemo && <AdminFunnel />}
         {section === "moderation" && !showDemo && <AdminModerationAppeals />}
         {section === "seasons" && !showDemo && <OfficialEventsAdmin />}
         {section === "seasons" && (
