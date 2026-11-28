@@ -299,6 +299,8 @@ export const aeb: Dict = {
     keepTitle: "شنوة يبقى ليك", keepBody: "السجل متاعك، النقاط اللي ربحتها والبادجات يبقاو محفوظين.", endsTitle: "شنوة يوفى", endsBody: "التسجيلات، الترتيب والعضوية في الكرو يوفاو في التحدّي هذا. ما عادش تنجم ترجعلو.", surrenderedToast: "التحدّي متاعك تحفظ في السجل.",
   },
   challengePulse: {
+    privateChallenge: "هذا تحدّي خاص، ما فماش فيل. ادخل لتحدّي مشترك باش تشجّع الناس وتنشر انتصاراتك.",
+    joinShared: "لوّج على تحدّي مشترك",
     title: "نبض التحدّي", today: "اليوم", checkedIn: "{{done}} من {{total}} سجّلو", crewTab: "الكرو", challengeTab: "التحدّي",
     moments: "لحظات", shareProof: "زيد دليل", emptyMoments: "مازال ما فماش لحظات. التسجيل الجاي متاعك يبدا الحكاية.",
     crewPosts: "منشورات الكرو", challengePosts: "منشورات التحدّي", emptyPosts: "مازال ما فماش منشورات. خلّيها ساهلة واحضر كل نهار.", noChallenge: "ادخل لتحدّي باش تشوف النبض متاعو.", lastComplete: "آخر تحدّي متاعك، {{name}}، وفى.", findCrew: "لوّجلي على كرو",

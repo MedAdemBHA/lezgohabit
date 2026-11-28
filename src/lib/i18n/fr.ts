@@ -299,6 +299,8 @@ export const fr: Dict = {
     keepTitle: "Ce que tu gardes", keepBody: "Ton historique, tes points déjà gagnés et tes badges restent enregistrés.", endsTitle: "Ce qui s’arrête", endsBody: "Les validations, le classement et ton appartenance au crew s’arrêtent pour ce défi. Tu ne pourras pas le rejoindre à nouveau.", surrenderedToast: "Ton défi est enregistré dans ton historique.",
   },
   challengePulse: {
+    privateChallenge: "C'est un défi privé, donc pas de fil. Rejoins un défi partagé pour encourager les autres et publier tes victoires.",
+    joinShared: "Trouver un défi partagé",
     title: "POULS DU DÉFI", today: "Aujourd’hui", checkedIn: "{{done}} sur {{total}} ont validé", crewTab: "Crew", challengeTab: "Défi",
     moments: "Moments", shareProof: "Ajouter une preuve", emptyMoments: "Pas encore de moment. Ta prochaine validation lancera l’histoire.",
     crewPosts: "Publications du crew", challengePosts: "Publications du défi", emptyPosts: "Pas encore de publication. Reste simple et sois là.", noChallenge: "Rejoins un défi pour voir son pouls.", lastComplete: "Ton dernier défi, {{name}}, est terminé.", findCrew: "Trouve-moi un crew",

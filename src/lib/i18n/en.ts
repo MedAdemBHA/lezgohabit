@@ -298,6 +298,8 @@ export const en = {
     keepTitle: "What you keep", keepBody: "Your history, points already earned, and badges stay saved.", endsTitle: "What ends", endsBody: "Check-ins, board rank, and crew membership end for this challenge. You cannot rejoin it.", surrenderedToast: "Your challenge is saved in history.",
   },
   challengePulse: {
+    privateChallenge: "This is a private challenge, so there's no feed. Join a shared challenge to cheer on others and post your wins.",
+    joinShared: "Find a shared challenge",
     title: "CHALLENGE PULSE", today: "Today", checkedIn: "{{done}} of {{total}} checked in", crewTab: "Crew", challengeTab: "Challenge",
     moments: "Moments", shareProof: "Add proof", emptyMoments: "No moments yet. Your next check-in starts the story.",
     crewPosts: "Crew posts", challengePosts: "Challenge posts", emptyPosts: "No posts yet. Keep it simple and show up.", noChallenge: "Join a challenge to see its pulse.", lastComplete: "Your last challenge, {{name}}, is complete.", findCrew: "Find me a crew",

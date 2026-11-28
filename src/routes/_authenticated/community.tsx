@@ -1,4 +1,5 @@
 import { moderationAccess } from "@/lib/event-data";
+import { challengeEntryQuery, isPrivateChallenge } from "@/lib/challenge-history";
 import { StickerLoading } from "@/components/lezgo/launch/loading";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
@@ -59,7 +60,12 @@ function Community() {
     ...challengeEventsQuery(uid, lastCompleted?.season_id ?? "", "challenge"),
     enabled: !!uid && !!lastCompleted,
   });
-  const posts = useInfiniteQuery({ ...postsOptions(uid, sid, scope), enabled: !!uid && !!sid });
+  const entry = useQuery({ ...challengeEntryQuery(uid, sid) });
+  const shared = entry.isSuccess && !isPrivateChallenge(entry.data);
+  const posts = useInfiniteQuery({
+    ...postsOptions(uid, sid, scope),
+    enabled: !!uid && !!sid && shared,
+  });
   const pulse = useQuery({ ...challengePulseQuery(uid, sid), enabled: !!uid && !!sid });
   const events = useQuery({ ...challengeEventsQuery(uid, sid, scope), enabled: !!uid && !!sid });
   const roles = useQuery({ ...rolesQuery(uid), enabled: !!uid });
@@ -109,6 +115,19 @@ function Community() {
         <StickerLoading />
       </AppShell>
     );
+  if (isPrivateChallenge(entry.data)) {
+    // A private personal challenge has no shared members: no feed, no posting.
+    return (
+      <AppShell title={t("nav.pulse")}>
+        <p className="font-semibold">{t("challengePulse.privateChallenge")}</p>
+        <Link to="/start">
+          <StickerButton block variant="lime">
+            {t("challengePulse.joinShared")}
+          </StickerButton>
+        </Link>
+      </AppShell>
+    );
+  }
   if (!season) {
     return (
       <AppShell title={t("nav.pulse")}>

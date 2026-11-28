@@ -299,6 +299,8 @@ export const ar: Dict = {
     keepTitle: "ما سيبقى لك", keepBody: "يبقى سجلك ونقاطك التي حصلت عليها وشاراتك محفوظة.", endsTitle: "ما الذي سيتوقف", endsBody: "تنتهي التسجيلات والترتيب وعضوية الفريق في هذا التحدي. لن تتمكن من الانضمام إليه مرة أخرى.", surrenderedToast: "تم حفظ تحديك في السجل.",
   },
   challengePulse: {
+    privateChallenge: "هذا تحدٍّ خاص، لذلك لا توجد منشورات. انضم إلى تحدٍّ مشترك لتشجّع الآخرين وتنشر إنجازاتك.",
+    joinShared: "ابحث عن تحدٍّ مشترك",
     title: "نبض التحدي", today: "اليوم", checkedIn: "سجّل {{done}} من أصل {{total}}", crewTab: "الفريق", challengeTab: "التحدي",
     moments: "لحظات", shareProof: "أضف دليلًا", emptyMoments: "لا توجد لحظات بعد. تسجيلك القادم يبدأ القصة.",
     crewPosts: "منشورات الفريق", challengePosts: "منشورات التحدي", emptyPosts: "لا توجد منشورات بعد. ببساطة، كن حاضرًا.", noChallenge: "انضم إلى تحدٍّ لمشاهدة نبضه.", lastComplete: "اكتمل تحديك الأخير، {{name}}.", findCrew: "ابحث لي عن فريق",
