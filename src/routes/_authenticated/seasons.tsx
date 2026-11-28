@@ -1,4 +1,4 @@
-import { createFileRoute,Link } from '@tanstack/react-router';
+import { createFileRoute,Link,redirect } from '@tanstack/react-router';
 import { PageTitle } from "@/components/lezgo/page-title";
 import { useQuery,useSuspenseQuery,useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
@@ -15,7 +15,9 @@ import { summaryQuery,countryName } from '@/lib/community-data';
 import { daysBetween, localDate } from '@/lib/time';
 import { pageHead } from '@/lib/page-head';
 import { loc,formatDayMonth } from '@/lib/i18n';
-export const Route=createFileRoute('/_authenticated/seasons')({head:()=>pageHead('Seasons · lezgo','Winter Arc, upcoming challenges, your reminders and earned season trophies.'),loader:({context})=>context.queryClient.ensureQueryData(seasonsHubQuery(context.user.id)),component:Seasons});
+// P2.3: progress has one home. Seasons content moved to /challenges (trophies, created
+// challenges) and /start (upcoming + reminders); the old URL redirects. Component kept.
+export const Route=createFileRoute('/_authenticated/seasons')({beforeLoad:()=>{throw redirect({to:'/challenges',search:{season:''}});},head:()=>pageHead('Seasons · lezgo','Winter Arc, upcoming challenges, your reminders and earned season trophies.'),loader:({context})=>context.queryClient.ensureQueryData(seasonsHubQuery(context.user.id)),component:Seasons});
 function Seasons(){const {t,i18n}=useTranslation();const eventToday=localDate('Africa/Tunis');const {profile,today,season:activeSeason}=useBase();const uid=Route.useRouteContext().user.id;const qc=useQueryClient();const q=useSuspenseQuery(seasonsHubQuery(uid));const challenges=useQuery(challengesQuery(uid));const current=profile?.is_demo?activeSeason:q.data.seasons.find(s=>s.status!=='ended'&&!s.challenge_owned&&!s.archived&&s.starts_on<=eventToday&&eventToday<=s.ends_on);const summary=useQuery({...summaryQuery(uid,current?.id??''),enabled:!!current});const [busy,setBusy]=useState<string|null>(null);
  const count=current?daysBetween(current.starts_on,current.ends_on)+1:1;const day=current?Math.min(count,Math.max(1,daysBetween(current.starts_on,today)+1)):0;
  const dates=(start:string,end:string)=>`${formatDayMonth(start,i18n.language)} – ${formatDayMonth(end,i18n.language)}`;

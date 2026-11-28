@@ -1,4 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { ProgressExtras } from "@/components/lezgo/progress-extras";
+import { localHour, useNow } from "@/lib/time";
 import { PageTitle } from "@/components/lezgo/page-title";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
@@ -11,6 +13,7 @@ import { useBase } from "@/lib/data";
 import {
   challengeHistoryQuery,
   possibleDays,
+  resultsFinal,
   type ChallengeHistoryEntry,
 } from "@/lib/challenge-history";
 import { loc, formatDayMonth } from "@/lib/i18n";
@@ -26,7 +29,8 @@ export const Route = createFileRoute("/_authenticated/challenges")({
 
 function ChallengesPage() {
   const { t, i18n } = useTranslation();
-  const { uid, tz } = useBase();
+  const { uid, tz, today } = useBase();
+  const now = useNow(60_000);
   const { season: selectedSeason } = Route.useSearch();
   const history = useQuery(challengeHistoryQuery(uid));
   const [surrenderOpen, setSurrenderOpen] = useState(false);
@@ -147,13 +151,15 @@ function ChallengesPage() {
               <ArrowRight className="rtl:-scale-x-100" size={18} />
             </StickerButton>
           </Link>
-          <Link
-            className="wrapped-action press"
-            to="/wrapped"
-            search={{ season: selected.season_id }}
-          >
-            {t("batch6.wrapped")}
-          </Link>
+          {now && resultsFinal(selected.end_date, today, localHour(tz, now)) && (
+            <Link
+              className="wrapped-action press"
+              to="/wrapped"
+              search={{ season: selected.season_id }}
+            >
+              {t("batch6.wrapped")}
+            </Link>
+          )}
           {selected.status === "active" && (
             <StickerButton
               block
@@ -172,11 +178,14 @@ function ChallengesPage() {
           />
         </>
       ) : entries.length ? (
-        <div className="space-y-3">
-          {entries.map((entry) => (
-            <HistoryCard key={entry.season_id} entry={entry} />
-          ))}
-        </div>
+        <>
+          <div className="space-y-3">
+            {entries.map((entry) => (
+              <HistoryCard key={entry.season_id} entry={entry} />
+            ))}
+          </div>
+          <ProgressExtras uid={uid} />
+        </>
       ) : (
         <div className="rounded-[22px] bg-card p-5 text-center sticker-border">
           <p className="font-bold">{t("challengeHistory.empty")}</p>

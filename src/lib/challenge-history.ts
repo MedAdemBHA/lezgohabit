@@ -76,3 +76,14 @@ export function possibleDays(
   );
   return { possible: Math.min(possible, entry.length), trophy: Math.ceil(entry.length * 0.75) };
 }
+
+/**
+ * Results are final once the challenge's last day has been locked by the server
+ * (03:00 local on the day after it ends). Wrapped is only offered from then on.
+ */
+export function resultsFinal(endDate: string, today: string, localHourNow: number) {
+  const dayAfter = new Date(`${endDate}T00:00:00Z`);
+  dayAfter.setUTCDate(dayAfter.getUTCDate() + 1);
+  const lockDay = dayAfter.toISOString().slice(0, 10);
+  return today > lockDay || (today === lockDay && localHourNow >= 3);
+}
