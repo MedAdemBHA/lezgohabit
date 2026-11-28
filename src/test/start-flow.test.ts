@@ -15,7 +15,10 @@ vi.mock("@/integrations/supabase/client", () => ({
 }));
 
 import {
+  CREW_RETRY_KEY,
+  crewRetryMessage,
   finishStartFlow,
+  readCrewRetry,
   readStartFlow,
   resumeStartFlow,
   startFlowResumeToken,
@@ -132,5 +135,52 @@ describe("challenge start flow", () => {
 
     await expect(finishStartFlow()).rejects.toThrow("guest_read_only");
     expect(api.rpc).not.toHaveBeenCalled();
+  });
+
+  describe("join flow recovers from crew failures", () => {
+    const official = { kind: "official" as const, seasonId: "season-id" };
+    for (const [label, reason, message] of [
+      ["full crew", "crew_full", "events.crewFull"],
+      ["invalid code", "crew_not_found", "events.invalidCode"],
+      ["closed crew", "challenge_ended", "events.closed"],
+    ] as const) {
+      it(`${label}: joins the chosen challenge, then Today offers one retry`, async () => {
+        api.rpc.mockImplementation(async (fn: string) =>
+          fn === "join_crew" ? { error: { message: reason } } : { error: null },
+        );
+        saveStartFlow({ challenge: official, play: { mode: "code", code: "ABC123" } });
+
+        const result = await finishStartFlow();
+
+        expect(api.rpc.mock.calls).toEqual([
+          ["join_crew", { _code: "ABC123" }],
+          ["join_season", { _season_id: "season-id", _mode: "solo" }],
+        ]);
+        expect(result.crewFailed).toEqual({ reason, action: { kind: "code" } });
+        expect(readCrewRetry()).toEqual(result.crewFailed);
+        expect(crewRetryMessage(reason)).toBe(message);
+        expect(sessionStorage.getItem(START_FLOW_KEY)).toBeNull();
+      });
+    }
+
+    it("find-a-crew failure keeps the join and offers to find again", async () => {
+      api.rpc.mockImplementation(async (fn: string) =>
+        fn === "find_challenge_crew" ? { error: { message: "crew_full" } } : { error: null },
+      );
+      saveStartFlow({ challenge: official, play: { mode: "find" } });
+
+      const result = await finishStartFlow();
+
+      expect(result.crewFailed).toEqual({ reason: "crew_full", action: { kind: "find" } });
+      expect(sessionStorage.getItem(CREW_RETRY_KEY)).not.toBeNull();
+      expect(sessionStorage.getItem(START_FLOW_KEY)).toBeNull();
+    });
+
+    it("an unrelated join error is still reported, not hidden behind a banner", async () => {
+      api.rpc.mockResolvedValue({ error: { message: "active_challenge_exists" } });
+      saveStartFlow({ challenge: official, play: { mode: "code", code: "ABC123" } });
+      await expect(finishStartFlow()).rejects.toMatchObject({ message: "active_challenge_exists" });
+      expect(readCrewRetry()).toBeNull();
+    });
   });
 });

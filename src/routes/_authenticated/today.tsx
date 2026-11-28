@@ -1,4 +1,5 @@
 import { AppStatus } from "@/components/lezgo/app-status";
+import { CrewRetryBanner } from "@/components/lezgo/today/crew-retry-banner";
 import {
   FirstInviteSheet,
   firstInviteKey,
@@ -621,6 +622,7 @@ function Today() {
           </StickerButton>
         </div>
       </header>
+      <CrewRetryBanner />
       {!!now && localHour(tz, now) < 3 && (
         <p className="locks-note num" role="status">
           <Lock size={14} aria-hidden />
