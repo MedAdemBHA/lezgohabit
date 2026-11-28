@@ -1,4 +1,5 @@
 import { createFileRoute,Link } from '@tanstack/react-router';
+import { PageTitle } from "@/components/lezgo/page-title";
 import { useQuery,useSuspenseQuery,useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -6,7 +7,6 @@ import { ArrowLeft,ArrowRight,Snowflake,Trophy,Bell,Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { AppShell } from '@/components/lezgo/app-shell';
-import { FitHeading } from '@/components/lezgo/fit-heading';
 import { Num,StickerButton } from '@/components/lezgo/ui';
 import {challengesQuery} from '@/lib/batch6-data';
 import { seasonsHubQuery } from '@/lib/batch5-data';
@@ -20,7 +20,7 @@ function Seasons(){const {t,i18n}=useTranslation();const eventToday=localDate('A
  const count=current?daysBetween(current.starts_on,current.ends_on)+1:1;const day=current?Math.min(count,Math.max(1,daysBetween(current.starts_on,today)+1)):0;
  const dates=(start:string,end:string)=>`${formatDayMonth(start,i18n.language)} – ${formatDayMonth(end,i18n.language)}`;
  async function remind(slug:string,on:boolean){setBusy(slug);const r=await supabase.rpc('set_season_reminder',{_slug:slug,_on:on});setBusy(null);if(r.error)toast(t('common.error'));else await qc.invalidateQueries({queryKey:['seasonsHub',uid]});}
- return <AppShell todayLayout><Link to="/profile" className="self-start"><StickerButton variant="secondary" className="icon-control" aria-label={t('common.back')}><ArrowLeft className="rtl:-scale-x-100"/></StickerButton></Link><FitHeading requestedSize={52} className="batch5-title" text={t('batch5.seasons')}/>
+ return <AppShell todayLayout><Link to="/profile" className="self-start"><StickerButton variant="secondary" className="icon-control" aria-label={t('common.back')}><ArrowLeft className="rtl:-scale-x-100"/></StickerButton></Link><PageTitle text={t('batch5.seasons')}/>
  {current&&<section className="season-current" data-color="blue"><div className="flex items-center justify-between"><span className="season-now">{t('batch5.nowSeason',{n:profile?.is_demo?1:q.data.seasons.filter(s=>s.starts_on<=current.starts_on&&!s.challenge_owned&&!s.archived).length})}</span><Snowflake size={32}/></div><h2 className="season-name">{loc(current.name,i18n.language)}</h2><p className="batch5-sub">{t('batch5.winterSub',{dates:dates(current.starts_on,current.ends_on)})}</p><div className="season-stats"><span>{t('batch5.dayOf',{n:day,total:count})}</span><span>{summary.data?.rank?t('batch5.rankCountry',{rank:summary.data.rank,country:countryName(profile?.country_code??'TN',i18n.language)}):'—'}</span></div><progress className="season-progress" value={day} max={count} aria-label={t('batch5.dayOf',{n:day,total:count})}/><Link to="/today"><StickerButton block size="lg">{t('batch5.openSeason')}<ArrowRight className="rtl:-scale-x-100"/></StickerButton></Link></section>}
  <Link to="/wrapped" search={{season:current?.id??''}}><StickerButton block variant="secondary">{t('batch6.wrapped')}</StickerButton></Link>
  <h2 className="section-label">{t('batch6.mine')}</h2>{challenges.data?.map(c=><div className="challenge-list-row" key={c.id}><div><h3>{c.name}</h3><p>{t('batch6.days',{n:c.days})} · {t(`batch6.${c.audience}`)}</p><Num>{c.code}</Num></div><StickerButton size="sm" variant="lime" onClick={async()=>{const r=await supabase.rpc('activate_challenge',{_id:c.id});if(r.error)toast(t('common.error'));else{await qc.invalidateQueries();window.location.assign('/today');}}}>{t('batch6.open')}</StickerButton></div>)}<StickerButton variant="secondary" onClick={async()=>{await supabase.rpc('activate_challenge',{});await qc.invalidateQueries();window.location.assign('/today');}}>{t('batch6.official')}</StickerButton>

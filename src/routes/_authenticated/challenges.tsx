@@ -1,11 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { PageTitle } from "@/components/lezgo/page-title";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, ArrowRight, CalendarDays, Flag, Footprints, Trophy } from "lucide-react";
 import { AppShell } from "@/components/lezgo/app-shell";
 import { ChallengeSurrenderSheet } from "@/components/lezgo/challenge-surrender-sheet";
-import { FitHeading } from "@/components/lezgo/fit-heading";
 import { Num, StickerButton } from "@/components/lezgo/ui";
 import { useBase } from "@/lib/data";
 import {
@@ -49,7 +49,7 @@ function ChallengesPage() {
           </StickerButton>
         </Link>
       )}
-      <FitHeading requestedSize={42} className="page-title" text={t("challengeHistory.title")} />
+      <PageTitle text={t("challengeHistory.title")} />
       {history.isLoading ? (
         <p>{t("common.loading")}</p>
       ) : history.isError ? (

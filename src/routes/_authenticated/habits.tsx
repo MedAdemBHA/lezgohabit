@@ -1,4 +1,5 @@
 import { habitName } from "@/components/lezgo/today/habit-tile";
+import { PageTitle } from "@/components/lezgo/page-title";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
@@ -21,7 +22,7 @@ function HabitsPage() {
   const query = useQuery({ ...habitsQuery(uid, season?.id ?? ""), enabled: !!uid && !!season });
   return (
     <AppShell hideTabs>
-      <h1 className="mb-2 text-[30px] font-extrabold">{t("challengeHistory.habits")}</h1>
+      <PageTitle text={t("challengeHistory.habits")} />
       <p className="mb-4 text-[14px] font-semibold text-design-muted">{t("challengeHistory.habitsLocked")}</p>
       <div className="space-y-3">
         {(query.data ?? []).map((habit) => (

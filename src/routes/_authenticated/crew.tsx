@@ -1,4 +1,5 @@
 import { pageHead } from "@/lib/page-head";
+import { PageTitle } from "@/components/lezgo/page-title";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -170,7 +171,7 @@ function NoCrew() {
   }
   return (
     <>
-      <h1 className="mb-4 text-[30px] font-extrabold">{t("crew.noneTitle")}</h1>
+      <PageTitle text={t("crew.noneTitle")} />
       <div className="space-y-4">
         <button
           type="button"
@@ -313,7 +314,7 @@ function CrewToday({ crewId }: { crewId: string }) {
     <>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <h1 className="text-[30px] font-extrabold leading-tight">{t("crew.title")}</h1>
+          <PageTitle text={t("crew.title")} />
           <Link
             to="/crew-details"
             className="block min-h-11 truncate text-[15px] font-bold text-muted-foreground underline"
