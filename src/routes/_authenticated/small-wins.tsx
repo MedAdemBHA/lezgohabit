@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { challengeEntryQuery, isPrivateChallenge } from "@/lib/challenge-history";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -35,6 +36,7 @@ function SmallWins() {
   const { uid, profile, season, today } = useBase();
   const qc = useQueryClient();
   const sid = season?.id ?? "";
+  const entry = useQuery({ ...challengeEntryQuery(uid, sid) });
   const hs = useQuery({ ...habitsQuery(uid, sid), enabled: !!uid && !!sid });
   const ds = useQuery({ ...dayQuery(uid, sid, today), enabled: !!uid && !!sid });
   const [selected, setSelected] = useState<WinKey[]>([]);
@@ -204,14 +206,16 @@ function SmallWins() {
           <Share2 size={18} aria-hidden="true" />
           {t("batch6.shareCard")}
         </StickerButton>
-        <StickerButton
-          variant="secondary"
-          disabled={busy || !safe.length || !sid}
-          onClick={() => void post()}
-        >
-          <Send size={18} aria-hidden="true" />
-          {t("batch6.postFeed")}
-        </StickerButton>
+        {entry.isSuccess && !isPrivateChallenge(entry.data) && (
+          <StickerButton
+            variant="secondary"
+            disabled={busy || !safe.length || !sid}
+            onClick={() => void post()}
+          >
+            <Send size={18} aria-hidden="true" />
+            {t("batch6.postFeed")}
+          </StickerButton>
+        )}
       </div>
     </AppShell>
   );

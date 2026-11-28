@@ -1,4 +1,5 @@
 import { AppStatus } from "@/components/lezgo/app-status";
+import { challengeEntryQuery, isPrivateChallenge } from "@/lib/challenge-history";
 import { StickerLoading } from "@/components/lezgo/launch/loading";
 import { GhostBar } from "@/components/lezgo/sharing/ghost-bar";
 import { summaryQuery } from "@/lib/community-data";
@@ -120,6 +121,7 @@ function Today() {
   const [pending, setPending] = useState(0);
   const revision = useRef(0);
   const bossOn = useFeature("bosses");
+  const entryKind = useQuery({ ...challengeEntryQuery(uid, sid) });
   const liftOn = useFeature("lift");
   const dareOn = useFeature("daily_dare");
   const latestWrite = useRef(new Map<string, number>());
@@ -781,7 +783,9 @@ function Today() {
           )}
         </BonusSection>
       )}
-      <TodayCrewStrip uid={uid} seasonId={sid} />
+      {entryKind.isSuccess && !isPrivateChallenge(entryKind.data) && (
+        <TodayCrewStrip uid={uid} seasonId={sid} />
+      )}
       {playDay >= 2 && missing.length === 0 && list.length > 0 && (
         <Link to="/ranks" className="today-next">
           {t("today.nextDone")}

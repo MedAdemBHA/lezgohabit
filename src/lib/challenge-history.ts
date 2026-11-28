@@ -87,3 +87,25 @@ export function resultsFinal(endDate: string, today: string, localHourNow: numbe
   const lockDay = dayAfter.toISOString().slice(0, 10);
   return today > lockDay || (today === lockDay && localHourNow >= 3);
 }
+
+/** The player's entry kind for a challenge (official / creator / personal). */
+export const challengeEntryQuery = (uid: string, seasonId: string) =>
+  queryOptions({
+    queryKey: ["challengeEntry", uid, seasonId],
+    enabled: !!uid && !!seasonId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("season_entries")
+        .select("kind,status")
+        .eq("user_id", uid)
+        .eq("season_id", seasonId)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+/** A personal challenge is private: no crew, no shared feed, nothing to post to. */
+export function isPrivateChallenge(entry: { kind?: string | null } | null | undefined) {
+  return entry?.kind === "personal";
+}
