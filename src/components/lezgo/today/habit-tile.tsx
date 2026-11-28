@@ -81,12 +81,20 @@ export function HabitTile({
       })
     ) : habit.kind === "count" ? (
       // Numbers stay left-to-right inside RTL text; the unit is translated.
-      <>
-        <Num>
-          {fmtVal(value)} / {fmtVal(Number(habit.target))}
-        </Num>{" "}
-        {unitLabel(t, habit.unit)}
-      </>
+      value > Number(habit.target) && Number(habit.target) > 0 ? (
+        // Over target: the goal reached, then what was actually logged ("10 pages · 29 logged").
+        <>
+          <Num>{fmtVal(Number(habit.target))}</Num> {unitLabel(t, habit.unit)} ·{" "}
+          {t("ux.overTarget", { value: fmtVal(value) })}
+        </>
+      ) : (
+        <>
+          <Num>
+            {fmtVal(value)} / {fmtVal(Number(habit.target))}
+          </Num>{" "}
+          {unitLabel(t, habit.unit)}
+        </>
+      )
     ) : (
       loc(habit.what_counts, i18n.language) ||
       loc(habit.template?.what_counts, i18n.language) ||
@@ -147,7 +155,8 @@ export function HabitTile({
         </span>
       </span>
       <span className="habit-top-end">
-        {fmtPts(points?.earned) !== "0" && (
+        {/* One rule for every tile: completed tiles show their points, others show none. */}
+        {done && points && (
           <Num className="habit-points">+{fmtPts(points?.earned)}</Num>
         )}
         <span className={`habit-check ${done ? "is-checked" : ""}`} aria-hidden="true">
