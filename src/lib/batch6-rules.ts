@@ -9,6 +9,8 @@ export const WIN_KEYS = [
   "steps",
   "sleep",
   "dessert",
+  "train",
+  "rest",
 ] as const;
 export type WinKey = (typeof WIN_KEYS)[number];
 export function prefilledWins(habits: UserHabit[], checkins: Checkin[]): WinKey[] {
@@ -24,6 +26,8 @@ export function prefilledWins(habits: UserHabit[], checkins: Checkin[]): WinKey[
     if (key === "read" && c.value >= 10) wins.add("read");
     if (key === "steps" && c.value >= 8000) wins.add("steps");
     if (key === "no_sugar") wins.add("dessert");
+    if (key === "train" || key === "run") wins.add("train");
+    if (key === "sleep7" && c.value >= Number(h.target || 7)) wins.add("rest");
   }
   return [...wins];
 }

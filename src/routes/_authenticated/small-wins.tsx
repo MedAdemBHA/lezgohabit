@@ -29,7 +29,7 @@ export const Route = createFileRoute("/_authenticated/small-wins")({
     search["from"] === "profile" ? { from: "profile" } : {},
   component: SmallWins,
 });
-const COLORS = ["blue", "lime", "pink", "yellow", "purple", "teal", "orange", "lime", "pink"];
+const COLORS = ["blue", "lime", "pink", "yellow", "purple", "teal", "orange", "lime", "pink", "orange", "purple"];
 function SmallWins() {
   const { t, i18n } = useTranslation();
   const { from } = Route.useSearch();
@@ -46,7 +46,8 @@ function SmallWins() {
   const [square, setSquare] = useState(false);
   const [busy, setBusy] = useState(false);
   const card = useRef<HTMLDivElement>(null);
-  const labels = (k: WinKey) => t(`batch6.${k === "steps" ? "stepsWin" : k}`);
+  const labels = (k: WinKey) =>
+    t(`batch6.${k === "steps" ? "stepsWin" : k === "train" ? "trainWin" : k === "rest" ? "restWin" : k}`);
   const captions = t("batch6.captions", { returnObjects: true }) as string[];
   const winCaptions = t("batch6.winCaptions", { returnObjects: true }) as Partial<
     Record<WinKey, string[]>
@@ -54,9 +55,8 @@ function SmallWins() {
   const safe = shareableWins(selected, profile?.faith_public ?? false);
   const words = pickCaption(safe, winCaptions, captions, `${uid}|${today}`, caption);
   const loggedWins = hs.data && ds.data ? prefilledWins(hs.data, ds.data.checkins) : [];
-  const suggestions: WinKey[] = [
-    ...new Set<WinKey>([...loggedWins, "water", "read", "steps"]),
-  ].slice(0, 3);
+  // Suggestions are the player's own logged habits; generic wins live under "other wins".
+  const suggestions: WinKey[] = loggedWins;
   const day = season ? Math.max(1, daysBetween(season.starts_on, today) + 1) : 1;
   useEffect(() => {
     if (!hs.data || !ds.data || initialized.current === sid) return;
@@ -118,7 +118,11 @@ function SmallWins() {
         <h2 id="choose-wins-title" className="app-section-title">
           {t("appRefresh.chooseWins")}
         </h2>
-        <div className="win-chips">{suggestions.map(renderWin)}</div>
+        {suggestions.length ? (
+          <div className="win-chips">{suggestions.map(renderWin)}</div>
+        ) : (
+          <p className="wins-privacy">{t("batch6.noLoggedWins")}</p>
+        )}
         <details className="app-disclosure wins-more">
           <summary>
             {t("appRefresh.moreWins")}
