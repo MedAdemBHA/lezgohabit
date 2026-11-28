@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Lock, Mic, Square, Trash2 } from "lucide-react";
+import { useFeature } from "@/lib/features";
 import { toast } from "sonner";
 import { SignatureFrame } from "@/components/lezgo/signature/frame";
 import { Num, StickerButton } from "@/components/lezgo/ui";
@@ -37,6 +38,7 @@ function CapsuleForSeason({ requestedSeason }: { requestedSeason: string | undef
   const [body, setBody] = useState("");
   const [busy, setBusy] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const audioOn = useFeature("capsule_audio");
   const [recording, setRecording] = useState(false);
   const [seconds, setSeconds] = useState(0);
   const [audio, setAudio] = useState<Blob | null>(null);
@@ -209,6 +211,8 @@ function CapsuleForSeason({ requestedSeason }: { requestedSeason: string | undef
               </StickerButton>
             ))}
           </div>
+          {/* Recording is optional and can be switched off (capsule_audio); already sealed audio still plays. */}
+          {audioOn && (
           <StickerButton
             block
             variant="ghost"
@@ -226,7 +230,8 @@ function CapsuleForSeason({ requestedSeason }: { requestedSeason: string | undef
               t("batch8.record")
             )}
           </StickerButton>
-          {preview && (
+          )}
+          {audioOn && preview && (
             <div className="capsule-audio">
               <audio controls src={preview} aria-label={t("batch8.audioReady")} />
               <StickerButton

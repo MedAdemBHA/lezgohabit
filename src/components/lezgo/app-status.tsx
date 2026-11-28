@@ -1,3 +1,4 @@
+import { hiddenUrl, useFeatureFlags } from "@/lib/features";
 import { ModerationNotices } from "./community/moderation-notices";
 import { moderationNotices } from "@/lib/event-data";
 import { useEffect, useState } from "react";
@@ -27,6 +28,7 @@ export function AppStatus({ profile, compact=false, hideBell=false }: { profile:
     }
     void presence({ data: { device } }).catch(() => {});
   }, [uid, presence, compact]);
+  const flags = useFeatureFlags();
   const inbox = useQuery({
     queryKey: ["inbox", uid],
     enabled: !!uid,
@@ -88,7 +90,7 @@ export function AppStatus({ profile, compact=false, hideBell=false }: { profile:
       <BottomSheet open={open} onClose={() => setOpen(false)} title={t("batch7.inbox")}>
         <div className="space-y-4">
           {open && !profile.is_demo && <ModerationNotices uid={uid} />}
-          {(inbox.data?.events??[]).filter(row=>row.type!=="broadcast").map(row=><article className="border-b-2 border-ink py-4" key={row.id}><a href={row.url} className="block min-h-11 text-[18px] font-extrabold">{t(`batch9.${row.type}`)}</a>{!row.read_at&&<StickerButton size="sm" variant="lime" onClick={async()=>{const {error}=await supabase.from("notifications").update({read_at:new Date().toISOString()}).eq("id",row.id).eq("user_id",uid);if(error)toast.error(t("common.error"));else await qc.invalidateQueries({queryKey:["inbox"]});}}><Check className="size-4"/>{t("batch7.read")}</StickerButton>}</article>)}
+          {(inbox.data?.events??[]).filter(row=>row.type!=="broadcast"&&!hiddenUrl(row.url,flags.data)).map(row=><article className="border-b-2 border-ink py-4" key={row.id}><a href={row.url} className="block min-h-11 text-[18px] font-extrabold">{t(`batch9.${row.type}`)}</a>{!row.read_at&&<StickerButton size="sm" variant="lime" onClick={async()=>{const {error}=await supabase.from("notifications").update({read_at:new Date().toISOString()}).eq("id",row.id).eq("user_id",uid);if(error)toast.error(t("common.error"));else await qc.invalidateQueries({queryKey:["inbox"]});}}><Check className="size-4"/>{t("batch7.read")}</StickerButton>}</article>)}
           {(inbox.data?.announcements ?? []).map((row) => (
             <article className="border-b-2 border-ink py-4" key={row.id}>
               <h3 className="text-[18px] font-extrabold">{loc(row.title, i18n.language)}</h3>
