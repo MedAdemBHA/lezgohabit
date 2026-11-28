@@ -1,4 +1,5 @@
 import { pageHead } from "@/lib/page-head";
+import { GhostIcon } from "@/components/icons/feature-icons";
 import { StickerLoading } from "@/components/lezgo/launch/loading";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
@@ -313,7 +314,7 @@ function Ranks() {
       )}
       {ghost && (
         <div className="dashed-ink flex min-h-[68px] items-center gap-3 rounded-[18px] p-3">
-          <Ghost size={32} />
+          <GhostIcon size={32} />
           <div className="min-w-0 flex-1">
             <p className="font-extrabold">{t("socialDesign.ghost")}</p>
             <p className="text-[13px] font-semibold">

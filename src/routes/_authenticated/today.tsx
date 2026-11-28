@@ -1,4 +1,5 @@
 import { AppStatus } from "@/components/lezgo/app-status";
+import { CompassIcon } from "@/components/icons/feature-icons";
 import { CrewRetryBanner } from "@/components/lezgo/today/crew-retry-banner";
 import {
   FirstInviteSheet,
@@ -17,17 +18,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
-import {
-  AlertTriangle,
-  ArrowRight,
-  Compass,
-  Minus,
-  Plus,
-  Share2,
-  RotateCcw,
-  Lock,
-  MoreHorizontal,
-} from "lucide-react";
+import { AlertTriangle, ArrowRight, Minus, Plus, Share2, RotateCcw, Lock, MoreHorizontal } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/lezgo/app-shell";
 import { TodayFlame } from "@/components/icons/tab-icons";
@@ -591,7 +582,7 @@ function Today() {
     return (
       <AppShell title={t("nav.today")}>
         <section className="app-surface today-start-card">
-          <Compass size={29} aria-hidden="true" />
+          <CompassIcon size={29} />
           <h2 className="app-section-title">{t("challengeHistory.noActive")}</h2>
           <p>{t("challengeHistory.noActiveBody")}</p>
           <Link to="/start" className="app-row-link today-start-link">

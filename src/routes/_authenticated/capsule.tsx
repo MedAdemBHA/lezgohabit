@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { PadlockIcon } from "@/components/icons/feature-icons";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Lock, Mic, Square, Trash2 } from "lucide-react";
+import { Mic, Square, Trash2 } from "lucide-react";
 import { useFeature } from "@/lib/features";
 import { toast } from "sonner";
 import { SignatureFrame } from "@/components/lezgo/signature/frame";
@@ -166,7 +167,7 @@ function CapsuleForSeason({ requestedSeason }: { requestedSeason: string | undef
         <p>{t("wrapped.capsuleUnavailable")}</p>
       ) : c.sealed ? (
         <section className="capsule-sealed">
-          <Lock size={88} className="seal-pop" />
+          <PadlockIcon size={88} className="seal-pop" />
           <FitHeading
             className="signature-heading"
             requestedSize={40}

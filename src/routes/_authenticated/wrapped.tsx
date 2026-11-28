@@ -1,20 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { PadlockIcon, WinsIcon } from "@/components/icons/feature-icons";
 import { useBase } from "@/lib/data";
 import { useRankVisibility } from "@/lib/rank-thresholds";
 import { useQuery } from "@tanstack/react-query";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  ArrowLeft,
-  CalendarDays,
-  ChevronDown,
-  Image,
-  Lock,
-  Mail,
-  Share2,
-  Sparkles,
-  Trophy,
-} from "lucide-react";
+import { ArrowLeft, CalendarDays, ChevronDown, Image, Mail, Share2, Sparkles, Trophy } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/lezgo/app-shell";
 import { Num, StickerButton } from "@/components/lezgo/ui";
@@ -81,9 +72,9 @@ function WrappedPage() {
         ) : data?.locked ? (
           <section className="wrapped-locked">
             <div className="wrapped-locked-art" aria-hidden="true">
-              <Sparkles className="wrapped-locked-spark" size={30} />
+              <WinsIcon className="wrapped-locked-spark" size={30} />
               <div className="wrapped-locked-icon">
-                <Lock size={40} strokeWidth={2.5} />
+                <PadlockIcon size={40} />
               </div>
             </div>
             <h2>{t("wrapped.locked")}</h2>
@@ -290,7 +281,7 @@ function WrappedRecap({ data, season }: { data: Wrapped; season: NonNullable<Wra
           {data.handle && <bdi dir="ltr">@{data.handle}</bdi>}
         </div>
         <div className="wrapped-poster-title">
-          <Sparkles className="wrapped-poster-spark" size={31} aria-hidden="true" />
+          <WinsIcon className="wrapped-poster-spark" size={31} />
           <h2>{name}</h2>
           <p>
             <time dateTime={season.starts_on}>

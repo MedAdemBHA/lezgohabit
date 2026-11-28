@@ -1,7 +1,8 @@
 import { Link } from "@tanstack/react-router";
+import { TrophyIcon } from "@/components/icons/feature-icons";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { ArrowRight, Bell, Trophy } from "lucide-react";
+import { ArrowRight, Bell } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { seasonsHubQuery } from "@/lib/batch5-data";
@@ -32,7 +33,7 @@ export function ProgressExtras({ uid }: { uid: string }) {
   return (
     <>
       <section className="trophy-shelf">
-        <Trophy size={32} aria-hidden="true" />
+        <TrophyIcon size={32} />
         <div>
           <h2>{t("batch5.trophyShelf")}</h2>
           {trophies.length ? (

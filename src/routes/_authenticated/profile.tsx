@@ -1,21 +1,12 @@
 import { ManageCommunity } from "@/components/lezgo/community/moderation";
+import { BuddyIcon, FirstGoIcon, PerfectIcon, WinsIcon } from "@/components/icons/feature-icons";
 import { StickerLoading } from "@/components/lezgo/launch/loading";
 import { pageHead } from "@/lib/page-head";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  ArrowLeft,
-  Settings,
-  Upload,
-  ChevronDown,
-  ChevronRight,
-  CheckCircle2,
-  Sparkles,
-  Star,
-  UsersRound,
-} from "lucide-react";
+import { ArrowLeft, Settings, Upload, ChevronDown, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { Compose } from "@/components/lezgo/community/compose";
 import { AppShell } from "@/components/lezgo/app-shell";
@@ -56,7 +47,7 @@ const COLORS = {
 function BadgeIcon({ badge }: { badge: (typeof BADGE_KEYS)[number] }) {
   switch (badge) {
     case "first_go":
-      return <CheckCircle2 size={30} strokeWidth={2.5} />;
+      return <FirstGoIcon size={30} />;
     case "streak7":
       return <StreakIcon size={30} />;
     case "boss_ko":
@@ -66,7 +57,7 @@ function BadgeIcon({ badge }: { badge: (typeof BADGE_KEYS)[number] }) {
     case "sugar7":
       return <NoSugarIcon size={30} />;
     case "perfect5":
-      return <Star size={30} strokeWidth={2.5} />;
+      return <PerfectIcon size={30} />;
   }
 }
 function ProfilePage() {
@@ -464,7 +455,7 @@ function ProfilePage() {
         search={{ from: "profile" }}
         className="app-surface app-row-link profile-wins-link"
       >
-        <Sparkles className="profile-win-icon" size={26} aria-hidden="true" />
+        <WinsIcon className="profile-win-icon" size={26} />
         <span>
           <strong>{t("batch6.winTitle")}</strong>
           <small>{t("appRefresh.shareWin")}</small>
@@ -474,7 +465,7 @@ function ProfilePage() {
 
       {buddiesOn && (
         <Link to="/buddies" className="app-surface app-row-link profile-wins-link profile-buddy-link">
-          <UsersRound className="profile-win-icon" size={26} aria-hidden="true" />
+          <BuddyIcon className="profile-win-icon" size={26} />
           <span>
             <strong>{buddy.data?.buddy?.display_name ?? t("socialDesign.findBuddy")}</strong>
             <small>{t(buddy.data?.buddy ? "batch5.myBuddy" : "socialDesign.findBuddySub")}</small>

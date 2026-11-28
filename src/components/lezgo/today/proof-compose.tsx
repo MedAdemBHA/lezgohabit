@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
+import { CameraIcon } from "@/components/icons/feature-icons";
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { Camera } from 'lucide-react';
+
 import { supabase } from '@/integrations/supabase/client';
 import { useServerFn } from '@tanstack/react-start';
 import { fingerprintProof } from '@/lib/admin.functions';
@@ -31,7 +32,7 @@ export function ProofCompose({ uid, seasonId, day, existingPath, onSaved }: { ui
  }
  return <div className="space-y-4">
   {preview && <img src={preview} alt={t('todayDesign.preview')} className="max-h-72 w-full rounded-[18px] object-contain sticker-border bg-card" />}
-  <label className="flex min-h-[80px] cursor-pointer items-center justify-center gap-3 rounded-[18px] bg-card p-4 font-extrabold dashed-ink"><Camera className="size-6" strokeWidth={2.5}/>{t('todayDesign.choosePhoto')}<input type="file" className="sr-only" accept="image/jpeg,image/png,image/webp" onChange={e => { const photo = e.target.files?.[0]; if (!photo) return; if (!['image/jpeg','image/png','image/webp'].includes(photo.type) || photo.size > 10 * 1024 * 1024) { toast(t('todayDesign.photoError')); return; } setFile(photo); }}/></label>
+  <label className="flex min-h-[80px] cursor-pointer items-center justify-center gap-3 rounded-[18px] bg-card p-4 font-extrabold dashed-ink"><CameraIcon className="size-7" />{t('todayDesign.choosePhoto')}<input type="file" className="sr-only" accept="image/jpeg,image/png,image/webp" onChange={e => { const photo = e.target.files?.[0]; if (!photo) return; if (!['image/jpeg','image/png','image/webp'].includes(photo.type) || photo.size > 10 * 1024 * 1024) { toast(t('todayDesign.photoError')); return; } setFile(photo); }}/></label>
   <p className="text-[13px] font-semibold text-design-muted">{t('todayDesign.proofPrivate')}</p>
   <StickerButton block disabled={!file || busy} onClick={post}>{t('todayDesign.postProof')}</StickerButton>
  </div>;

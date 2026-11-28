@@ -1086,7 +1086,7 @@
 .community-switch, .board-segments { border-width:1.5px; box-shadow:none; margin-bottom:0; }
 .feed-pulse { padding:12px 13px 0; background:color-mix(in srgb, var(--yellow) 27%, var(--card)); }
 .feed-pulse-heading { display:flex; align-items:center; gap:10px; }
-.feed-pulse-icon { flex:none; width:39px; height:39px; padding:8px; border-radius:11px; background:var(--yellow); }
+.feed-pulse-icon { flex:none; width:39px; height:39px; padding:4px; border-radius:11px; background:var(--card); border:1.5px solid var(--ink); }
 .feed-pulse-heading h2 { font-size:17px; font-weight:800; line-height:1.15; overflow-wrap:anywhere; }
 .feed-pulse-heading p { font-size:13px; font-weight:700; color:var(--color-design-body); }
 .feed-pulse .pulse-meter { height:8px; margin-top:10px; border:0; background:rgb(17 17 17 / .13); }
@@ -1141,7 +1141,7 @@
 .profile-wins-link { justify-content:flex-start; padding:10px 12px; background:color-mix(in srgb, var(--purple) 33%, var(--card)); }
 .profile-wins-link > :last-child { margin-inline-start:auto; }
 .profile-wins-link strong { display:block; font-size:15px; }
-.profile-win-icon { width:39px; height:39px; padding:8px; border-radius:11px; background:var(--purple); }
+.profile-win-icon { width:39px; height:39px; padding:4px; border-radius:11px; background:var(--purple); }
 .profile-badges summary > bdi { margin-inline-start:auto; font-size:13px; }
 .profile-badges summary svg { margin-inline-start:0; }
 .profile-tools { display:grid; padding:0 13px 7px; }
