@@ -68,6 +68,7 @@ export const en = {
     "privateShare": "Private faith results are excluded from your share card."
 },
   firstInvite: { title: "Bring two friends", body: "Challenges stick when friends play too. Send your crew code to two people now; they join from the link.", makeCrew: "Make a crew to invite friends", skip: "Maybe later" },
+  crewStatus: { "summary": "{{done}} of {{total}} finished today", "you": "You", "done": "All done", "progress": "{{done}}/{{total}} habits", "idle": "Not started" },
   todayDesign: {
     "heldTile": "Being checked · points after review",
     "heldToast": "Saved. This entry is being checked; its points come after review.",
