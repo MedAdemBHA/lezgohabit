@@ -8,12 +8,9 @@ import { fmtPts, fmtVal, isSleepHabit, unitLabel } from "@/lib/habits";
 import { HabitIcon } from "../habit-icon";
 import { Num } from "../ui";
 export function habitName(h: UserHabit, t: (key: string) => string, lang: string) {
-  const key = h.template?.key;
+  // One name per habit everywhere: the template's localized name (or the player's own name).
+  // Today used to swap in short labels ("Sport", "Sommeil") that no other screen showed.
   if (h.custom_name) return h.custom_name;
-  if (key === "train") return t("todayDesign.train");
-  if (key === "learn" || key === "learn15") return t("todayDesign.learn");
-  if (key === "sleep" || key === "sleep7") return t("todayDesign.sleep");
-  if (key === "no_sugar") return t("todayDesign.noSugar");
   const title = loc(h.template?.name, lang);
   const base = Number(h.template?.default_target);
   return (h.kind === "count" || h.kind === "timer") && base > 0 && base !== Number(h.target)
