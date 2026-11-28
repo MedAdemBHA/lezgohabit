@@ -49,3 +49,47 @@ describe("trail layout and summary", () => {
     expect(stats).toEqual({ good: 2, perfect: 1, streak: 0 });
   });
 });
+
+import { legendStates } from "@/lib/signature-rules";
+import { trailState } from "@/lib/community-rules";
+import { joinedDay, possibleDays } from "@/lib/challenge-history";
+describe("late joiners", () => {
+  const joined = "2026-11-26";
+  it("days before joining are not missed", () => {
+    for (const d of ["2026-11-22", "2026-11-23", "2026-11-24", "2026-11-25"])
+      expect(tileState(d, "2026-11-27", undefined, joined)).toBe("before");
+    expect(trailState("2026-11-22", "2026-11-27", undefined, joined)).toBe("before");
+  });
+  it("the join day and later empty days still count as missed", () => {
+    expect(tileState("2026-11-26", "2026-11-27", undefined, joined)).toBe("missed");
+    expect(tileState("2026-11-26", "2026-11-26", undefined, joined)).toBe("today");
+  });
+  it("zero missed days on the join day", () => {
+    const states = ["2026-11-22", "2026-11-23", "2026-11-24", "2026-11-25", "2026-11-26"].map((d) =>
+      tileState(d, joined, undefined, joined),
+    );
+    expect(states.filter((s) => s === "missed")).toHaveLength(0);
+  });
+  it("the legend lists exactly the styles in use", () => {
+    expect(legendStates(["before", "today", "future", "future"])).toEqual([
+      "before",
+      "today",
+      "future",
+    ]);
+  });
+  it("join day uses the player's time zone, not UTC", () => {
+    // 23:39 UTC on the 26th is already the 27th in Tunis.
+    expect(joinedDay("2026-11-26T23:39:24Z", "Africa/Tunis")).toBe("2026-11-27");
+    expect(
+      possibleDays(
+        {
+          start_date: "2026-11-22",
+          end_date: "2026-12-31",
+          joined_at: "2026-11-26T16:23:39Z",
+          length: 40,
+        },
+        "Africa/Tunis",
+      ).possible,
+    ).toBe(36);
+  });
+});

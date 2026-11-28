@@ -6,8 +6,9 @@ export function initials(name: string) {
 }
 export function seasonWeek(day: number) { return Math.max(1, Math.ceil(day/7)); }
 export function movement(previous: number | null, current: number) { return previous === null ? 0 : previous-current; }
-export function trailState(day: string, today: string, score?: { completion: number; shield_used: boolean }) {
+export function trailState(day: string, today: string, score?: { completion: number; shield_used: boolean }, joinedOn?: string | null) {
  if (score?.shield_used) return 'shield';
+ if (joinedOn && day < joinedOn && day !== today && !score) return 'before';
  if (day === today) return 'today';
  if ((score?.completion ?? 0) >= .6) return 'done';
  return day < today ? 'missed' : 'future';

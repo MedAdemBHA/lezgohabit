@@ -6,11 +6,11 @@ import { SignatureFrame } from "@/components/lezgo/signature/frame";
 import { Avatar, Num, StickerButton } from "@/components/lezgo/ui";
 import { useBase, scoresQuery } from "@/lib/data";
 import { signatureQuery } from "@/lib/signature-data";
-import { tileState, trailStats, weekRows } from "@/lib/signature-rules";
+import { legendStates, tileState, trailStats, weekRows } from "@/lib/signature-rules";
 import { addDays } from "@/lib/time";
 import { formatDayMonth, formatNumber, loc } from "@/lib/i18n";
 import { pageHead } from "@/lib/page-head";
-import { challengeHistoryQuery } from "@/lib/challenge-history";
+import { challengeHistoryQuery, joinedDay } from "@/lib/challenge-history";
 import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/_authenticated/trail")({
   validateSearch: (s: Record<string, unknown>) => ({
@@ -22,7 +22,7 @@ export const Route = createFileRoute("/_authenticated/trail")({
 });
 function Trail() {
   const { t, i18n } = useTranslation();
-  const { uid, season: activeSeason, today } = useBase();
+  const { uid, season: activeSeason, today, tz } = useBase();
   const search = Route.useSearch();
   const sid = search.season || activeSeason?.id || "";
   const seasonQuery = useQuery({
@@ -37,6 +37,7 @@ function Trail() {
   const season = seasonQuery.data;
   const history = useQuery({ ...challengeHistoryQuery(uid), enabled: !!uid && !!sid });
   const historyEntry = history.data?.find((entry) => entry.season_id === sid);
+  const joinedOn = historyEntry ? joinedDay(historyEntry.joined_at, tz) : null;
   const q = useQuery({ ...signatureQuery(uid, sid), enabled: !!uid && !!sid });
   const scores = useQuery({ ...scoresQuery(uid, sid), enabled: !!uid && !!sid });
   const data = q.data;
@@ -114,7 +115,7 @@ function Trail() {
                 <div className="trail-row" key={i}>
                   {row.map((n) => {
                     const d = addDays(season.starts_on, n - 1);
-                    const state = tileState(d, today, byDay.get(d));
+                    const state = tileState(d, today, byDay.get(d), joinedOn);
                     const friends = data.crew.filter((c) => c.day === n).slice(0, 2);
                     const final = !!byDay.get(d)?.finalized_at;
                     const milestone = n === Math.ceil(data.length / 2);
@@ -125,7 +126,7 @@ function Trail() {
                         data-milestone={milestone}
                         key={n}
                         data-final={final}
-                        title={`${formatDayMonth(d, i18n.language)} · ${state === "missed" ? t("ux.missed") : t(`batch8.${state === "future" ? "day" : state}`, { n })}${final ? ` · ${t("integrity.final")}` : ""}`}
+                        title={`${formatDayMonth(d, i18n.language)} · ${state === "missed" ? t("ux.missed") : state === "before" ? t("ux.beforeJoin") : t(`batch8.${state === "future" ? "day" : state}`, { n })}${final ? ` · ${t("integrity.final")}` : ""}`}
                       >
                         {state === "perfect" ? (
                           <Check aria-hidden="true" />
@@ -161,10 +162,27 @@ function Trail() {
               ))}
             </div>
             <ul className="trail-legend">
-              {(["perfect", "partial", "missed", "shield", "today"] as const).map((s) => (
+              {legendStates(
+                Array.from({ length: data.length }, (_, i) =>
+                  tileState(
+                    addDays(season.starts_on, i),
+                    today,
+                    byDay.get(addDays(season.starts_on, i)),
+                    joinedOn,
+                  ),
+                ),
+              ).map((s) => (
                 <li key={s}>
                   <i data-state={s} />
-                  {t(s === "missed" ? "ux.missed" : `batch8.${s}`)}
+                  {t(
+                    s === "missed"
+                      ? "ux.missed"
+                      : s === "before"
+                        ? "ux.beforeJoin"
+                        : s === "future"
+                          ? "ux.upcoming"
+                          : `batch8.${s}`,
+                  )}
                 </li>
               ))}
             </ul>

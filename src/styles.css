@@ -384,6 +384,7 @@
 .season-square { aspect-ratio:1; border-radius:5px; border:1.5px solid var(--ink); }
 .season-square[data-state='missed'] { border-style:dashed; }
 .season-square[data-state='future'] { border-color:var(--color-countdown-muted); }
+.season-square[data-state='before'] { opacity:.35; border-style:solid; }
 .season-square[data-state='today'] { outline:2px solid var(--orange); outline-offset:2px; }
 .profile-header { display:flex; align-items:center; gap:14px; }
 .profile-name { font-size:34px; font-weight:800; overflow-wrap:anywhere; line-height:1.1; }
@@ -828,6 +829,7 @@
 .trail-tile[data-state=today] { background:var(--orange); border-color:var(--ink); color:var(--ink); box-shadow:0 0 0 3px var(--card), 0 0 0 5.5px var(--ink); }
 .trail-tile[data-state=missed] { background:transparent; border-style:dashed; color:color-mix(in oklab, var(--muted-foreground) 70%, transparent); }
 .trail-tile[data-state=future] { background:var(--cream); }
+.trail-tile[data-state=before] { background:transparent; border-color:color-mix(in oklab, var(--ink) 18%, transparent); color:color-mix(in oklab, var(--muted-foreground) 55%, transparent); opacity:.6; }
 .trail-tile-star { position:absolute; top:-7px; inset-inline-end:-7px; width:18px!important; height:18px!important; color:var(--yellow); stroke:var(--ink); stroke-width:2.5; }
 .trail-friends { position:absolute; inset-inline-end:-6px; bottom:-6px; display:flex; pointer-events:none; }
 .trail-friends>span+span { margin-inline-start:-8px; }
@@ -838,6 +840,8 @@
 .trail-legend i[data-state=shield] { background:var(--blue); }
 .trail-legend i[data-state=today] { background:var(--orange); }
 .trail-legend i[data-state=missed] { background:transparent; border-style:dashed; border-color:var(--muted-foreground); }
+.trail-legend i[data-state=before] { background:transparent; border-color:color-mix(in oklab, var(--ink) 18%, transparent); opacity:.6; }
+.trail-legend i[data-state=future] { background:var(--cream); }
 .trail-cards { display:flex; flex-direction:column; gap:12px; }
 .trail-milestone { display:flex; align-items:center; gap:14px; min-height:72px; padding:14px 16px; background:var(--card); border:2.5px solid var(--ink); border-radius:20px; box-shadow:var(--sx) 4px 0 var(--ink); }
 .trail-milestone.is-done { background:color-mix(in oklab, var(--lime) 45%, var(--card)); }

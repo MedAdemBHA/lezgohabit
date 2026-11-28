@@ -51,11 +51,22 @@ export const challengeHistoryQuery = (uid: string) =>
     enabled: !!uid,
   });
 
+/** The calendar day the player joined, in their own time zone (joined_at is a UTC timestamp). */
+export function joinedDay(joinedAt: string, tz = "Africa/Tunis") {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: tz,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date(joinedAt));
+}
+
 /** Days the player could actually play (from their join day), and the trophy target for the challenge. */
 export function possibleDays(
   entry: Pick<ChallengeHistoryEntry, "start_date" | "end_date" | "joined_at" | "length">,
+  tz?: string,
 ) {
-  const joined = entry.joined_at.slice(0, 10);
+  const joined = joinedDay(entry.joined_at, tz);
   const from = joined > entry.start_date ? joined : entry.start_date;
   const possible = Math.max(
     1,
