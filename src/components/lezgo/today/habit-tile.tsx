@@ -146,7 +146,7 @@ export function HabitTile({
       }}
     >
       <span className="habit-icon-box">
-        <HabitIcon name={habit.template?.icon ?? null} className="size-7" />
+        <HabitIcon habitKey={key} name={habit.template?.icon ?? null} className="size-7" />
       </span>
       <span className="today-habit-bottom">
         <span className="habit-name">{habitName(habit, t, i18n.language)}</span>

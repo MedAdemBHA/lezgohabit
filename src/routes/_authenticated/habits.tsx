@@ -27,7 +27,11 @@ function HabitsPage() {
       <div className="space-y-3">
         {(query.data ?? []).map((habit) => (
           <article key={habit.id} className="flex min-h-[72px] items-center gap-3 rounded-[18px] bg-card p-4 sticker-border shadow-hard-sm">
-            <HabitIcon name={habit.template?.icon ?? "sparkles"} className="size-7 shrink-0" />
+            <HabitIcon
+              habitKey={habit.template?.key}
+              name={habit.template?.icon ?? "sparkles"}
+              className="size-7 shrink-0"
+            />
             <div className="min-w-0 flex-1">
               <h2 className="truncate font-extrabold">{habitName(habit, t, i18n.language)}</h2>
               <p className="text-[13px] font-semibold text-design-muted">{loc(habit.what_counts, i18n.language) || loc(habit.template?.what_counts, i18n.language)}</p>

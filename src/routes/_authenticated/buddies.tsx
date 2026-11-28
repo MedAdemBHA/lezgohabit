@@ -652,7 +652,7 @@ function BuddyDetails({ person }: { person: Match }) {
           <ul className="buddy-habits">
             {person.shared.map((habit) => (
               <li key={habit.key} data-color={habit.color || "lime"}>
-                <HabitIcon name={habit.icon || habit.key} />
+                <HabitIcon habitKey={habit.key} name={habit.icon} />
                 {loc(habit.name, i18n.language)}
               </li>
             ))}

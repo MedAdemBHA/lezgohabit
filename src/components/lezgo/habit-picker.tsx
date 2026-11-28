@@ -42,7 +42,7 @@ export function HabitPicker({ templates, picks, onChange }: { templates: Templat
     return (
       <Tile key={tpl.id} selected={on} onClick={() => toggle(tpl)} aria-pressed={on}>
         <span className="flex items-center justify-between">
-          <HabitIcon name={tpl.icon} className="size-6" />
+          <HabitIcon habitKey={tpl.key} name={tpl.icon} className="size-6" />
           {on && <span className="grid size-6 place-items-center rounded-full bg-ink text-lime"><Check strokeWidth={3} className="size-4" /></span>}
         </span>
         <span className="truncate text-[16px] font-extrabold">{loc(tpl.name, lang)}</span>
