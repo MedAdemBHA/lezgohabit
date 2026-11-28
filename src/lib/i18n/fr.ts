@@ -68,6 +68,8 @@ export const fr: Dict = {
     "privateShare": "Les résultats de foi privés sont exclus de ta carte partagée."
 },
   todayDesign: {
+    "heldTile": "En vérification · points après validation",
+    "heldToast": "Enregistré. Cette saisie est en vérification ; ses points arrivent après validation.",
     "day": "JOUR",
     "days": "JOURS",
     "today": "AUJOURD’HUI",
@@ -183,7 +185,7 @@ export const fr: Dict = {
   common: {
     cta: "Lezgo", today: "Aujourd’hui", ranks: "Classement", crew: "Crew", profile: "Profil", settings: "Réglages",
     back: "Retour", save: "Enregistrer", cancel: "Annuler", close: "Fermer", done: "Fait", loading: "Chargement…",
-    retry: "Réessayer", error: "Oups, un souci. Réessaie.", next: "Suivant", skip: "Passer", pts: "pts", language: "Langue",
+    retry: "Réessayer", error: "Oups, un souci. Réessaie.", next: "Suivant", skip: "Passer", pts: "pts", ptsToday: "pts aujourd'hui", language: "Langue",
     season1: "Saison 1", live: "LIVE", openProfile: "Ouvrir le profil",
   },
   nav: { today: "Aujourd’hui", board: "Classement", crew: "Crew", me: "Moi", pulse: "Fil" },
@@ -290,7 +292,7 @@ export const fr: Dict = {
     openHistory: "Voir mon historique", pickNext: "Choisir mon prochain défi", noActive: "Ton défi est terminé", noActiveBody: "Tes points et ton historique sont conservés. Choisis la suite.",
     kind_official: "Défi officiel", kind_creator: "Défi de créateur", kind_personal: "Défi personnel", by: "par {{name}}",
     status_active: "En cours", status_completed: "Terminé", status_surrendered: "Abandonné", days: "{{done}} / {{total}} jours", dayUnit: "jours",
-    consistency: "Régularité", points: "Points", pointsShort: "pts", rank: "Rang final", perfectDays: "Jours parfaits", crew: "Crew · {{name}}", habits: "Habitudes du défi", habitsLocked: "Ces habitudes sont fixées pour ce défi.", openTrail: "Voir le parcours jour par jour",
+    consistency: "Régularité", points: "Points", pointsShort: "pts", pointsTotal: "pts au total", rank: "Rang final", perfectDays: "Jours parfaits", crew: "Crew · {{name}}", habits: "Habitudes du défi", habitsLocked: "Ces habitudes sont fixées pour ce défi.", openTrail: "Voir le parcours jour par jour",
     surrender: "Abandonner le défi", surrenderTitle: "Terminer ce défi ?", surrenderIntro: "Tu peux arrêter maintenant. Ta progression jusqu’ici reste à toi.",
     keepTitle: "Ce que tu gardes", keepBody: "Ton historique, tes points déjà gagnés et tes badges restent enregistrés.", endsTitle: "Ce qui s’arrête", endsBody: "Les validations, le classement et ton appartenance au crew s’arrêtent pour ce défi. Tu ne pourras pas le rejoindre à nouveau.", surrenderedToast: "Ton défi est enregistré dans ton historique.",
   },

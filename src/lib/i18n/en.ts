@@ -67,6 +67,8 @@ export const en = {
     "privateShare": "Private faith results are excluded from your share card."
 },
   todayDesign: {
+    "heldTile": "Being checked · points after review",
+    "heldToast": "Saved. This entry is being checked; its points come after review.",
     "day": "DAY",
     "days": "DAYS",
     "today": "TODAY",
@@ -182,7 +184,7 @@ export const en = {
   common: {
     cta: "Lezgo", today: "Today", ranks: "Ranks", crew: "Crew", profile: "Profile", settings: "Settings",
     back: "Back", save: "Save", cancel: "Cancel", close: "Close", done: "Done", loading: "Loading…",
-    retry: "Retry", error: "Something went wrong. Try again.", next: "Next", skip: "Skip", pts: "pts", language: "Language",
+    retry: "Retry", error: "Something went wrong. Try again.", next: "Next", skip: "Skip", pts: "pts", ptsToday: "pts today", language: "Language",
     season1: "Season 1", live: "LIVE", openProfile: "Open profile",
   },
   nav: { today: "Today", board: "Board", crew: "Crew", me: "Me", pulse: "Feed" },
@@ -289,7 +291,7 @@ export const en = {
     openHistory: "Open my history", pickNext: "Pick your next challenge", noActive: "Your challenge has ended", noActiveBody: "Your points and history are saved. Choose what you want to do next.",
     kind_official: "Official challenge", kind_creator: "Creator challenge", kind_personal: "Personal challenge", by: "by {{name}}",
     status_active: "Active", status_completed: "Completed", status_surrendered: "Surrendered", days: "{{done}} / {{total}} days", dayUnit: "days",
-    consistency: "Consistency", points: "Points", pointsShort: "pts", rank: "Final rank", perfectDays: "Perfect days", crew: "Crew · {{name}}", habits: "Challenge habits", habitsLocked: "These habits are fixed for this challenge.", openTrail: "Open day-by-day trail",
+    consistency: "Consistency", points: "Points", pointsShort: "pts", pointsTotal: "pts total", rank: "Final rank", perfectDays: "Perfect days", crew: "Crew · {{name}}", habits: "Challenge habits", habitsLocked: "These habits are fixed for this challenge.", openTrail: "Open day-by-day trail",
     surrender: "Surrender challenge", surrenderTitle: "End this challenge?", surrenderIntro: "You can leave now. Your progress so far stays yours.",
     keepTitle: "What you keep", keepBody: "Your history, points already earned, and badges stay saved.", endsTitle: "What ends", endsBody: "Check-ins, board rank, and crew membership end for this challenge. You cannot rejoin it.", surrenderedToast: "Your challenge is saved in history.",
   },

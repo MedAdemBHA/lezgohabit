@@ -159,7 +159,10 @@ function CrewDetailsPage() {
                     </p>
                   </div>
                   {checked || me ? (
-                    <Num className="text-[18px] font-bold">{m.points}</Num>
+                    <span className="text-end leading-tight">
+                      <Num className="block text-[18px] font-bold">{m.points}</Num>
+                      <span className="text-[11px] font-bold">{t("common.ptsToday")}</span>
+                    </span>
                   ) : (
                     <StickerButton
                       variant="yellow"

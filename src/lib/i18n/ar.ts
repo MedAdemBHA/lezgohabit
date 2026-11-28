@@ -68,6 +68,8 @@ export const ar: Dict = {
     "privateShare": "نتائج الإيمان الخاصة لا تظهر في بطاقة المشاركة."
 },
   todayDesign: {
+    "heldTile": "قيد المراجعة · النقاط بعد التحقق",
+    "heldToast": "تم الحفظ. هذا الإدخال قيد المراجعة، وستُضاف نقاطه بعد التحقق.",
     "day": "يوم",
     "days": "أيام",
     "today": "اليوم",
@@ -183,7 +185,7 @@ export const ar: Dict = {
   common: {
     cta: "يلّا نبدأ", today: "اليوم", ranks: "الترتيب", crew: "الفريق", profile: "الملف الشخصي", settings: "الإعدادات",
     back: "رجوع", save: "حفظ", cancel: "إلغاء", close: "إغلاق", done: "تم", loading: "جارٍ التحميل…",
-    retry: "إعادة المحاولة", error: "حدث خطأ. حاول مجددًا.", next: "التالي", skip: "تخطَّ", pts: "نقطة", language: "اللغة",
+    retry: "إعادة المحاولة", error: "حدث خطأ. حاول مجددًا.", next: "التالي", skip: "تخطَّ", pts: "نقطة", ptsToday: "نقطة اليوم", language: "اللغة",
     season1: "الموسم 1", live: "مباشر", openProfile: "افتح الملف الشخصي",
   },
   nav: { today: "اليوم", board: "الترتيب", crew: "الفريق", me: "أنا", pulse: "المنشورات" },
@@ -290,7 +292,7 @@ export const ar: Dict = {
     openHistory: "افتح سجلي", pickNext: "اختر تحديك القادم", noActive: "انتهى تحديك", noActiveBody: "نقاطك وسجلك محفوظان. اختر ما تريد فعله بعد ذلك.",
     kind_official: "تحدٍّ رسمي", kind_creator: "تحدي صانع محتوى", kind_personal: "تحدٍّ شخصي", by: "بواسطة {{name}}",
     status_active: "نشط", status_completed: "مكتمل", status_surrendered: "منسحب", days: "{{done}} / {{total}} يومًا", dayUnit: "أيام",
-    consistency: "المواظبة", points: "النقاط", pointsShort: "نقطة", rank: "الترتيب النهائي", perfectDays: "أيام مثالية", crew: "الفريق · {{name}}", habits: "عادات التحدي", habitsLocked: "هذه العادات ثابتة لهذا التحدي.", openTrail: "افتح المسار يومًا بيوم",
+    consistency: "المواظبة", points: "النقاط", pointsShort: "نقطة", pointsTotal: "نقطة إجمالًا", rank: "الترتيب النهائي", perfectDays: "أيام مثالية", crew: "الفريق · {{name}}", habits: "عادات التحدي", habitsLocked: "هذه العادات ثابتة لهذا التحدي.", openTrail: "افتح المسار يومًا بيوم",
     surrender: "انسحب من التحدي", surrenderTitle: "إنهاء هذا التحدي؟", surrenderIntro: "يمكنك المغادرة الآن. يبقى تقدّمك حتى الآن ملكك.",
     keepTitle: "ما سيبقى لك", keepBody: "يبقى سجلك ونقاطك التي حصلت عليها وشاراتك محفوظة.", endsTitle: "ما الذي سيتوقف", endsBody: "تنتهي التسجيلات والترتيب وعضوية الفريق في هذا التحدي. لن تتمكن من الانضمام إليه مرة أخرى.", surrenderedToast: "تم حفظ تحديك في السجل.",
   },
