@@ -268,6 +268,7 @@ export const en = {
     empty: "No scores yet. Be the first.", you: "You", members: "{{n}} members", next: "Next: log a go to climb", noCrew: "Join or find a crew to see this board.", privateChallenge: "Personal challenges stay private. There is no public board.", myCrew: "My crew",
   },
   crew: {
+    rankLocked: "Ranks unlock with 3 crews · invite friends",
     noneTitle: "Play with your crew", create: "Create a crew", createDesc: "Start one, share the code",
     join: "Join with code", joinDesc: "Got 6 characters from a friend?", name: "Crew name", type: "Type",
     duo: "Duo", squad: "Squad", club: "Club", company: "Company", size: "Max size", code: "Crew code",

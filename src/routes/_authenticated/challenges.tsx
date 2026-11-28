@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useRankVisibility } from "@/lib/rank-thresholds";
 import { ProgressExtras } from "@/components/lezgo/progress-extras";
 import { localHour, useNow } from "@/lib/time";
 import { PageTitle } from "@/components/lezgo/page-title";
@@ -36,6 +37,8 @@ function ChallengesPage() {
   const [surrenderOpen, setSurrenderOpen] = useState(false);
   const entries = history.data ?? [];
   const selected = entries.find((entry) => entry.season_id === selectedSeason);
+  const { profile } = useBase();
+  const selectedRanks = useRankVisibility(uid, selected?.season_id ?? "", profile?.country_code);
   const pct = (n: number) => `${Math.round(Number(n) || 0)}%`;
 
   return (
@@ -126,7 +129,12 @@ function ChallengesPage() {
             <Stat
               icon={<Trophy size={18} />}
               label={t("challengeHistory.rank")}
-              value={selected.rank ? `#${selected.rank}` : "—"}
+              value={
+                selected.rank &&
+                (selected.kind === "official" ? selectedRanks.country : selectedRanks.challenge)
+                  ? `#${selected.rank}`
+                  : "—"
+              }
             />
           </section>
 
@@ -219,7 +227,8 @@ function Stat({
 }
 
 function HistoryCard({ entry }: { entry: ChallengeHistoryEntry }) {
-  const { tz } = useBase();
+  const { tz, uid, profile } = useBase();
+  const ranks = useRankVisibility(uid, entry.season_id, profile?.country_code);
   const { t, i18n } = useTranslation();
   return (
     <Link
@@ -255,7 +264,9 @@ function HistoryCard({ entry }: { entry: ChallengeHistoryEntry }) {
         <span>
           <Num>{entry.points}</Num> {t("challengeHistory.pointsTotal")}
         </span>
-        {entry.rank && <span>#{entry.rank}</span>}
+        {entry.rank && (entry.kind === "official" ? ranks.country : ranks.challenge) && (
+          <span>#{entry.rank}</span>
+        )}
       </div>
       {entry.crew && (
         <p className="mt-2 text-[13px] font-semibold">

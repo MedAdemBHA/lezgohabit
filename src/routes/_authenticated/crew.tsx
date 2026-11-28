@@ -1,4 +1,5 @@
 import { pageHead } from "@/lib/page-head";
+import { useRankVisibility } from "@/lib/rank-thresholds";
 import { PageTitle } from "@/components/lezgo/page-title";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -268,7 +269,8 @@ function NoCrew() {
 function CrewToday({ crewId }: { crewId: string }) {
   const { t, i18n } = useTranslation();
   const qc = useQueryClient();
-  const { uid, tz, season } = useBase();
+  const { uid, tz, season, profile } = useBase();
+  const ranks = useRankVisibility(uid, season?.id ?? "", profile?.country_code);
   const now = useNow();
   const [share, setShare] = useState(false);
   const q = useQuery({
@@ -323,9 +325,11 @@ function CrewToday({ crewId }: { crewId: string }) {
           </Link>
         </div>
         <div className="flex shrink-0 flex-col items-end gap-2">
-          <Chip as="span" active>
-            <Num>#{crew.rank}</Num>
-          </Chip>
+          {ranks.crew && (
+            <Chip as="span" active>
+              <Num>#{crew.rank}</Num>
+            </Chip>
+          )}
           <Chip onClick={() => setShare(true)}>
             <UserPlus strokeWidth={2.5} className="size-4" />
             {t("crew.invite")}

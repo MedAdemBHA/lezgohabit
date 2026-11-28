@@ -1,4 +1,5 @@
 import { ManageCommunity } from "@/components/lezgo/community/moderation";
+import { useRankVisibility } from "@/lib/rank-thresholds";
 import { moderationAccess } from "@/lib/event-data";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -20,7 +21,8 @@ export const Route = createFileRoute("/_authenticated/crew-details")({
 });
 function CrewDetailsPage() {
   const { t, i18n } = useTranslation();
-  const { uid, season } = useBase();
+  const { uid, season, profile } = useBase();
+  const ranks = useRankVisibility(uid, season?.id ?? "", profile?.country_code);
   const qc = useQueryClient();
   const navigate = useNavigate();
   const [menu, setMenu] = useState(false);
@@ -98,13 +100,20 @@ function CrewDetailsPage() {
           <h1 className="crew-name">{data.crew.name}</h1>
           {access.data && season && <ManageCommunity season={season.id} crew={id} />}
           <div className="flex flex-wrap gap-2">
-            <span className="rounded-full bg-blue px-3 py-1.5 text-[13px] font-extrabold sticker-border">
-              {t("socialDesign.countryRank", {
-                rank: data.country_rank,
-                country: countryName(data.country_code, i18n.language),
-                where: countryWhere(data.country_code, i18n.language),
-              })}
-            </span>
+            {ranks.country && ranks.crew ? (
+              <span className="rounded-full bg-blue px-3 py-1.5 text-[13px] font-extrabold sticker-border">
+                {t("socialDesign.countryRank", {
+                  rank: data.country_rank,
+                  country: countryName(data.country_code, i18n.language),
+                  where: countryWhere(data.country_code, i18n.language),
+                })}
+              </span>
+            ) : (
+              // Below the thresholds a rank says nothing; invite people instead.
+              <span className="rounded-full bg-yellow px-3 py-1.5 text-[13px] font-extrabold sticker-border">
+                {t("crew.rankLocked")}
+              </span>
+            )}
             <span className="rounded-full bg-card px-3 py-1.5 text-[13px] font-extrabold sticker-border">
               {t("socialDesign.seasonPoints", { n: data.season_points.toLocaleString("en-US") })}
             </span>
