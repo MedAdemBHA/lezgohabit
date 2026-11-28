@@ -12,6 +12,7 @@ export const fr: Dict = {
     "scoreHabits": "Habitudes · jusqu’à 100 points, à parts égales. Les progrès partiels comptent.",
     "scoreStacks": "Parfait +20 · Preuve +10 · Chaos +10 · Crew sync +10 · Record muscu +5 chacun (max +15).",
     "scoreStreak": "Un jour à 60 % maintient ta série. Chaque jour de série ajoute 5 %, jusqu’à ×1,5.",
+    "scoreRuleV2": "Chaque jour : jusqu'à 100 points pour tes habitudes, +20 pour une journée parfaite, +10 pour une photo preuve et +10 quand ton équipe est synchro ; ta série ajoute jusqu'à 10 %.",
     "scoreShield": "Un bouclier par semaine protège un jour manqué. Un retour par saison double les points d’habitudes, jusqu’à 200.",
     "scoreTotal": "Score du jour = arrondi inférieur de ((habitudes + bonus) × multiplicateur). Maximum : 247.",
     "ghostToggle": "Solo · contre ton fantôme",

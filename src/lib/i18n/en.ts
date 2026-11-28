@@ -11,6 +11,7 @@ export const en = {
     "scoreHabits": "Habits · up to 100 points, shared equally. Partial progress counts.",
     "scoreStacks": "Perfect +20 · Proof +10 · Chaos +10 · Crew sync +10 · Lift PR +5 each (up to +15).",
     "scoreStreak": "A day at 60% keeps your go streak. Each streak day adds 5%, up to ×1.5.",
+    "scoreRuleV2": "Each day: up to 100 points for your habits, +20 for a perfect day, +10 for a proof photo and +10 when your crew syncs; a streak adds up to 10%.",
     "scoreShield": "One shield per week protects a miss. One comeback per season doubles habit points, up to 200.",
     "scoreTotal": "Daily score = floor((habits + bonuses) × multiplier). Maximum: 247.",
     "ghostToggle": "Solo · vs your ghost",

@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { useBase } from "@/lib/data";
+import { DAILY_MAX, previewV2, scoringVersion, type Preview } from "@/lib/scoring-version";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, Minus, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,9 +19,10 @@ export const Route = createFileRoute("/_authenticated/scoring")({
     ),
   component: Scoring,
 });
-type Preview = { habits: number; stacks: number; multiplier: number; total: number; max: number };
 function Scoring() {
   const { t } = useTranslation();
+  const { season } = useBase();
+  const v2 = scoringVersion(season) === 2;
   const [picked, setPicked] = useState(5);
   const [done, setDone] = useState(4);
   const [streak, setStreak] = useState(8);
@@ -28,8 +31,16 @@ function Scoring() {
   const [crew, setCrew] = useState(true);
   const [lift, setLift] = useState(0);
   const q = useQuery({
-    queryKey: ["scoring-preview", picked, done, streak, proof, chaos, crew, lift],
+    queryKey: ["scoring-preview", v2, picked, done, streak, proof, chaos, crew, lift],
     queryFn: async () => {
+      if (v2)
+        return previewV2({
+          _picked: picked,
+          _done: done,
+          _streak: streak,
+          _proof: proof,
+          _crew: crew,
+        });
       const { data, error } = await supabase.rpc("scoring_preview", {
         _picked: picked,
         _done: done,
@@ -65,12 +76,16 @@ function Scoring() {
           <span>) × </span>
           <span className="text-yellow">{t("batch4.streakWord")}</span>
         </div>
-        <p className="mt-3 text-[15px] font-semibold">{t("batch4.formulaSub")}</p>
+        <p className="mt-3 text-[15px] font-semibold">
+          {t(v2 ? "batch4.ruleV2" : "batch4.formulaSub")}
+        </p>
       </div>
       <section className="score-calculator">
         <div className="flex flex-wrap justify-between gap-2">
           <h2 className="section-label">{t("batch4.tryIt")}</h2>
-          <Num className="text-[13px] font-bold">{t("batch4.dailyMax", { n: 247 })}</Num>
+          <Num className="text-[13px] font-bold">
+            {t("batch4.dailyMax", { n: DAILY_MAX[v2 ? 2 : 1] })}
+          </Num>
         </div>
         <ScoreStepper
           name={t("batch4.picked")}
@@ -109,28 +124,32 @@ function Scoring() {
           </StickerButton>
           {[
             { label: "proofBonus", on: proof, change: setProof, color: "bg-yellow" },
-            { label: "chaosBonus", on: chaos, change: setChaos, color: "bg-pink" },
+            { label: "chaosBonus", on: chaos, change: setChaos, color: "bg-pink", v1Only: true },
             { label: "crewBonus", on: crew, change: setCrew, color: "bg-blue" },
-          ].map((b) => (
+          ]
+            .filter((b) => !(v2 && b.v1Only))
+            .map((b) => (
+              <StickerButton
+                variant="secondary"
+                size="sm"
+                className={cn("calc-chip", b.on ? b.color : "shadow-none")}
+                aria-pressed={b.on}
+                key={b.label}
+                onClick={() => b.change(!b.on)}
+              >
+                {t(`batch4.${b.label}`)}
+              </StickerButton>
+            ))}
+          {!v2 && (
             <StickerButton
               variant="secondary"
               size="sm"
-              className={cn("calc-chip", b.on ? b.color : "shadow-none")}
-              aria-pressed={b.on}
-              key={b.label}
-              onClick={() => b.change(!b.on)}
+              className={cn("calc-chip", lift > 0 && "bg-lime")}
+              onClick={() => setLift((lift + 1) % 4)}
             >
-              {t(`batch4.${b.label}`)}
+              {t("batch4.liftBonus", { n: lift, points: lift * 5 })}
             </StickerButton>
-          ))}
-          <StickerButton
-            variant="secondary"
-            size="sm"
-            className={cn("calc-chip", lift > 0 && "bg-lime")}
-            onClick={() => setLift((lift + 1) % 4)}
-          >
-            {t("batch4.liftBonus", { n: lift, points: lift * 5 })}
-          </StickerButton>
+          )}
         </div>
         <div className="calc-result">
           {q.isError ? (
@@ -169,11 +188,7 @@ function Scoring() {
       <h2 className="section-label mt-2">{t("batch4.boards")}</h2>
       <div className="flex flex-wrap gap-2">
         {(["challenge", "crew"] as const).map((scope) => (
-          <Link
-            to="/ranks"
-            search={{ scope }}
-            key={scope}
-          >
+          <Link to="/ranks" search={{ scope }} key={scope}>
             <StickerButton variant="secondary" size="sm" className="feed-chip">
               {t(scope === "crew" ? "challengePulse.crewTab" : "challengePulse.challengeTab")}
             </StickerButton>
