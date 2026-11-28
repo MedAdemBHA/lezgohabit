@@ -78,8 +78,8 @@ export function AppShell({
       )}
       <main
         className={cn(
-          todayLayout || title ? "today-content" : "flex-1 px-4",
-          !todayLayout && !title && (hideTabs ? "pb-8" : "pb-28"),
+          todayLayout || title ? "today-content" : "page-content",
+          hideTabs && "no-tabs",
         )}
       >
         {title && (

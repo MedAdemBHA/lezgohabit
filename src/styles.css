@@ -212,7 +212,15 @@
 .main-tab-wrap { position:fixed; inset-inline:0; bottom:calc(16px + env(safe-area-inset-bottom,0px)); z-index:40; width:100%; max-width:440px; margin-inline:auto; padding-inline:16px; }
 .main-tab-bar { height:64px; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:4px; padding:5px; background:var(--card); border:2.5px solid var(--ink); border-radius:20px; box-shadow:var(--sx) 4px 0 var(--ink); }
 .main-tab { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; border-radius:14px; min-width:0; min-height:44px; font-size:11px; font-weight:800; line-height:14px; letter-spacing:0; }
-.today-content { display:flex; flex-direction:column; gap:12px; padding:16px 18px calc(104px + env(safe-area-inset-bottom,0px)); flex:1; }
+/* Space the fixed tab bar takes: its offset (16) + height (64) + shadow (4) + breathing room (28) + safe area.
+   Defined once so every screen's last control can scroll fully above the bar. */
+:root { --tabbar-clear: calc(16px + 64px + 4px + 28px + env(safe-area-inset-bottom,0px)); }
+.today-content { display:flex; flex-direction:column; gap:12px; padding:16px 18px var(--tabbar-clear); flex:1; }
+.today-content.no-tabs { padding-bottom:calc(32px + env(safe-area-inset-bottom,0px)); }
+.page-content { flex:1; padding-inline:16px; padding-bottom:var(--tabbar-clear); }
+.page-content.no-tabs { padding-bottom:calc(32px + env(safe-area-inset-bottom,0px)); }
+/* The pinned "your rank" card floats above the bar: leave room for it too. */
+.today-content:has(.pinned-rank) { padding-bottom:calc(var(--tabbar-clear) + 96px); }
 .today-top { display:flex; align-items:center; justify-content:space-between; gap:8px; height:44px; flex-shrink:0; }
 .today-challenge-heading { display:flex; align-items:center; gap:8px; flex:1; min-width:0; }
 .today-challenge-name { flex:1; min-width:0; max-width:190px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:15px; font-weight:800; }
