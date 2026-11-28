@@ -66,3 +66,36 @@ describe("batch 6 concrete rules", () => {
       company: "100+",
     }));
 });
+
+import { readFileSync } from "node:fs";
+import { WIN_KEYS } from "@/lib/batch6-rules";
+describe("Small Wins suggests the player's own habits", () => {
+  const sleep7 = { id: "sleep7", target: 7, template: { key: "sleep7" } } as unknown as UserHabit;
+  it("sport, reading and sleep become their own wins", () => {
+    expect(
+      prefilledWins(
+        [habit("train"), habit("read"), sleep7],
+        [check("train", 1), check("read", 29), check("sleep7", 11)],
+      ).sort(),
+    ).toEqual(["read", "rest", "train"]);
+  });
+  it("no generic wins are suggested for habits the player doesn't have", () => {
+    const wins = prefilledWins([habit("train")], [check("train", 1)]);
+    expect(wins).not.toContain("water");
+    expect(wins).not.toContain("steps");
+  });
+  it("short sleep is not a win", () =>
+    expect(prefilledWins([sleep7], [check("sleep7", 5)])).toEqual([]));
+  it("the page suggests only logged wins", () => {
+    const src = readFileSync("src/routes/_authenticated/small-wins.tsx", "utf8");
+    expect(src).toContain("const suggestions: WinKey[] = loggedWins;");
+  });
+  it("every win key is accepted by the server", () => {
+    const sql = readFileSync("drizzle/migrations/0084_small_wins_train_rest.sql", "utf8");
+    expect(WIN_KEYS).toContain("train");
+    expect(WIN_KEYS).toContain("rest");
+    expect(sql).toContain('"train":');
+    expect(sql).toContain('"rest":');
+    expect(new Set(WIN_KEYS).size).toBe(WIN_KEYS.length);
+  });
+});
